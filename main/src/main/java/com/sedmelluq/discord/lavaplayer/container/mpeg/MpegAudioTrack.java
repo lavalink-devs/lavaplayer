@@ -63,7 +63,10 @@ public class MpegAudioTrack extends BaseAudioTrack {
       trackConsumer = selectAudioTrack(file.getTrackList(), context);
 
       if (trackConsumer == null) {
-        throw new FriendlyException("The audio codec used in the track is not supported.", SUSPICIOUS, null);
+        StringBuilder error = new StringBuilder();
+        error.append("The audio codec used in the track is not supported, options:\n");
+        file.getTrackList().forEach(track -> error.append(track.handler).append("|").append(track.codecName).append("\n"));
+        throw new FriendlyException(error.toString(), SUSPICIOUS, null);
       } else {
         log.debug("Starting to play track with codec {}", trackConsumer.getTrack().codecName);
       }
@@ -86,7 +89,6 @@ public class MpegAudioTrack extends BaseAudioTrack {
         return new MpegAacTrackConsumer(context, track);
       }
     }
-
     return null;
   }
 }

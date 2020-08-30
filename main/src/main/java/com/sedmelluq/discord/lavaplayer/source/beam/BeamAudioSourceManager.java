@@ -20,6 +20,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -62,6 +63,7 @@ public class BeamAudioSourceManager implements AudioSourceManager, HttpConfigura
     } else {
       String displayName = channelInfo.get("name").text();
       String id = getPlayedStreamId(channelInfo);
+      String thumbnailUrl = channelInfo.get("thumbnail").get("url").text();
 
       if (displayName == null || id == null) {
         throw new IllegalStateException("Expected id and name fields from Beam channel info.");
@@ -73,7 +75,8 @@ public class BeamAudioSourceManager implements AudioSourceManager, HttpConfigura
           Units.DURATION_MS_UNKNOWN,
           id + "|" + streamName + "|" + reference.identifier,
           true,
-          "https://beam.pro/" + streamName
+          "https://beam.pro/" + streamName,
+          Collections.singletonMap("artworkUrl", thumbnailUrl)
       ), this);
     }
   }

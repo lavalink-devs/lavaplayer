@@ -31,3 +31,4 @@ udpqueue-natives/dist
 version.txt
 
 *.log
+.vscode/settings.json

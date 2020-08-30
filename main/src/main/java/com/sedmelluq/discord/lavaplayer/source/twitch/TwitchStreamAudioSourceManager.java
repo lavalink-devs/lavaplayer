@@ -23,6 +23,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.net.URI;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -73,7 +74,20 @@ public class TwitchStreamAudioSourceManager implements AudioSourceManager, HttpC
       return null;
     }
 
-    JsonBrowser channelInfo = fetchStreamChannelInfo(streamName);
+    JsonBrowser accessToken = fetchAccessToken(streamName);
+
+    if (accessToken == null || accessToken.get("token").isNull()) {
+      return AudioReference.NO_TRACK;
+    }
+
+    String channelId;
+    try {
+      channelId = JsonBrowser.parse(accessToken.get("token").text()).get("channel_id").text();
+    } catch (IOException e) {
+      return null;
+    }
+
+    JsonBrowser channelInfo = fetchStreamChannelInfo(channelId);
 
     if (channelInfo == null || channelInfo.get("stream").isNull()) {
       return AudioReference.NO_TRACK;
@@ -85,19 +99,20 @@ public class TwitchStreamAudioSourceManager implements AudioSourceManager, HttpC
       --- HELIX STUFF
       //Retrieve the data value list; this will have only one element since we're getting only one stream's information
       List<JsonBrowser> dataList = channelInfo.get("data").values();
-    
+
       //The value list is empty if the stream is offline, even when hosting another channel
       if (dataList.size() == 0){
           return null;
       }
-    
+
       //The first one has the title of the broadcast
       JsonBrowser channelData = dataList.get(0);
       String status = channelData.get("title").text();
        */
-
       JsonBrowser channelData = channelInfo.get("stream").get("channel");
       String status = channelData.get("status").text();
+
+      final String thumbnail = channelData.get("logo").text();
 
       return new TwitchStreamAudioTrack(new AudioTrackInfo(
           status,
@@ -105,7 +120,8 @@ public class TwitchStreamAudioSourceManager implements AudioSourceManager, HttpC
           Units.DURATION_MS_UNKNOWN,
           reference.identifier,
           true,
-          reference.identifier
+          reference.identifier,
+          Collections.singletonMap("artworkUrl", thumbnail)
       ), this);
     }
   }
@@ -173,14 +189,24 @@ public class TwitchStreamAudioSourceManager implements AudioSourceManager, HttpC
   }
 
   private static HttpUriRequest addClientHeaders(HttpUriRequest request, String clientId) {
+    request.setHeader("Accept", "application/vnd.twitchtv.v5+json; charset=UTF-8");
     request.setHeader("Client-ID", clientId);
     return request;
   }
 
-  private JsonBrowser fetchStreamChannelInfo(String name) {
+  private JsonBrowser fetchAccessToken(String name) {
+    try (HttpInterface httpInterface = getHttpInterface()) {
+      HttpUriRequest request = createGetRequest("https://api.twitch.tv/api/channels/" + name + "/access_token");
+      return HttpClientTools.fetchResponseAsJson(httpInterface, request);
+    } catch (IOException e) {
+      throw new FriendlyException("Loading Twitch channel access token failed.", SUSPICIOUS, e);
+    }
+  }
+
+  private JsonBrowser fetchStreamChannelInfo(String channelId) {
     try (HttpInterface httpInterface = getHttpInterface()) {
       // helix/streams?user_login=name
-      HttpUriRequest request = createGetRequest("https://api.twitch.tv/kraken/streams/" + name + "?stream_type=all");
+      HttpUriRequest request = createGetRequest("https://api.twitch.tv/kraken/streams/" + channelId + "?stream_type=all");
 
       return HttpClientTools.fetchResponseAsJson(httpInterface, request);
     } catch (IOException e) {

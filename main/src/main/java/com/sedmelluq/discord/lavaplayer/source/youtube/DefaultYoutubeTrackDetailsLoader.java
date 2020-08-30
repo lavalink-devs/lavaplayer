@@ -12,6 +12,8 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.util.EntityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static com.sedmelluq.discord.lavaplayer.tools.DataFormatTools.convertToMapLayout;
 import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.COMMON;
@@ -19,6 +21,7 @@ import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoader {
+  private static final Logger log = LoggerFactory.getLogger(DefaultYoutubeTrackDetails.class);
 
   @Override
   public YoutubeTrackDetails loadDetails(HttpInterface httpInterface, String videoId) {
@@ -44,32 +47,48 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
       try {
         JsonBrowser json = JsonBrowser.parse(responseText);
         JsonBrowser playerInfo = JsonBrowser.NULL_BROWSER;
+        JsonBrowser playerResponse = JsonBrowser.NULL_BROWSER;
         JsonBrowser statusBlock = JsonBrowser.NULL_BROWSER;
+        boolean requiresCipher = true;
 
         for (JsonBrowser child : json.values()) {
           if (child.isMap()) {
             if (!child.get("player").isNull()) {
               playerInfo = child.get("player");
-            } else if (!child.get("playerResponse").isNull()) {
-              statusBlock = child.get("playerResponse").get("playabilityStatus");
+            }
+            if (!child.get("playerResponse").isNull()) {
+              playerResponse = child.get("playerResponse");
+              statusBlock = playerResponse.get("playabilityStatus");
             }
           }
+        }
+
+        if (playerInfo.isNull()) {
+          requiresCipher = playerResponse.get("videoDetails").get("useCipher").asBoolean(true);
+          if (!requiresCipher)
+            playerInfo = playerResponse;
         }
 
         switch (checkStatusBlock(statusBlock)) {
           case INFO_PRESENT:
             if (playerInfo.isNull()) {
-              throw new RuntimeException("No player info block.");
+              playerInfo = getTrackInfoFromEmbedPage(httpInterface, videoId);
+              log.warn("No player info block, falling back to embed page. json:\n" + json.text());
             }
 
-            return new DefaultYoutubeTrackDetails(videoId, playerInfo);
+            if (requiresCipher && playerInfo.get("assets").get("js").isNull()) {
+              log.warn("Cipher script not found, falling back to embed page. json:\n" + json.text());
+              playerInfo = getTrackInfoFromEmbedPage(httpInterface, videoId);
+            }
+
+            return new DefaultYoutubeTrackDetails(videoId, playerInfo, requiresCipher);
           case REQUIRES_LOGIN:
-            return new DefaultYoutubeTrackDetails(videoId, getTrackInfoFromEmbedPage(httpInterface, videoId));
+            return new DefaultYoutubeTrackDetails(videoId, getTrackInfoFromEmbedPage(httpInterface, videoId), true); // true?
           case DOES_NOT_EXIST:
             return null;
         }
 
-        return new DefaultYoutubeTrackDetails(videoId, playerInfo);
+        return new DefaultYoutubeTrackDetails(videoId, playerInfo, requiresCipher);
       } catch (FriendlyException e) {
         throw e;
       } catch (Exception e) {
@@ -152,11 +171,16 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
   }
 
   protected JsonBrowser loadTrackBaseInfoFromEmbedPage(HttpInterface httpInterface, String videoId) throws IOException {
+    String html;
     try (CloseableHttpResponse response = httpInterface.execute(new HttpGet("https://www.youtube.com/embed/" + videoId))) {
       HttpClientTools.assertSuccessWithContent(response, "embed video page response");
 
-      String html = EntityUtils.toString(response.getEntity(), UTF_8);
+      html = EntityUtils.toString(response.getEntity(), UTF_8);
       String configJson = DataFormatTools.extractBetween(html, "'PLAYER_CONFIG': ", "});writeEmbed();");
+
+      if(configJson == null) {
+        configJson = DataFormatTools.extractBetween(html, "'PLAYER_CONFIG': ", "});yt.setConfig({");
+      }
 
       if (configJson != null) {
         return JsonBrowser.parse(configJson);
@@ -164,7 +188,7 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
     }
 
     throw new FriendlyException("Track information is unavailable.", SUSPICIOUS,
-            new IllegalStateException("Expected player config is not present in embed page."));
+            new IllegalStateException("Expected player config is not present in embed page. HTML:\n" + html));
   }
 
   protected Map<String, String> loadTrackArgsFromVideoInfoPage(HttpInterface httpInterface, String videoId, String sts) throws IOException {

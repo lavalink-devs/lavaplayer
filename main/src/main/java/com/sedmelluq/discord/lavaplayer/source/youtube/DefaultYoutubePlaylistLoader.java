@@ -11,6 +11,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
 import com.sedmelluq.discord.lavaplayer.track.BasicAudioPlaylist;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -143,11 +144,24 @@ public class DefaultYoutubePlaylistLoader implements YoutubePlaylistLoader {
         String videoId = item.get("videoId").text();
         String title = item.get("title").get("simpleText").text();
         String author = shortBylineText.get("runs").index(0).get("text").text();
-        JsonBrowser lengthSeconds = item.get("lengthSeconds");
-        long duration = Units.secondsToMillis(lengthSeconds.asLong(Units.DURATION_SEC_UNKNOWN));
+        JsonBrowser lengthText = item.get("lengthText");
 
-        AudioTrackInfo info = new AudioTrackInfo(title, author, duration, videoId, false,
-            "https://www.youtube.com/watch?v=" + videoId);
+        final boolean isStream;
+        final long duration;
+        if(!lengthText.isNull()) {
+          duration = PBJUtils.parseDuration(lengthText.get("simpleText").text());
+          isStream = false;
+        }
+        else {
+          duration = Units.DURATION_MS_UNKNOWN;
+          isStream = true;
+        }
+
+        final String thumbnail = PBJUtils.getBestThumbnail(item, videoId);
+
+        AudioTrackInfo info = new AudioTrackInfo(title, author, duration, videoId, isStream,
+            "https://www.youtube.com/watch?v=" + videoId,
+            Collections.singletonMap("artworkUrl", thumbnail));
 
         tracks.add(trackFactory.apply(info));
       }
