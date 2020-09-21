@@ -146,13 +146,17 @@ public class DefaultYoutubePlaylistLoader implements YoutubePlaylistLoader {
         String author = shortBylineText.get("runs").index(0).get("text").text();
         JsonBrowser lengthText = item.get("lengthText");
 
+        if (title == null) {
+          title = item.get("title").get("runs").index(0).get("text").text();
+        }
+
         final boolean isStream;
         final long duration;
-        if(!lengthText.isNull()) {
+        
+        if (!lengthText.isNull()) {
           duration = PBJUtils.parseDuration(lengthText.get("simpleText").text());
           isStream = false;
-        }
-        else {
+        } else {
           duration = Units.DURATION_MS_UNKNOWN;
           isStream = true;
         }
