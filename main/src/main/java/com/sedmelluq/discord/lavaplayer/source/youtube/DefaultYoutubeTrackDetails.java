@@ -50,6 +50,9 @@ public class DefaultYoutubeTrackDetails implements YoutubeTrackDetails {
     this.videoId = videoId;
     this.data = data;
     this.requiresCipher = requiresCipher;
+    if (!requiresCipher) {
+      log.warn("Created DefaultYoutubeTrackDetails for videoId {} using new code (w/o cipher)", videoId);
+    }
   }
 
   @Override
