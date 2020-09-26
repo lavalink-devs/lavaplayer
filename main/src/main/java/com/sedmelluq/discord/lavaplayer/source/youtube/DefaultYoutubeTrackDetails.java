@@ -50,9 +50,6 @@ public class DefaultYoutubeTrackDetails implements YoutubeTrackDetails {
     this.videoId = videoId;
     this.data = data;
     this.requiresCipher = requiresCipher;
-    if(!requiresCipher) {
-      log.warn("Created DefaultYoutubeTrackDetails for videoId {} using new code (w/o cipher)", videoId);
-    }
   }
 
   @Override
@@ -75,7 +72,7 @@ public class DefaultYoutubeTrackDetails implements YoutubeTrackDetails {
 
   @Override
   public String getPlayerScript() {
-    if(!requiresCipher)
+    if (!requiresCipher)
       return null;
     return data.get("assets").get("js").text();
   }
@@ -99,18 +96,16 @@ public class DefaultYoutubeTrackDetails implements YoutubeTrackDetails {
 
     String playerResponse = args.get("player_response").text();
 
-    if (playerResponse != null) {
-      JsonBrowser playerData = requiresCipher ? JsonBrowser.parse(playerResponse) : data;
-      JsonBrowser streamingData = playerData.get("streamingData");
-      boolean isLive = playerData.get("videoDetails").get("isLiveContent").asBoolean(false);
+    JsonBrowser playerData = requiresCipher ? JsonBrowser.parse(playerResponse) : data;
+    JsonBrowser streamingData = playerData.get("streamingData");
+    boolean isLive = playerData.get("videoDetails").get("isLiveContent").asBoolean(false);
 
-      if (!streamingData.isNull()) {
-        List<YoutubeTrackFormat> formats = loadTrackFormatsFromStreamingData(streamingData.get("formats"), isLive);
-        formats.addAll(loadTrackFormatsFromStreamingData(streamingData.get("adaptiveFormats"), isLive));
+    if (!streamingData.isNull()) {
+      List<YoutubeTrackFormat> formats = loadTrackFormatsFromStreamingData(streamingData.get("formats"), isLive);
+      formats.addAll(loadTrackFormatsFromStreamingData(streamingData.get("adaptiveFormats"), isLive));
 
-        if (!formats.isEmpty()) {
-          return formats;
-        }
+      if (!formats.isEmpty()) {
+        return formats;
       }
     }
 
@@ -124,7 +119,7 @@ public class DefaultYoutubeTrackDetails implements YoutubeTrackDetails {
       return loadTrackFormatsFromFormatStreamMap(formatStreamMap);
     }
 
-    log.warn("Video {} with no detected format field, arguments are: {}", videoId, args.format());
+    log.warn("Error in video ID: {} | Arguments: {} | Data: {}", videoId, args.format(), data.format());
 
     throw new FriendlyException("Unable to play this YouTube track.", SUSPICIOUS,
             new IllegalStateException("No adaptive formats, no dash, no stream map."));
