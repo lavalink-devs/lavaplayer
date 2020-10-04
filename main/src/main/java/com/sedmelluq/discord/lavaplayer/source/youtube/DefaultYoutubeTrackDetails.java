@@ -98,12 +98,15 @@ public class DefaultYoutubeTrackDetails implements YoutubeTrackDetails {
       case OK:
         break;
       case ERROR:
+        log.error("Error in video ID: {}\nData: {}", videoId, data.format());
         String reason = statusBlock.get("reason").text();
         throw new FriendlyException(reason, COMMON, null);
       case UNPLAYABLE:
+        log.error("Error in video ID: {}\nData: {}", videoId, data.format());
         String unplayableReason = getUnplayableReason(statusBlock);
         throw new FriendlyException(unplayableReason, COMMON, null);
       case LOGIN_REQUIRED:
+        log.error("Error in video ID: {}\nData: {}", videoId, data.format());
         String errorReason = statusBlock.get("errorScreen")
         .get("playerErrorMessageRenderer")
         .get("reason")
@@ -134,7 +137,7 @@ public class DefaultYoutubeTrackDetails implements YoutubeTrackDetails {
       return loadTrackFormatsFromFormatStreamMap(formatStreamMap);
     }
 
-    log.error("Error in video ID: {}\nArguments: {}\nData: {}", videoId, args.format(), data.format());
+    log.error("Error in video ID: {}\nData: {}", videoId, data.format());
 
     throw new FriendlyException("Unable to play this YouTube track.", SUSPICIOUS,
             new IllegalStateException("No adaptive formats, no dash, no stream map."));
