@@ -10,6 +10,4 @@ public interface YoutubeTrackDetails {
   List<YoutubeTrackFormat> getFormats(HttpInterface httpInterface, YoutubeSignatureResolver signatureResolver);
 
   String getPlayerScript();
-
-  boolean requiresCipher();
 }

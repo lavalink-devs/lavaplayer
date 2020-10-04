@@ -34,25 +34,19 @@ import static com.sedmelluq.discord.lavaplayer.tools.Units.DURATION_SEC_UNKNOWN;
 public class DefaultYoutubeTrackDetails implements YoutubeTrackDetails {
   private static final Logger log = LoggerFactory.getLogger(DefaultYoutubeTrackDetails.class);
 
-  private static final String DEFAULT_SIGNATURE_KEY = "signature";
+  private static final String DEFAULT_SIGNATURE_KEY = "sig";
 
   private final String videoId;
   private final JsonBrowser data;
-  private final boolean requiresCipher;
 
   /**
    *
    * @param videoId youtube video key
-   * @param data player json or playerResponse json when requiresCipher is false
-   * @param requiresCipher true, when the default player json is passed, false otherwise
+   * @param data player json or playerResponse json
    */
-  public DefaultYoutubeTrackDetails(String videoId, JsonBrowser data, boolean requiresCipher) {
+  public DefaultYoutubeTrackDetails(String videoId, JsonBrowser data) {
     this.videoId = videoId;
     this.data = data;
-    this.requiresCipher = requiresCipher;
-    if (!requiresCipher) {
-      log.warn("Created DefaultYoutubeTrackDetails for videoId {} using new code (w/o cipher)", videoId);
-    }
   }
 
   @Override
@@ -75,16 +69,8 @@ public class DefaultYoutubeTrackDetails implements YoutubeTrackDetails {
 
   @Override
   public String getPlayerScript() {
-    if (!requiresCipher)
-      return null;
     return data.get("assets").get("js").text();
   }
-
-  @Override
-  public boolean requiresCipher() {
-    return requiresCipher;
-  }
-
 
   private List<YoutubeTrackFormat> loadTrackFormats(
       HttpInterface httpInterface,
@@ -99,14 +85,40 @@ public class DefaultYoutubeTrackDetails implements YoutubeTrackDetails {
 
     String playerResponse = args.get("player_response").text();
 
-    JsonBrowser playerData = requiresCipher ? JsonBrowser.parse(playerResponse) : data;
+    JsonBrowser playerData;
+    if (args.isNull()) {
+      log.info("Received new json");
+      playerData = data;
+    } else {
+      playerData = JsonBrowser.parse(playerResponse);
+    }
+
+    JsonBrowser statusBlock = playerData.get("playabilityStatus");
+    switch (checkStatusBlock(statusBlock)) {
+      case OK:
+        break;
+      case ERROR:
+        String reason = statusBlock.get("reason").text();
+        throw new FriendlyException(reason, COMMON, null);
+      case UNPLAYABLE:
+        String unplayableReason = getUnplayableReason(statusBlock);
+        throw new FriendlyException(unplayableReason, COMMON, null);
+      case LOGIN_REQUIRED:
+        String errorReason = statusBlock.get("errorScreen")
+        .get("playerErrorMessageRenderer")
+        .get("reason")
+        .get("simpleText")
+        .text();
+        throw new FriendlyException(errorReason, COMMON, null);
+    }
+
     JsonBrowser streamingData = playerData.get("streamingData");
     boolean isLive = playerData.get("videoDetails").get("isLiveContent").asBoolean(false);
 
     if (!streamingData.isNull()) {
       List<YoutubeTrackFormat> formats = loadTrackFormatsFromStreamingData(streamingData.get("formats"), isLive);
       formats.addAll(loadTrackFormatsFromStreamingData(streamingData.get("adaptiveFormats"), isLive));
-
+    
       if (!formats.isEmpty()) {
         return formats;
       }
@@ -114,7 +126,7 @@ public class DefaultYoutubeTrackDetails implements YoutubeTrackDetails {
 
     String dashUrl = args.get("dashmpd").text();
     if (dashUrl != null) {
-      return loadTrackFormatsFromDash(dashUrl, httpInterface, signatureResolver); // requires "old" json!!
+      return loadTrackFormatsFromDash(dashUrl, httpInterface, signatureResolver);
     }
 
     String formatStreamMap = args.get("url_encoded_fmt_stream_map").text();
@@ -122,10 +134,57 @@ public class DefaultYoutubeTrackDetails implements YoutubeTrackDetails {
       return loadTrackFormatsFromFormatStreamMap(formatStreamMap);
     }
 
-    log.warn("Error in video ID: {} | Arguments: {} | Data: {}", videoId, args.format(), data.format());
+    log.error("Error in video ID: {}\nArguments: {}\nData: {}", videoId, args.format(), data.format());
 
     throw new FriendlyException("Unable to play this YouTube track.", SUSPICIOUS,
             new IllegalStateException("No adaptive formats, no dash, no stream map."));
+  }
+
+  protected InfoStatus checkStatusBlock(JsonBrowser statusBlock) {
+    if (statusBlock.isNull()) {
+      throw new FriendlyException("No playability status block.", COMMON, null);
+    }
+
+    String status = statusBlock.get("status").text();
+
+    if (status == null) {
+      throw new FriendlyException("No playability status field.", COMMON, null);
+    } else if ("OK".equals(status)) {
+      return InfoStatus.OK;
+    } else if ("ERROR".equals(status)) {
+      return InfoStatus.ERROR;
+    } else if ("UNPLAYABLE".equals(status)) {
+      return InfoStatus.UNPLAYABLE;
+    } else if ("LOGIN_REQUIRED".equals(status)) {
+      return InfoStatus.LOGIN_REQUIRED;
+    } else {
+      throw new FriendlyException("This video cannot be viewed anonymously.", COMMON, null);
+    }
+  }
+
+  protected enum InfoStatus {
+    OK,
+    ERROR,
+    UNPLAYABLE,
+    LOGIN_REQUIRED
+  }
+
+  protected String getUnplayableReason(JsonBrowser statusBlock) {
+    JsonBrowser playerErrorMessage = statusBlock.get("errorScreen").get("playerErrorMessageRenderer");
+    String unplayableReason = statusBlock.get("reason").text();
+
+    if (!playerErrorMessage.get("subreason").isNull()) {
+      JsonBrowser subreason = playerErrorMessage.get("subreason");
+
+
+      if (!subreason.get("simpleText").isNull()) {
+        unplayableReason = subreason.get("simpleText").text();
+      } else if (!subreason.get("runs").isNull() && subreason.get("runs").isList()) {
+        unplayableReason = subreason.get("runs").index(3).get("text").text();
+      }
+    }
+
+    return unplayableReason;
   }
 
   private List<YoutubeTrackFormat> loadTrackFormatsFromAdaptive(String adaptiveFormats) throws Exception {
@@ -136,8 +195,7 @@ public class DefaultYoutubeTrackDetails implements YoutubeTrackDetails {
 
       String url = format.get("url");
 
-      if(url == null) continue;
-
+      if (url == null) continue;
       tracks.add(new YoutubeTrackFormat(
           ContentType.parse(format.get("type")),
           Long.parseLong(format.get("bitrate")),
@@ -216,11 +274,9 @@ public class DefaultYoutubeTrackDetails implements YoutubeTrackDetails {
             log.debug("Track not a live stream, but no contentLength in format {}, skipping", formatJson.format());
             continue;
           }
-
           String url = cipherInfo.getOrDefault("url", formatJson.get("url").text());
 
-          if(url == null) continue;
-
+          if (url == null) continue;
           tracks.add(new YoutubeTrackFormat(
               ContentType.parse(formatJson.get("mimeType").text()),
               formatJson.get("bitrate").asLong(Units.BITRATE_UNKNOWN),
@@ -311,16 +367,17 @@ public class DefaultYoutubeTrackDetails implements YoutubeTrackDetails {
       return null;
     }
 
-    if(!requiresCipher) {
+    JsonBrowser args = data.get("args");
+
+    if (args.isNull()) {
       final JsonBrowser videoDetails = data.get("videoDetails");
 
       boolean isStream =  isStream(videoDetails);
       long duration = extractDurationSeconds(isStream, videoDetails, "lengthSeconds");
-
+  
       return buildTrackInfo(videoId, videoDetails.get("title").text(), videoDetails.get("author").text(), isStream, duration, PBJUtils.getBestThumbnail(videoDetails, videoId));
     }
 
-    JsonBrowser args = data.get("args");
     boolean useOldFormat = args.get("player_response").isNull();
 
     if (useOldFormat) {
@@ -371,7 +428,7 @@ public class DefaultYoutubeTrackDetails implements YoutubeTrackDetails {
 
   private static Map<String, String> decodeUrlEncodedItems(String input, boolean escapedSeparator) {
     if (escapedSeparator) {
-      input = input.replace("\\\\u0026", "&");
+      input = input.replace("\u0026", "&");
     }
 
     return convertToMapLayout(URLEncodedUtils.parse(input, StandardCharsets.UTF_8));

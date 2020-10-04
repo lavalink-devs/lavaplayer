@@ -49,7 +49,6 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
         JsonBrowser playerInfo = JsonBrowser.NULL_BROWSER;
         JsonBrowser playerResponse = JsonBrowser.NULL_BROWSER;
         JsonBrowser statusBlock = JsonBrowser.NULL_BROWSER;
-        boolean requiresCipher = true;
 
         for (JsonBrowser child : json.values()) {
           if (child.isMap()) {
@@ -64,31 +63,25 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
         }
 
         if (playerInfo.isNull()) {
-          requiresCipher = playerResponse.get("videoDetails").get("useCipher").asBoolean(true);
-          if (!requiresCipher)
-            playerInfo = playerResponse;
+          playerInfo = playerResponse;
         }
 
         switch (checkStatusBlock(statusBlock)) {
           case INFO_PRESENT:
-            if (playerInfo.isNull()) {
+
+            if (playerInfo.get("assets").get("js").isNull() && !playerInfo.get("streamingData").get("formats").index(0).get("signatureCipher").isNull()) {
               playerInfo = getTrackInfoFromEmbedPage(httpInterface, videoId);
-              log.warn("No player info block, falling back to embed page. json:\n" + json.text());
+              log.warn("Cipher script not found on new json when it needed, falling back to embed page. YouTube response:\n" + responseText);
             }
 
-            if (requiresCipher && playerInfo.get("assets").get("js").isNull()) {
-              log.warn("Cipher script not found, falling back to embed page. json:\n" + json.text());
-              playerInfo = getTrackInfoFromEmbedPage(httpInterface, videoId);
-            }
-
-            return new DefaultYoutubeTrackDetails(videoId, playerInfo, requiresCipher);
+            return new DefaultYoutubeTrackDetails(videoId, playerInfo);
           case REQUIRES_LOGIN:
-            return new DefaultYoutubeTrackDetails(videoId, getTrackInfoFromEmbedPage(httpInterface, videoId), true); // true?
+            return new DefaultYoutubeTrackDetails(videoId, getTrackInfoFromEmbedPage(httpInterface, videoId));
           case DOES_NOT_EXIST:
             return null;
         }
 
-        return new DefaultYoutubeTrackDetails(videoId, playerInfo, requiresCipher);
+        return new DefaultYoutubeTrackDetails(videoId, playerInfo);
       } catch (FriendlyException e) {
         throw e;
       } catch (Exception e) {
@@ -176,10 +169,18 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
       HttpClientTools.assertSuccessWithContent(response, "embed video page response");
 
       html = EntityUtils.toString(response.getEntity(), UTF_8);
-      String configJson = DataFormatTools.extractBetween(html, "'PLAYER_CONFIG': ", "});writeEmbed();");
+      String configJson = DataFormatTools.extractBetween(html, "'PLAYER_CONFIG':", "});writeEmbed();");
 
-      if(configJson == null) {
-        configJson = DataFormatTools.extractBetween(html, "'PLAYER_CONFIG': ", "});yt.setConfig({");
+      if (configJson == null) {
+        configJson = DataFormatTools.extractBetween(html, "\"PLAYER_CONFIG\":", "});writeEmbed();");
+      }
+
+      if (configJson == null) {
+        configJson = DataFormatTools.extractBetween(html, "'PLAYER_CONFIG':", "});yt.setConfig({");
+      }
+
+      if (configJson == null) {
+        configJson = DataFormatTools.extractBetween(html, "\"PLAYER_CONFIG\":", "});yt.setConfig({");
       }
 
       if (configJson != null) {

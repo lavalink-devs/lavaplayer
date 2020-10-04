@@ -84,11 +84,13 @@ public class YoutubeAudioTrack extends DelegatedAudioTrack {
     YoutubeTrackFormat format = findBestSupportedFormat(formats);
 
     URI signedUrl;
-    if (details.requiresCipher())
+    if (details.getPlayerScript() == null) {
+      log.info("PlayerScript is null");
+      signedUrl = format.getUrl();
+    } else {
       signedUrl = sourceManager.getSignatureResolver()
               .resolveFormatUrl(httpInterface, details.getPlayerScript(), format);
-    else
-      signedUrl = format.getUrl();
+    }
 
     return new FormatWithUrl(format, signedUrl);
   }
