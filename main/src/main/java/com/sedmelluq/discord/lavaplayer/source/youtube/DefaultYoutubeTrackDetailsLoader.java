@@ -49,11 +49,13 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
         JsonBrowser playerInfo = JsonBrowser.NULL_BROWSER;
         JsonBrowser playerResponse = JsonBrowser.NULL_BROWSER;
         JsonBrowser statusBlock = JsonBrowser.NULL_BROWSER;
+        JsonBrowser baseJs = JsonBrowser.NULL_BROWSER;
 
         for (JsonBrowser child : json.values()) {
           if (child.isMap()) {
             if (!child.get("player").isNull()) {
               playerInfo = child.get("player");
+              baseJs = playerInfo.get("assets").get("js");
             }
             if (!child.get("playerResponse").isNull()) {
               playerResponse = child.get("playerResponse");
@@ -63,25 +65,22 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
         }
 
         if (playerInfo.isNull()) {
+          JsonBrowser baseEmbedPage = loadTrackBaseInfoFromEmbedPage(httpInterface, videoId);
+          baseJs = baseEmbedPage.get("assets").get("js");
+          log.info("Received baseJs script from embed page:\n" + baseJs.format());
           playerInfo = playerResponse;
         }
 
         switch (checkStatusBlock(statusBlock)) {
           case INFO_PRESENT:
-
-            if (playerInfo.get("assets").get("js").isNull() && !playerInfo.get("streamingData").get("formats").index(0).get("signatureCipher").isNull()) {
-              playerInfo = getTrackInfoFromEmbedPage(httpInterface, videoId);
-              log.warn("Cipher script not found on new json when it needed, falling back to embed page. YouTube response:\n" + responseText);
-            }
-
-            return new DefaultYoutubeTrackDetails(videoId, playerInfo);
+            return new DefaultYoutubeTrackDetails(videoId, playerInfo, baseJs);
           case REQUIRES_LOGIN:
-            return new DefaultYoutubeTrackDetails(videoId, getTrackInfoFromEmbedPage(httpInterface, videoId));
+            return new DefaultYoutubeTrackDetails(videoId, getTrackInfoFromEmbedPage(httpInterface, videoId), baseJs);
           case DOES_NOT_EXIST:
             return null;
         }
 
-        return new DefaultYoutubeTrackDetails(videoId, playerInfo);
+        return new DefaultYoutubeTrackDetails(videoId, playerInfo, baseJs);
       } catch (FriendlyException e) {
         throw e;
       } catch (Exception e) {

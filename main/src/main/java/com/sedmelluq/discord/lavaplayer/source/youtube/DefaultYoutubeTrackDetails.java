@@ -38,15 +38,18 @@ public class DefaultYoutubeTrackDetails implements YoutubeTrackDetails {
 
   private final String videoId;
   private final JsonBrowser data;
+  private final JsonBrowser baseJs;
 
   /**
    *
    * @param videoId youtube video key
    * @param data player json or playerResponse json
+   * @param baseJs baseJs player script
    */
-  public DefaultYoutubeTrackDetails(String videoId, JsonBrowser data) {
+  public DefaultYoutubeTrackDetails(String videoId, JsonBrowser data, JsonBrowser baseJs) {
     this.videoId = videoId;
     this.data = data;
+    this.baseJs = baseJs;
   }
 
   @Override
@@ -69,7 +72,7 @@ public class DefaultYoutubeTrackDetails implements YoutubeTrackDetails {
 
   @Override
   public String getPlayerScript() {
-    return data.get("assets").get("js").text();
+    return baseJs.text();
   }
 
   private List<YoutubeTrackFormat> loadTrackFormats(
