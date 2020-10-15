@@ -70,15 +70,15 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
           }
         }
 
-        if (playerInfo.isNull()) {
-          JsonBrowser baseEmbedPage = loadTrackBaseInfoFromEmbedPage(httpInterface, videoId);
-          baseJs = baseEmbedPage.get("assets").get("js");
-          log.info("Received baseJs script from embed page: " + baseJs.format());
-          playerInfo = playerResponse;
-        }
-
         switch (checkStatusBlock(statusBlock)) {
           case INFO_PRESENT:
+            if (playerInfo.isNull()) {
+              JsonBrowser baseEmbedPage = loadTrackBaseInfoFromEmbedPage(httpInterface, videoId);
+              baseJs = baseEmbedPage.get("assets").get("js");
+              log.info("Received baseJs script from embed page: " + baseJs.format());
+              playerInfo = playerResponse;
+            }
+
             return new DefaultYoutubeTrackDetails(videoId, playerInfo, baseJs);
           case REQUIRES_LOGIN:
             return new DefaultYoutubeTrackDetails(videoId, getTrackInfoFromEmbedPage(httpInterface, videoId), baseJs);
