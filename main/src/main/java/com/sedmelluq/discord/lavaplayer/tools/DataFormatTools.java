@@ -42,6 +42,31 @@ public class DataFormatTools {
   }
 
   /**
+   * Extract text between the first subsequent occurrences of start and end in haystack
+   * @param haystack The text to search from
+   * @param checkBetween The prefix and suffixes to check
+   * @return The extracted string
+   */
+  public static String extractBetween(String haystack, String... checkBetween) {
+    if (checkBetween.length % 2 != 0) {
+      throw new IllegalArgumentException("checkBetween must have an equal number of arguments (prefix and suffix)");
+    }
+
+    for (int i = 0; i < checkBetween.length; i += 2) {
+      String prefix = checkBetween[i];
+      String suffix = checkBetween[i + 1];
+
+      String extracted = extractBetween(haystack, prefix, suffix);
+
+      if (extracted != null) {
+        return extracted;
+      }
+    }
+
+    return null;
+  }
+
+  /**
    * Converts name value pairs to a map, with the last entry for each name being present.
    * @param pairs Name value pairs to convert
    * @return The resulting map

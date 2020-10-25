@@ -8,8 +8,6 @@ import com.sedmelluq.discord.lavaplayer.tools.io.HttpInterface;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URLEncodedUtils;
@@ -23,10 +21,6 @@ import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoader {
-  private static final String PLAYER_CONFIG_REGEX = "[\"\']PLAYER_CONFIG[\'\"]:(.+)\\}\\);(writeEmbed\\(\\);|yt\\.setConfig\\(\\{)";
-
-  private static final Pattern playerConfigRegex = Pattern.compile(PLAYER_CONFIG_REGEX);
-
   private static final Logger log = LoggerFactory.getLogger(DefaultYoutubeTrackDetails.class);
 
   @Override
@@ -76,6 +70,10 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
               JsonBrowser baseEmbedPage = loadTrackBaseInfoFromEmbedPage(httpInterface, videoId);
               baseJs = baseEmbedPage.get("assets").get("js");
               log.info("Received baseJs script from embed page: " + baseJs.format());
+              if (baseJs == JsonBrowser.NULL_BROWSER) {
+                baseJs = baseEmbedPage.get("WEB_PLAYER_CONTEXT_CONFIG_ID_EMBEDDED_PLAYER").get("jsUrl");
+                log.info("Received baseJs script from new embed page: " + baseJs.format());
+              }
               playerInfo = playerResponse;
             }
 
@@ -175,15 +173,25 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
       HttpClientTools.assertSuccessWithContent(response, "embed video page response");
 
       html = EntityUtils.toString(response.getEntity(), UTF_8);
-      Matcher matcher = playerConfigRegex.matcher(html);
+      configJson = DataFormatTools.extractBetween(
+          html,
+          "'WEB_PLAYER_CONTEXT_CONFIGS':", "});writeEmbed();",
+          "'WEB_PLAYER_CONTEXT_CONFIGS':", "});yt.setConfig",
+          "\"WEB_PLAYER_CONTEXT_CONFIGS\":", "});writeEmbed();",
+          "\"WEB_PLAYER_CONTEXT_CONFIGS\":", "});yt.setConfig",
+          "'PLAYER_CONFIG':", "});writeEmbed();",
+          "'PLAYER_CONFIG':", "});yt.setConfig",
+          "\"PLAYER_CONFIG\":", "});writeEmbed();",
+          "\"PLAYER_CONFIG\":", "});yt.setConfig"
+      );
 
-      if (!matcher.find()) {
-        throw new FriendlyException("Track information is unavailable.", SUSPICIOUS,
-            new IllegalStateException("Expected player config is not present in embed page. HTML:\n" + html));
-      } else {
-        return JsonBrowser.parse(matcher.group(1));
+      if (configJson != null) {
+        return JsonBrowser.parse(configJson);
       }
     }
+
+    throw new FriendlyException("Track information is unavailable.", SUSPICIOUS,
+            new IllegalStateException("Expected player config is not present in embed page. HTML:\n" + html));
   }
 
   protected Map<String, String> loadTrackArgsFromVideoInfoPage(HttpInterface httpInterface, String videoId, String sts) throws IOException {
