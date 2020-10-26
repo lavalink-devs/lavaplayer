@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URLEncodedUtils;
@@ -73,7 +74,9 @@ public class DefaultYoutubeTrackDetails implements YoutubeTrackDetails {
   @Override
   public String getPlayerScript() {
     if (baseJs.isNull()) {
-      return data.get("assets").get("js").text();
+      String baseJs = Optional.ofNullable(data.get("assets").get("js").text())
+              .orElse(data.get("WEB_PLAYER_CONTEXT_CONFIG_ID_EMBEDDED_PLAYER").get("jsUrl").text());
+      return baseJs;
     } else {
       return baseJs.text();
     }
