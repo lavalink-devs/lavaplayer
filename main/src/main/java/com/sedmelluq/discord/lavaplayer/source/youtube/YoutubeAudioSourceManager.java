@@ -249,11 +249,25 @@ public class YoutubeAudioSourceManager implements AudioSourceManager, HttpConfig
     }
 
     @Override
-    public AudioItem search(String query) {
+    public AudioItem searchvideo(String query) {
       if (allowSearch) {
         return searchResultLoader.loadSearchResult(
             query,
-            YoutubeAudioSourceManager.this::buildTrackFromInfo
+            YoutubeAudioSourceManager.this::buildTrackFromInfo,
+            false
+        );
+      } else {
+        return null;
+      }
+    }
+
+    @Override
+    public AudioItem searchmusic(String query) {
+      if (allowSearch) {
+        return searchResultLoader.loadSearchResult(
+            query,
+            YoutubeAudioSourceManager.this::buildTrackFromInfo,
+            true
         );
       } else {
         return null;
