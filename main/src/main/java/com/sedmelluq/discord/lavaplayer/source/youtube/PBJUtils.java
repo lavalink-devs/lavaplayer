@@ -13,21 +13,19 @@ public class PBJUtils {
             int hours = Integer.parseInt(parts[0]);
             int minutes = Integer.parseInt(parts[1]);
             int seconds = Integer.parseInt(parts[2]);
-            return (hours * 3600000) + (minutes * 60000) + (seconds * 1000);
+            return (hours * 3600000L) + (minutes * 60000L) + (seconds * 1000L);
         } else if (parts.length == 2) { // mm:ss
             int minutes = Integer.parseInt(parts[0]);
             int seconds = Integer.parseInt(parts[1]);
-            return (minutes * 60000) + (seconds * 1000);
+            return (minutes * 60000L) + (seconds * 1000L);
         } else {
             return Units.DURATION_MS_UNKNOWN;
         }
     }
 
-    public static String getBestThumbnail(JsonBrowser videoDetails, String videoId) {
-        List<JsonBrowser> thumbnails = videoDetails.get("thumbnail").get("thumbnails").values();
-        if (!thumbnails.isEmpty())
-            return thumbnails.get(thumbnails.size() - 1).get("url").text();
-        return String.format("https://i.ytimg.com/vi/%s/maxresdefault.jpg", videoId);
+    public static String getBestThumbnail(JsonBrowser videoData, String videoId) {
+        List<JsonBrowser> thumbnails = videoData.get("thumbnail").get("thumbnails").values();
+        if (!thumbnails.isEmpty()) return thumbnails.get(thumbnails.size() - 1).get("url").text();
+        return String.format("https://i.ytimg.com/vi_webp/%s/maxresdefault.webp", videoId);
     }
-
 }

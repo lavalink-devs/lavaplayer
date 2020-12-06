@@ -2,19 +2,20 @@ package com.sedmelluq.discord.lavaplayer.source.youtube;
 
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.tools.JsonBrowser;
-import com.sedmelluq.discord.lavaplayer.tools.Units;
 import com.sedmelluq.discord.lavaplayer.tools.io.HttpClientTools;
 import com.sedmelluq.discord.lavaplayer.tools.io.HttpInterface;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
 import com.sedmelluq.discord.lavaplayer.track.BasicAudioPlaylist;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Function;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.function.Function;
 
 import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.SUSPICIOUS;
 
@@ -86,7 +87,8 @@ public class YoutubeMixProvider implements YoutubeMixLoader {
       String identifier = renderer.get("videoId").text();
       String uri = "https://youtube.com/watch?v=" + identifier;
 
-      AudioTrackInfo trackInfo = new AudioTrackInfo(title, author, duration, identifier, false, uri);
+      AudioTrackInfo trackInfo = new AudioTrackInfo(title, author, duration, identifier, false, uri,
+              Collections.singletonMap("artworkUrl", PBJUtils.getBestThumbnail(renderer, identifier)));
       tracks.add(trackFactory.apply(trackInfo));
     }
   }

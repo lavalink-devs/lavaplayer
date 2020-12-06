@@ -74,9 +74,8 @@ public class DefaultYoutubeTrackDetails implements YoutubeTrackDetails {
   @Override
   public String getPlayerScript() {
     if (baseJs.isNull()) {
-      String baseJs = Optional.ofNullable(data.get("assets").get("js").text())
+      return Optional.ofNullable(data.get("assets").get("js").text())
               .orElse(data.get("WEB_PLAYER_CONTEXT_CONFIG_ID_EMBEDDED_PLAYER").get("jsUrl").text());
-      return baseJs;
     } else {
       return baseJs.text();
     }
@@ -200,7 +199,7 @@ public class DefaultYoutubeTrackDetails implements YoutubeTrackDetails {
     return unplayableReason;
   }
 
-  private List<YoutubeTrackFormat> loadTrackFormatsFromAdaptive(String adaptiveFormats) throws Exception {
+  private List<YoutubeTrackFormat> loadTrackFormatsFromAdaptive(String adaptiveFormats) {
     List<YoutubeTrackFormat> tracks = new ArrayList<>();
 
     for (String formatString : adaptiveFormats.split(",")) {
@@ -222,7 +221,7 @@ public class DefaultYoutubeTrackDetails implements YoutubeTrackDetails {
     return tracks;
   }
 
-  private List<YoutubeTrackFormat> loadTrackFormatsFromFormatStreamMap(String adaptiveFormats) throws Exception {
+  private List<YoutubeTrackFormat> loadTrackFormatsFromFormatStreamMap(String adaptiveFormats) {
     List<YoutubeTrackFormat> tracks = new ArrayList<>();
     boolean anyFailures = false;
 
@@ -436,7 +435,8 @@ public class DefaultYoutubeTrackDetails implements YoutubeTrackDetails {
 
   private AudioTrackInfo buildTrackInfo(String videoId, String title, String uploader, boolean isStream, long duration, String thumbnail) {
     return new AudioTrackInfo(title, uploader, duration, videoId, isStream,
-            "https://www.youtube.com/watch?v=" + videoId, Collections.singletonMap("artworkUrl", thumbnail));
+            "https://www.youtube.com/watch?v=" + videoId,
+            Collections.singletonMap("artworkUrl", thumbnail));
   }
 
   private static Map<String, String> decodeUrlEncodedItems(String input, boolean escapedSeparator) {

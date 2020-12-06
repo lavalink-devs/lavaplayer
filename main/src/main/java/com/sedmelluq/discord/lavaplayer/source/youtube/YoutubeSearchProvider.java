@@ -7,11 +7,7 @@ import com.sedmelluq.discord.lavaplayer.tools.http.ExtendedHttpConfigurable;
 import com.sedmelluq.discord.lavaplayer.tools.io.HttpClientTools;
 import com.sedmelluq.discord.lavaplayer.tools.io.HttpInterface;
 import com.sedmelluq.discord.lavaplayer.tools.io.HttpInterfaceManager;
-import com.sedmelluq.discord.lavaplayer.track.AudioItem;
-import com.sedmelluq.discord.lavaplayer.track.AudioReference;
-import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
-import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
-import com.sedmelluq.discord.lavaplayer.track.BasicAudioPlaylist;
+import com.sedmelluq.discord.lavaplayer.track.*;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -42,10 +38,10 @@ public class YoutubeSearchProvider implements YoutubeSearchResultLoader {
 
   private static final String WATCH_URL_PREFIX = "https://www.youtube.com/watch?v=";
   private static final String YT_MUSIC_KEY = "AIzaSyC9XL3ZjWddXya6X74dJoCTL-WEYFDNX30";
-  private static final String YT_MUSIC_PAYLOAD = "{\"context\":{\"client\":{\"clientName\":\"WEB_REMIX\",\"clientVersion\":\"0.1\"}},\"query\":\"%s\",\"params\":\"Eg-KAQwIARAAGAAgACgAMABqCBADEAkQBBAK\"}";
+  private static final String YT_MUSIC_PAYLOAD = "{\"context\":{\"client\":{\"clientName\":\"WEB_REMIX\",\"clientVersion\":\"0.1\"}},\"query\":\"%s\",\"params\":\"Eg-KAQwIARAAGAAgACgAMABqChADEAQQCRAFEAo=\"}";
   private final HttpInterfaceManager httpInterfaceManager;
   private final Pattern polymerInitialDataRegex = Pattern.compile("(window\\[\"ytInitialData\"]|var ytInitialData)\\s*=\\s*(.*);");
-  private final Pattern ytMusicDataRegex = Pattern.compile("<body>\\s*(.*)\\s*<\\/body>");
+  private final Pattern ytMusicDataRegex = Pattern.compile("<body>\\s*(.*)\\s*</body>");
 
   public YoutubeSearchProvider() {
     this.httpInterfaceManager = HttpClientTools.createCookielessThreadLocalManager();
@@ -157,7 +153,8 @@ public class YoutubeSearchProvider implements YoutubeSearchResultLoader {
     String author = contentElement.select(".yt-lockup-byline > a").text();
 
     AudioTrackInfo info = new AudioTrackInfo(title, author, duration, videoId, false,
-        WATCH_URL_PREFIX + videoId);
+        WATCH_URL_PREFIX + videoId,
+            Collections.singletonMap("artworkUrl", String.format("https://i.ytimg.com/vi_webp/%s/maxresdefault.webp", videoId)));
 
     tracks.add(trackFactory.apply(info));
   }
@@ -201,7 +198,8 @@ public class YoutubeSearchProvider implements YoutubeSearchResultLoader {
     String videoId = json.get("videoId").text();
 
     AudioTrackInfo info = new AudioTrackInfo(title, author, duration, videoId, false,
-        WATCH_URL_PREFIX + videoId);
+        WATCH_URL_PREFIX + videoId,
+            Collections.singletonMap("artworkUrl", PBJUtils.getBestThumbnail(json, videoId)));
 
     return trackFactory.apply(info);
   }
@@ -215,14 +213,21 @@ public class YoutubeSearchProvider implements YoutubeSearchResultLoader {
 
     JsonBrowser jsonBrowser = JsonBrowser.parse(matcher.group(1));
     ArrayList<AudioTrack> list = new ArrayList<>();
-    jsonBrowser.get("contents")
-        .get("sectionListRenderer")
-        .get("contents")
-        .index(0)
-        .get("musicShelfRenderer")
-        .get("contents")
-        .values()
-        .forEach(json -> {
+    JsonBrowser tracks = jsonBrowser.get("contents")
+            .get("sectionListRenderer")
+            .get("contents")
+            .index(0)
+            .get("musicShelfRenderer")
+            .get("contents");
+    if (tracks == JsonBrowser.NULL_BROWSER) {
+      tracks = jsonBrowser.get("contents")
+              .get("sectionListRenderer")
+              .get("contents")
+              .index(1)
+              .get("musicShelfRenderer")
+              .get("contents");
+    }
+    tracks.values().forEach(json -> {
           AudioTrack track = extractMusicData(json, trackFactory);
           if (track != null) list.add(track);
         });
@@ -230,6 +235,9 @@ public class YoutubeSearchProvider implements YoutubeSearchResultLoader {
   }
 
   private AudioTrack extractMusicData(JsonBrowser json, Function<AudioTrackInfo, AudioTrack> trackFactory) {
+    JsonBrowser thumbnail = json.get("musicResponsiveListItemRenderer")
+         .get("thumbnail")
+         .get("musicThumbnailRenderer");
     String title = json.get("musicResponsiveListItemRenderer")
         .get("flexColumns")
         .index(0)
@@ -270,9 +278,10 @@ public class YoutubeSearchProvider implements YoutubeSearchResultLoader {
         .get("doubleTapCommand")
         .get("watchEndpoint")
         .get("videoId").text();
-      
+
     AudioTrackInfo info = new AudioTrackInfo(title, author, duration, videoId, false,
-            WATCH_URL_PREFIX + videoId);
+            WATCH_URL_PREFIX + videoId,
+            Collections.singletonMap("artworkUrl", PBJUtils.getBestThumbnail(thumbnail, videoId)));
 
     return trackFactory.apply(info);
   }
