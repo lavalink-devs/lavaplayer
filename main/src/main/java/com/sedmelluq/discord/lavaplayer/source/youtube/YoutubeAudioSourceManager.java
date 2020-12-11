@@ -197,7 +197,7 @@ public class YoutubeAudioSourceManager implements AudioSourceManager, HttpConfig
    */
   public AudioItem loadTrackWithVideoId(String videoId, boolean mustExist) {
     try (HttpInterface httpInterface = getHttpInterface()) {
-      YoutubeTrackDetails details = trackDetailsLoader.loadDetails(httpInterface, videoId);
+      YoutubeTrackDetails details = trackDetailsLoader.loadDetails(httpInterface, videoId, false);
 
       if (details == null) {
         if (mustExist) {
@@ -249,25 +249,12 @@ public class YoutubeAudioSourceManager implements AudioSourceManager, HttpConfig
     }
 
     @Override
-    public AudioItem searchvideo(String query) {
+    public AudioItem search(String query, Boolean ytMusic) {
       if (allowSearch) {
         return searchResultLoader.loadSearchResult(
             query,
             YoutubeAudioSourceManager.this::buildTrackFromInfo,
-            false
-        );
-      } else {
-        return null;
-      }
-    }
-
-    @Override
-    public AudioItem searchmusic(String query) {
-      if (allowSearch) {
-        return searchResultLoader.loadSearchResult(
-            query,
-            YoutubeAudioSourceManager.this::buildTrackFromInfo,
-            true
+            ytMusic
         );
       } else {
         return null;
@@ -278,11 +265,8 @@ public class YoutubeAudioSourceManager implements AudioSourceManager, HttpConfig
     public AudioItem anonymous(String videoIds) {
       try (HttpInterface httpInterface = getHttpInterface()) {
         try (CloseableHttpResponse response = httpInterface.execute(new HttpGet("https://www.youtube.com/watch_videos?video_ids=" + videoIds))) {
-          int statusCode = response.getStatusLine().getStatusCode();
+          HttpClientTools.assertSuccessWithContent(response, "playlist response");
           HttpClientContext context = httpInterface.getContext();
-          if (!HttpClientTools.isSuccessWithContent(statusCode)) {
-            throw new IOException("Invalid status code for playlist response: " + statusCode);
-          }
           // youtube currently transforms watch_video links into a link with a video id and a list id.
           // because thats what happens, we can simply re-process with the redirected link
           List<URI> redirects = context.getRedirectLocations();

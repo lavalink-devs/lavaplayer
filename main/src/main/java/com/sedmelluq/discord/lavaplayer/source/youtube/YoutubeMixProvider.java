@@ -2,20 +2,20 @@ package com.sedmelluq.discord.lavaplayer.source.youtube;
 
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.tools.JsonBrowser;
+import com.sedmelluq.discord.lavaplayer.tools.Units;
 import com.sedmelluq.discord.lavaplayer.tools.io.HttpClientTools;
 import com.sedmelluq.discord.lavaplayer.tools.io.HttpInterface;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
 import com.sedmelluq.discord.lavaplayer.track.BasicAudioPlaylist;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
 
 import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.SUSPICIOUS;
 
@@ -42,10 +42,7 @@ public class YoutubeMixProvider implements YoutubeMixLoader {
     String mixUrl = "https://www.youtube.com/watch?v=" + selectedVideoId + "&list=" + mixId + "&pbj=1";
 
     try (CloseableHttpResponse response = httpInterface.execute(new HttpGet(mixUrl))) {
-      int statusCode = response.getStatusLine().getStatusCode();
-      if (!HttpClientTools.isSuccessWithContent(statusCode)) {
-        throw new IOException("Invalid status code for mix response: " + statusCode);
-      }
+      HttpClientTools.assertSuccessWithContent(response, "mix response");
 
       JsonBrowser body = JsonBrowser.parse(response.getEntity().getContent());
       JsonBrowser playlist = body.index(3).get("response")
@@ -83,13 +80,30 @@ public class YoutubeMixProvider implements YoutubeMixLoader {
       String title = renderer.get("title").get("simpleText").text();
       String author = renderer.get("longBylineText").get("runs").index(0).get("text").text();
       String durationStr = renderer.get("lengthText").get("simpleText").text();
-      long duration = PBJUtils.parseDuration(durationStr);
+      long duration = parseDuration(durationStr);
       String identifier = renderer.get("videoId").text();
       String uri = "https://youtube.com/watch?v=" + identifier;
 
       AudioTrackInfo trackInfo = new AudioTrackInfo(title, author, duration, identifier, false, uri,
               Collections.singletonMap("artworkUrl", PBJUtils.getBestThumbnail(renderer, identifier)));
       tracks.add(trackFactory.apply(trackInfo));
+    }
+  }
+
+  private long parseDuration(String duration) {
+    String[] parts = duration.split(":");
+
+    if (parts.length == 3) { // hh::mm:ss
+      int hours = Integer.parseInt(parts[0]);
+      int minutes = Integer.parseInt(parts[1]);
+      int seconds = Integer.parseInt(parts[2]);
+      return (hours * 3600000) + (minutes * 60000) + (seconds * 1000);
+    } else if (parts.length == 2) { // mm:ss
+      int minutes = Integer.parseInt(parts[0]);
+      int seconds = Integer.parseInt(parts[1]);
+      return (minutes * 60000) + (seconds * 1000);
+    } else {
+      return Units.DURATION_MS_UNKNOWN;
     }
   }
 

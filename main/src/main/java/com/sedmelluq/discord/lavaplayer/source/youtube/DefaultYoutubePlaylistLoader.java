@@ -1,5 +1,6 @@
 package com.sedmelluq.discord.lavaplayer.source.youtube;
 
+import com.sedmelluq.discord.lavaplayer.tools.ExceptionTools;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.tools.JsonBrowser;
 import com.sedmelluq.discord.lavaplayer.tools.Units;
@@ -13,13 +14,18 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.COMMON;
 
 public class DefaultYoutubePlaylistLoader implements YoutubePlaylistLoader {
+  private static final Logger log = LoggerFactory.getLogger(DefaultYoutubePlaylistLoader.class);
+
   private volatile int playlistPageCount = 6;
 
   @Override
@@ -34,13 +40,10 @@ public class DefaultYoutubePlaylistLoader implements YoutubePlaylistLoader {
     HttpGet request = new HttpGet(getPlaylistUrl(playlistId) + "&pbj=1&hl=en");
 
     try (CloseableHttpResponse response = httpInterface.execute(request)) {
-      int statusCode = response.getStatusLine().getStatusCode();
-      if (!HttpClientTools.isSuccessWithContent(statusCode)) {
-        throw new IOException("Invalid status code for playlist response: " + statusCode);
-      }
+      HttpClientTools.assertSuccessWithContent(response, "playlist response");
+      HttpClientTools.assertJsonContentType(response);
 
       JsonBrowser json = JsonBrowser.parse(response.getEntity().getContent());
-
       return buildPlaylist(httpInterface, json, selectedVideoId, trackFactory);
     } catch (IOException e) {
       throw new RuntimeException(e);
@@ -96,10 +99,7 @@ public class DefaultYoutubePlaylistLoader implements YoutubePlaylistLoader {
     // Also load the next pages, each result gives us a JSON with separate values for list html and next page loader html
     while (loadMoreUrl != null && ++loadCount < pageCount) {
       try (CloseableHttpResponse response = httpInterface.execute(new HttpGet("https://www.youtube.com" + loadMoreUrl))) {
-        int statusCode = response.getStatusLine().getStatusCode();
-        if (!HttpClientTools.isSuccessWithContent(statusCode)) {
-          throw new IOException("Invalid status code for playlist response: " + statusCode);
-        }
+        HttpClientTools.assertSuccessWithContent(response, "playlist response");
 
         JsonBrowser continuationJson = JsonBrowser.parse(response.getEntity().getContent());
 
@@ -151,30 +151,18 @@ public class DefaultYoutubePlaylistLoader implements YoutubePlaylistLoader {
       // If the shortBylineText property does not exist, it means the Track is Region blocked
       if (!item.get("isPlayable").isNull() && !shortBylineText.isNull()) {
         String videoId = item.get("videoId").text();
-        String title = item.get("title").get("simpleText").text();
+        JsonBrowser titleField = item.get("title");
+        String title = Optional.ofNullable(titleField.get("simpleText").text())
+                .orElse(titleField.get("runs").index(0).get("text").text());
         String author = shortBylineText.get("runs").index(0).get("text").text();
-        JsonBrowser lengthText = item.get("lengthText");
-
-        if (title == null) {
-          title = item.get("title").get("runs").index(0).get("text").text();
-        }
-
-        final boolean isStream;
-        final long duration;
-        
-        if (!lengthText.isNull()) {
-          duration = PBJUtils.parseDuration(lengthText.get("simpleText").text());
-          isStream = false;
-        } else {
-          duration = Units.DURATION_MS_UNKNOWN;
-          isStream = true;
-        }
+        JsonBrowser lengthSeconds = item.get("lengthSeconds");
+        long duration = Units.secondsToMillis(lengthSeconds.asLong(Units.DURATION_SEC_UNKNOWN));
 
         final String thumbnail = PBJUtils.getBestThumbnail(item, videoId);
 
-        AudioTrackInfo info = new AudioTrackInfo(title, author, duration, videoId, isStream,
+        AudioTrackInfo info = new AudioTrackInfo(title, author, duration, videoId, false,
             "https://www.youtube.com/watch?v=" + videoId,
-            Collections.singletonMap("artworkUrl", thumbnail));
+                Collections.singletonMap("artworkUrl", thumbnail));
 
         tracks.add(trackFactory.apply(info));
       }

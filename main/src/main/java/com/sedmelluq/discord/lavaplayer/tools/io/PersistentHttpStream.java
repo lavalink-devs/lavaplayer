@@ -9,7 +9,6 @@ import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -86,14 +85,7 @@ public class PersistentHttpStream extends SeekableInputStream implements AutoClo
     if (returnOnServerError && statusCode >= HttpStatus.SC_INTERNAL_SERVER_ERROR) {
       return false;
     } else if (!isSuccessWithContent(statusCode)) {
-      String body;
-      try {
-        body = EntityUtils.toString(response.getEntity());
-      } catch (IOException e) {
-        log.error("Error extracting body from " + statusCode, e);
-        body = "error";
-      }
-      throw new RuntimeException("Not success status code: " + statusCode + " body:" + body);
+      throw new RuntimeException("Not success status code: " + statusCode);
     }
     return true;
   }

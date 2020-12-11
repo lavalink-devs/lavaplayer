@@ -1,5 +1,6 @@
 package com.sedmelluq.discord.lavaplayer.tools;
 
+import java.nio.charset.StandardCharsets;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.NameValuePair;
 
@@ -12,6 +13,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
+import org.apache.http.client.utils.URLEncodedUtils;
 
 /**
  * Helper methods related to strings and maps.
@@ -41,25 +43,12 @@ public class DataFormatTools {
     return null;
   }
 
-  /**
-   * Extract text between the first subsequent occurrences of start and end in haystack
-   * @param haystack The text to search from
-   * @param checkBetween The prefix and suffixes to check
-   * @return The extracted string
-   */
-  public static String extractBetween(String haystack, String... checkBetween) {
-    if (checkBetween.length % 2 != 0) {
-      throw new IllegalArgumentException("checkBetween must have an equal number of arguments (prefix and suffix)");
-    }
+  public static String extractBetween(String haystack, TextRange[] candidates) {
+    for (TextRange candidate : candidates) {
+      String result = extractBetween(haystack, candidate.start, candidate.end);
 
-    for (int i = 0; i < checkBetween.length; i += 2) {
-      String prefix = checkBetween[i];
-      String suffix = checkBetween[i + 1];
-
-      String extracted = extractBetween(haystack, prefix, suffix);
-
-      if (extracted != null) {
-        return extracted;
+      if (result != null) {
+        return result;
       }
     }
 
@@ -77,6 +66,14 @@ public class DataFormatTools {
       map.put(pair.getName(), pair.getValue());
     }
     return map;
+  }
+
+  public static Map<String, String> decodeUrlEncodedItems(String input, boolean escapedSeparator) {
+    if (escapedSeparator) {
+      input = input.replace("\\\\u0026", "&");
+    }
+
+    return convertToMapLayout(URLEncodedUtils.parse(input, StandardCharsets.UTF_8));
   }
 
   /**
@@ -161,5 +158,15 @@ public class DataFormatTools {
     }
 
     return true;
+  }
+
+  public static class TextRange {
+    public final String start;
+    public final String end;
+
+    public TextRange(String start, String end) {
+      this.start = start;
+      this.end = end;
+    }
   }
 }

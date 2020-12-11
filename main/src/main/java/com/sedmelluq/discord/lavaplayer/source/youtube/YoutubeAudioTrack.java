@@ -72,7 +72,8 @@ public class YoutubeAudioTrack extends DelegatedAudioTrack {
   }
 
   private FormatWithUrl loadBestFormatWithUrl(HttpInterface httpInterface) throws Exception {
-    YoutubeTrackDetails details = sourceManager.getTrackDetailsLoader().loadDetails(httpInterface, getIdentifier());
+    YoutubeTrackDetails details = sourceManager.getTrackDetailsLoader()
+        .loadDetails(httpInterface, getIdentifier(), true);
 
     // If the error reason is "Video unavailable" details will return null
     if (details == null) {
@@ -83,14 +84,8 @@ public class YoutubeAudioTrack extends DelegatedAudioTrack {
 
     YoutubeTrackFormat format = findBestSupportedFormat(formats);
 
-    URI signedUrl;
-    if (details.getPlayerScript() == null) {
-      log.info("PlayerScript is null");
-      signedUrl = format.getUrl();
-    } else {
-      signedUrl = sourceManager.getSignatureResolver()
-              .resolveFormatUrl(httpInterface, details.getPlayerScript(), format);
-    }
+    URI signedUrl = sourceManager.getSignatureResolver()
+        .resolveFormatUrl(httpInterface, details.getPlayerScript(), format);
 
     return new FormatWithUrl(format, signedUrl);
   }
