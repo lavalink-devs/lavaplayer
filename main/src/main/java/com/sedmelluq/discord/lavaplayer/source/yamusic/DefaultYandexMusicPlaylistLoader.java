@@ -15,6 +15,7 @@ import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.
 public class DefaultYandexMusicPlaylistLoader extends DefaultYandexMusicTrackLoader implements YandexMusicPlaylistLoader {
   private static final String PLAYLIST_INFO_FORMAT = "https://api.music.yandex.net/users/%s/playlists/%s";
   private static final String ALBUM_INFO_FORMAT = "https://api.music.yandex.net/albums/%s/with-tracks";
+  private static final String ARTIST_INFO_FORMAT = "https://api.music.yandex.net/artists/%s/brief-info";
 
   private final ExecutorService tracksLoader;
 
@@ -28,23 +29,20 @@ public class DefaultYandexMusicPlaylistLoader extends DefaultYandexMusicTrackLoa
   }
 
   @Override
-  public AudioItem loadPlaylist(String album, String trackProperty, Function<AudioTrackInfo, AudioTrack> trackFactory) {
-    return loadPlaylistUrl(String.format(ALBUM_INFO_FORMAT, album), trackProperty, trackFactory);
+  public AudioItem loadPlaylist(String id, String trackProperty, Function<AudioTrackInfo, AudioTrack> trackFactory) {
+    if (trackProperty.equals("volumes")) {
+      return loadPlaylistUrl(String.format(ALBUM_INFO_FORMAT, id), trackProperty, trackFactory);
+    } else {
+      return loadPlaylistUrl(String.format(ARTIST_INFO_FORMAT, id), trackProperty, trackFactory);
+    }
   }
 
   private AudioItem loadPlaylistUrl(String url, String trackProperty, Function<AudioTrackInfo, AudioTrack> trackFactory) {
     return extractFromApi(url, (httpClient, result) -> {
-      JsonBrowser error = result.get("error");
-      if (!error.isNull()) {
-        String code = error.text();
-        if ("not-found".equals(code)) {
-          return AudioReference.NO_TRACK;
-        }
-        throw new FriendlyException(String.format("Yandex Music returned an error code: %s", code), SUSPICIOUS, null);
-      }
+      if (hasError(result)) return AudioReference.NO_TRACK;
       JsonBrowser volumes = result.get(trackProperty);
       if (volumes.isNull()) {
-        throw new FriendlyException("Empty album found", SUSPICIOUS, null);
+        throw new FriendlyException("Volumes is empty", SUSPICIOUS, null);
       }
 
       List<Future<AudioTrack>> futures = new ArrayList<>();
@@ -67,8 +65,27 @@ public class DefaultYandexMusicPlaylistLoader extends DefaultYandexMusicTrackLoa
         return AudioReference.NO_TRACK;
       }
 
-      return new BasicAudioPlaylist(result.get("title").text(), tracks, null, false);
+      String name;
+      if (trackProperty.equals("volumes")) {
+        name = result.get("title").text();
+      } else {
+        name = result.get("artist").get("name").text();
+      }
+
+      return new BasicAudioPlaylist(name, tracks, null, false);
     });
+  }
+
+  static boolean hasError(JsonBrowser result) {
+    JsonBrowser error = result.get("error");
+    if (!error.isNull()) {
+      String code = error.text();
+      if ("not-found".equals(code)) {
+        return true;
+      }
+      throw new FriendlyException(String.format("Yandex Music returned an error code: %s", code), SUSPICIOUS, null);
+    }
+    return false;
   }
 
   private AudioTrack loadTrack(JsonBrowser trackInfo, Function<AudioTrackInfo, AudioTrack> trackFactory) {

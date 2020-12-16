@@ -32,11 +32,12 @@ public class YandexMusicAudioSourceManager implements AudioSourceManager, HttpCo
   private static final String TRACK_URL_REGEX = "^https?://music\\.yandex\\.[a-zA-Z]+/album/([0-9]+)/track/([0-9]+)$";
   private static final String ALBUM_URL_REGEX = "^https?://music\\.yandex\\.[a-zA-Z]+/album/([0-9]+)$";
   private static final String PLAYLIST_URL_REGEX = "^https?://music\\.yandex\\.[a-zA-Z]+/users/(.+)/playlists/([0-9]+)$";
-
+  private static final String ARTIST_URL_REGEX = "^https?://music\\.yandex\\.[a-zA-Z]+/artist/([0-9]+)$";
 
   private static final Pattern trackUrlPattern = Pattern.compile(TRACK_URL_REGEX);
   private static final Pattern albumUrlPattern = Pattern.compile(ALBUM_URL_REGEX);
   private static final Pattern playlistUrlPattern = Pattern.compile(PLAYLIST_URL_REGEX);
+  private static final Pattern artistUrlPattern = Pattern.compile(ARTIST_URL_REGEX);
 
   private final boolean allowSearch;
 
@@ -100,6 +101,9 @@ public class YandexMusicAudioSourceManager implements AudioSourceManager, HttpCo
     }
     if ((matcher = albumUrlPattern.matcher(reference.identifier)).matches()) {
       return playlistLoader.loadPlaylist(matcher.group(1), "volumes", this::getTrack);
+    }
+    if ((matcher = artistUrlPattern.matcher(reference.identifier)).matches()) {
+      return playlistLoader.loadPlaylist(matcher.group(1), "popularTracks", this::getTrack);
     }
     if (allowSearch) {
       return searchResultLoader.loadSearchResult(reference.identifier, playlistLoader, this::getTrack);
