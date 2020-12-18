@@ -264,7 +264,7 @@ public class YoutubeSearchProvider implements YoutubeSearchResultLoader {
             .get("runs")
             .index(0)
             .get("text").text());
-      } catch (NumberFormatException ignored) {
+      } catch (RuntimeException ignored) {
         duration = DataFormatTools.durationTextToMillis(json.get("musicResponsiveListItemRenderer")
             .get("flexColumns")
             .index(3)
