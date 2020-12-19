@@ -235,53 +235,29 @@ public class YoutubeSearchProvider implements YoutubeSearchResultLoader {
   }
 
   private AudioTrack extractMusicData(JsonBrowser json, Function<AudioTrackInfo, AudioTrack> trackFactory) {
-    JsonBrowser thumbnail = json.get("musicResponsiveListItemRenderer")
-         .get("thumbnail")
-         .get("musicThumbnailRenderer");
-    String title = json.get("musicResponsiveListItemRenderer")
-        .get("flexColumns")
-        .index(0)
+    JsonBrowser thumbnail = json.get("musicResponsiveListItemRenderer").get("thumbnail").get("musicThumbnailRenderer");
+    JsonBrowser columns = json.get("musicResponsiveListItemRenderer").get("flexColumns");
+    JsonBrowser firstColumn = columns.index(0)
         .get("musicResponsiveListItemFlexColumnRenderer")
         .get("text")
         .get("runs")
-        .index(0)
-        .get("text").text();
-    String author = json.get("musicResponsiveListItemRenderer")
-        .get("flexColumns")
-        .index(1)
-        .get("musicResponsiveListItemFlexColumnRenderer")
-        .get("text")
-        .get("runs")
-        .index(0)
-        .get("text").text();
-      long duration;
-      try {
-        duration = DataFormatTools.durationTextToMillis(json.get("musicResponsiveListItemRenderer")
-            .get("flexColumns")
-            .index(2)
-            .get("musicResponsiveListItemFlexColumnRenderer")
-            .get("text")
-            .get("runs")
-            .index(0)
-            .get("text").text());
-      } catch (RuntimeException ignored) {
-        duration = DataFormatTools.durationTextToMillis(json.get("musicResponsiveListItemRenderer")
-            .get("flexColumns")
-            .index(3)
-            .get("musicResponsiveListItemFlexColumnRenderer")
-            .get("text")
-            .get("runs")
-            .index(0)
-            .get("text").text());
-      }
-    String videoId = json.get("musicResponsiveListItemRenderer")
-        .get("doubleTapCommand")
+        .index(0);
+    String title = firstColumn.get("text").text();
+    String videoId = firstColumn.get("navigationEndpoint")
         .get("watchEndpoint")
         .get("videoId").text();
+    List<JsonBrowser> secondColumn = columns.index(1)
+        .get("musicResponsiveListItemFlexColumnRenderer")
+        .get("text")
+        .get("runs").values();
+    String author = secondColumn.get(0)
+        .get("text").text();
+    long duration = DataFormatTools.durationTextToMillis(secondColumn.get(secondColumn.size() - 1)
+        .get("text").text());
 
     AudioTrackInfo info = new AudioTrackInfo(title, author, duration, videoId, false,
             WATCH_URL_PREFIX + videoId,
-            Collections.singletonMap("artworkUrl", PBJUtils.getBestThumbnail(thumbnail, videoId)));
+            Collections.singletonMap("artworkUrl", PBJUtils.getYoutubeMusicThumbnail(thumbnail, videoId)));
 
     return trackFactory.apply(info);
   }

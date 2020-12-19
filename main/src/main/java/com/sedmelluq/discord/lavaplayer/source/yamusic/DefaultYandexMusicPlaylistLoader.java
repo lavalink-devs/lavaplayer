@@ -66,7 +66,7 @@ public class DefaultYandexMusicPlaylistLoader extends DefaultYandexMusicTrackLoa
       }
 
       String name;
-      if (trackProperty.equals("volumes")) {
+      if (trackProperty.equals("volumes") || trackProperty.equals("tracks")) {
         name = result.get("title").text();
       } else {
         name = result.get("artist").get("name").text();
