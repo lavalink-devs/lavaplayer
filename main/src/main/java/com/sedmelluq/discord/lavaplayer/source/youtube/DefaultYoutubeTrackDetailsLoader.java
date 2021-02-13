@@ -29,12 +29,16 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
   private static final TextRange[] EMBED_CONFIG_RANGES = new TextRange[] {
       new TextRange("'WEB_PLAYER_CONTEXT_CONFIGS':", "});writeEmbed();"),
       new TextRange("'WEB_PLAYER_CONTEXT_CONFIGS':", "});yt.setConfig"),
+      new TextRange("'WEB_PLAYER_CONTEXT_CONFIGS':", "});</script>"),
       new TextRange("\"WEB_PLAYER_CONTEXT_CONFIGS\":", "});writeEmbed();"),
       new TextRange("\"WEB_PLAYER_CONTEXT_CONFIGS\":", "});yt.setConfig"),
+      new TextRange("\"WEB_PLAYER_CONTEXT_CONFIGS\":", "});</script>"),
       new TextRange("'PLAYER_CONFIG':", "});writeEmbed();"),
       new TextRange("'PLAYER_CONFIG':", "});yt.setConfig"),
+      new TextRange("'PLAYER_CONFIG':", "});</script>"),
       new TextRange("\"PLAYER_CONFIG\":", "});writeEmbed();"),
-      new TextRange("\"PLAYER_CONFIG\":", "});yt.setConfig")
+      new TextRange("\"PLAYER_CONFIG\":", "});yt.setConfig"),
+      new TextRange("\"PLAYER_CONFIG\":", "});</script>")
   };
 
   private volatile CachedPlayerScript cachedPlayerScript = null;
@@ -194,7 +198,7 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
         return JsonBrowser.parse(configJson);
       }
 
-      log.debug("Did not find player config in track {} embed page HTML: {}", videoId, html);
+      log.error("Did not find player config in track {} embed page HTML: {}", videoId, html);
     }
 
     throw new FriendlyException("Track information is unavailable.", SUSPICIOUS,
@@ -240,7 +244,7 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
 
     CachedPlayerScript cached = cachedPlayerScript;
 
-    if (cached != null && cached.timestamp + 600000L >= now) {
+    if (cached != null && cached.timestamp + 100000L >= now) {
       return data.withPlayerScriptUrl(cached.playerScriptUrl);
     }
 
