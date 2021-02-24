@@ -1,14 +1,11 @@
 package com.sedmelluq.discord.lavaplayer.source.youtube;
 
 import com.sedmelluq.discord.lavaplayer.tools.DataFormatTools;
-import com.sedmelluq.discord.lavaplayer.tools.DataFormatTools.TextRange;
 import com.sedmelluq.discord.lavaplayer.tools.ExceptionTools;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.tools.JsonBrowser;
 import com.sedmelluq.discord.lavaplayer.tools.io.HttpClientTools;
 import com.sedmelluq.discord.lavaplayer.tools.io.HttpInterface;
-import java.io.IOException;
-import java.net.URLEncoder;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -16,6 +13,9 @@ import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.net.URLEncoder;
 
 import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeTrackJsonData.fromEmbedParts;
 import static com.sedmelluq.discord.lavaplayer.tools.ExceptionTools.throwWithDebugInfo;
@@ -26,19 +26,11 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoader {
   private static final Logger log = LoggerFactory.getLogger(DefaultYoutubeTrackDetailsLoader.class);
 
-  private static final TextRange[] EMBED_CONFIG_RANGES = new TextRange[] {
-      new TextRange("'WEB_PLAYER_CONTEXT_CONFIGS':", "});writeEmbed();"),
-      new TextRange("'WEB_PLAYER_CONTEXT_CONFIGS':", "});yt.setConfig"),
-      new TextRange("'WEB_PLAYER_CONTEXT_CONFIGS':", "});</script>"),
-      new TextRange("\"WEB_PLAYER_CONTEXT_CONFIGS\":", "});writeEmbed();"),
-      new TextRange("\"WEB_PLAYER_CONTEXT_CONFIGS\":", "});yt.setConfig"),
-      new TextRange("\"WEB_PLAYER_CONTEXT_CONFIGS\":", "});</script>"),
-      new TextRange("'PLAYER_CONFIG':", "});writeEmbed();"),
-      new TextRange("'PLAYER_CONFIG':", "});yt.setConfig"),
-      new TextRange("'PLAYER_CONFIG':", "});</script>"),
-      new TextRange("\"PLAYER_CONFIG\":", "});writeEmbed();"),
-      new TextRange("\"PLAYER_CONFIG\":", "});yt.setConfig"),
-      new TextRange("\"PLAYER_CONFIG\":", "});</script>")
+  private static final String[] EMBED_CONFIG_PREFIXES = new String[] {
+          "'WEB_PLAYER_CONTEXT_CONFIGS':",
+          "\"WEB_PLAYER_CONTEXT_CONFIGS\":",
+          "'PLAYER_CONFIG':",
+          "\"PLAYER_CONFIG\":"
   };
 
   private volatile CachedPlayerScript cachedPlayerScript = null;
@@ -192,7 +184,7 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
       HttpClientTools.assertSuccessWithContent(response, "embed video page response");
 
       String html = EntityUtils.toString(response.getEntity(), UTF_8);
-      String configJson = DataFormatTools.extractBetween(html, EMBED_CONFIG_RANGES);
+      String configJson = DataFormatTools.extractAfter(html, EMBED_CONFIG_PREFIXES);
 
       if (configJson != null) {
         return JsonBrowser.parse(configJson);

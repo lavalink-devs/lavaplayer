@@ -237,6 +237,10 @@ public class YoutubeSearchProvider implements YoutubeSearchResultLoader {
   private AudioTrack extractMusicData(JsonBrowser json, Function<AudioTrackInfo, AudioTrack> trackFactory) {
     JsonBrowser thumbnail = json.get("musicResponsiveListItemRenderer").get("thumbnail").get("musicThumbnailRenderer");
     JsonBrowser columns = json.get("musicResponsiveListItemRenderer").get("flexColumns");
+    if (columns.isNull()) {
+      // Somehow don't get track info, ignore
+      return null;
+    }
     JsonBrowser firstColumn = columns.index(0)
         .get("musicResponsiveListItemFlexColumnRenderer")
         .get("text")
@@ -252,8 +256,14 @@ public class YoutubeSearchProvider implements YoutubeSearchResultLoader {
         .get("runs").values();
     String author = secondColumn.get(0)
         .get("text").text();
-    long duration = DataFormatTools.durationTextToMillis(secondColumn.get(secondColumn.size() - 1)
-        .get("text").text());
+    JsonBrowser lastElement = secondColumn.get(secondColumn.size() - 1);
+
+    if (!lastElement.get("navigationEndpoint").isNull()) {
+      // The duration element should not have this key, if it does, then duration is probably missing, so return
+      return null;
+    }
+
+    long duration = DataFormatTools.durationTextToMillis(lastElement.get("text").text());
 
     AudioTrackInfo info = new AudioTrackInfo(title, author, duration, videoId, false,
             WATCH_URL_PREFIX + videoId,

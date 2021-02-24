@@ -55,6 +55,28 @@ public class DataFormatTools {
     return null;
   }
 
+  public static String extractAfter(String haystack, String start) {
+    int startMatch = haystack.indexOf(start);
+
+    if (startMatch >= 0) {
+      return haystack.substring(startMatch + start.length());
+    }
+
+    return null;
+  }
+
+  public static String extractAfter(String haystack, String[] candidates) {
+    for (String candidate : candidates) {
+      String result = extractAfter(haystack, candidate);
+
+      if (result != null) {
+        return result;
+      }
+    }
+
+    return null;
+  }
+
   /**
    * Converts name value pairs to a map, with the last entry for each name being present.
    * @param pairs Name value pairs to convert
@@ -111,7 +133,7 @@ public class DataFormatTools {
     int length = 0;
 
     for (String part : durationText.split("[:.]")) {
-      length = length * 60 + Integer.valueOf(part);
+      length = length * 60 + Integer.parseInt(part);
     }
 
     return length * 1000L;
