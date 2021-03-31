@@ -33,7 +33,7 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
           "\"PLAYER_CONFIG\":"
   };
 
-  private volatile CachedPlayerScript cachedPlayerScript = null;
+//  private volatile CachedPlayerScript cachedPlayerScript = null;
 
   @Override
   public YoutubeTrackDetails loadDetails(HttpInterface httpInterface, String videoId, boolean requireFormats) {
@@ -58,7 +58,7 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
         return null;
       }
 
-      YoutubeTrackJsonData finalData = augmentWithPlayerScript(initialData, videoId, httpInterface, requireFormats);
+      YoutubeTrackJsonData finalData = augmentWithPlayerScript(initialData, httpInterface, videoId);
       return new DefaultYoutubeTrackDetails(videoId, finalData);
     } catch (FriendlyException e) {
       throw e;
@@ -222,11 +222,11 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
 
   protected YoutubeTrackJsonData augmentWithPlayerScript(
       YoutubeTrackJsonData data,
-      String videoId,
       HttpInterface httpInterface,
-      boolean requireFormats
+      String videoId
+//      boolean requireFormats
   ) throws IOException {
-    long now = System.currentTimeMillis();
+//    long now = System.currentTimeMillis();
 
 //    if (data.playerScriptUrl != null) {
 //      cachedPlayerScript = new CachedPlayerScript(data.playerScriptUrl, now);
@@ -235,11 +235,11 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
 //      return data;
 //    }
 
-    CachedPlayerScript cached = cachedPlayerScript;
+//    CachedPlayerScript cached = cachedPlayerScript;
 
-    if (cached != null && cached.timestamp + 60000L >= now) {
-      return data.withPlayerScriptUrl(cached.playerScriptUrl);
-    }
+//    if (cached != null && cached.timestamp + 60000L >= now) {
+//      return data.withPlayerScriptUrl(cached.playerScriptUrl);
+//    }
 
     try (CloseableHttpResponse response = httpInterface.execute(new HttpGet("https://www.youtube.com"))) {
       log.info("Requested PLAYER_JS_URL from www.youtube.com");
@@ -247,16 +247,6 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
 
       String responseText = EntityUtils.toString(response.getEntity());
       String encodedUrl = DataFormatTools.extractBetween(responseText, "\"PLAYER_JS_URL\":\"", "\"");
-
-      if (encodedUrl == null) {
-        try (CloseableHttpResponse videoResponse = httpInterface.execute(new HttpGet("https://www.youtube.com/watch?v=" + videoId))) {
-          log.info("Requested PLAYER_JS_URL from video " + videoId);
-          HttpClientTools.assertSuccessWithContent(videoResponse, "youtube video id");
-
-          responseText = EntityUtils.toString(videoResponse.getEntity());
-          encodedUrl = DataFormatTools.extractBetween(responseText, "\"PLAYER_JS_URL\":\"", "\"");
-        }
-      }
 
       if (encodedUrl == null) {
         try (CloseableHttpResponse embedVideoResponse = httpInterface.execute(new HttpGet("https://www.youtube.com/embed/" + videoId))) {
@@ -270,19 +260,19 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
 
       String fetchedPlayerScript = JsonBrowser.parse("{\"url\":\"" + encodedUrl + "\"}").get("url").text();
       log.info("Received PLAYER_JS_URL: " + fetchedPlayerScript);
-      cachedPlayerScript = new CachedPlayerScript(fetchedPlayerScript, now);
+//      cachedPlayerScript = new CachedPlayerScript(fetchedPlayerScript, now);
 
       return data.withPlayerScriptUrl(fetchedPlayerScript);
     }
   }
 
-  protected static class CachedPlayerScript {
-    public final String playerScriptUrl;
-    public final long timestamp;
-
-    public CachedPlayerScript(String playerScriptUrl, long timestamp) {
-      this.playerScriptUrl = playerScriptUrl;
-      this.timestamp = timestamp;
-    }
-  }
+//  protected static class CachedPlayerScript {
+//    public final String playerScriptUrl;
+//    public final long timestamp;
+//
+//    public CachedPlayerScript(String playerScriptUrl, long timestamp) {
+//      this.playerScriptUrl = playerScriptUrl;
+//      this.timestamp = timestamp;
+//    }
+//  }
 }
