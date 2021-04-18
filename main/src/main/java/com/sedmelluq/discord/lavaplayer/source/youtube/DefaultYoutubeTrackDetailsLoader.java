@@ -245,9 +245,7 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
       HttpClientTools.assertSuccessWithContent(response, "content verify response");
 
       String json = EntityUtils.toString(response.getEntity(), UTF_8);
-
-      if (json != null) {
-        String fetchedContentVerifiedLink = JsonBrowser.parse(json)
+      String fetchedContentVerifiedLink = JsonBrowser.parse(json)
               .get("actions")
               .index(0)
               .get("navigateAction")
@@ -255,6 +253,7 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
               .get("urlEndpoint")
               .get("url")
               .text();
+      if (fetchedContentVerifiedLink != null) {
         return loadTrackInfoFromMainPage(httpInterface, fetchedContentVerifiedLink, true);
       }
 
