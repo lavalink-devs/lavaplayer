@@ -248,13 +248,13 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
 
       if (json != null) {
         String fetchedContentVerifiedLink = JsonBrowser.parse(json)
-                .get("actions")
-                .index(0)
-                .get("navigateAction")
-                .get("endpoint")
-                .get("urlEndpoint")
-                .get("url")
-                .text();
+              .get("actions")
+              .index(0)
+              .get("navigateAction")
+              .get("endpoint")
+              .get("urlEndpoint")
+              .get("url")
+              .text();
         return loadTrackInfoFromMainPage(httpInterface, fetchedContentVerifiedLink, true);
       }
 
