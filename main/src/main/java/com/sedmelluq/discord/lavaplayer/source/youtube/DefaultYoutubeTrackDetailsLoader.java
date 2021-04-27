@@ -280,21 +280,15 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
       return data.withPlayerScriptUrl(cached.playerScriptUrl);
     }
 
-    try (CloseableHttpResponse response = httpInterface.execute(new HttpGet("https://www.youtube.com"))) {
-      log.info("Requested PLAYER_JS_URL from www.youtube.com");
-      HttpClientTools.assertSuccessWithContent(response, "youtube root");
+    try (CloseableHttpResponse response = httpInterface.execute(new HttpGet("https://www.youtube.com/embed/" + videoId))) {
+      log.info("Requested PLAYER_JS_URL from embed video " + videoId);
+      HttpClientTools.assertSuccessWithContent(response, "youtube embed video id");
 
       String responseText = EntityUtils.toString(response.getEntity());
-      String encodedUrl = DataFormatTools.extractBetween(responseText, "\"PLAYER_JS_URL\":\"", "\"");
+      String encodedUrl = DataFormatTools.extractBetween(responseText, "\"jsUrl\":\"", "\"");
 
       if (encodedUrl == null) {
-        try (CloseableHttpResponse embedVideoResponse = httpInterface.execute(new HttpGet("https://www.youtube.com/embed/" + videoId))) {
-          log.info("Requested PLAYER_JS_URL from embed video " + videoId);
-          HttpClientTools.assertSuccessWithContent(embedVideoResponse, "youtube embed video id");
-
-          responseText = EntityUtils.toString(embedVideoResponse.getEntity());
-          encodedUrl = DataFormatTools.extractBetween(responseText, "\"jsUrl\":\"", "\"");
-        }
+        throw throwWithDebugInfo(log, null, "no PLAYER_JS_URL found", "html", responseText);
       }
 
       String fetchedPlayerScript = JsonBrowser.parse("{\"url\":\"" + encodedUrl + "\"}").get("url").text();
