@@ -37,8 +37,6 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
           "\"PLAYER_CONFIG\":"
   };
 
-  private volatile CachedPlayerScript cachedPlayerScript = null;
-
   @Override
   public YoutubeTrackDetails loadDetails(HttpInterface httpInterface, String videoId, boolean requireFormats) {
     try {
@@ -62,7 +60,7 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
         return null;
       }
 
-      YoutubeTrackJsonData finalData = augmentWithPlayerScript(initialData, httpInterface, videoId, requireFormats);
+      YoutubeTrackJsonData finalData = augmentWithPlayerScript(initialData, httpInterface, videoId);
       return new DefaultYoutubeTrackDetails(videoId, finalData);
     } catch (FriendlyException e) {
       throw e;
@@ -262,23 +260,8 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
   protected YoutubeTrackJsonData augmentWithPlayerScript(
       YoutubeTrackJsonData data,
       HttpInterface httpInterface,
-      String videoId,
-      boolean requireFormats
+      String videoId
   ) throws IOException {
-    long now = System.currentTimeMillis();
-
-    if (data.playerScriptUrl != null) {
-      cachedPlayerScript = new CachedPlayerScript(data.playerScriptUrl, now);
-      return data;
-    } else if (!requireFormats) {
-      return data;
-    }
-
-    CachedPlayerScript cached = cachedPlayerScript;
-
-    if (cached != null && cached.timestamp + 300000L >= now) {
-      return data.withPlayerScriptUrl(cached.playerScriptUrl);
-    }
 
     try (CloseableHttpResponse response = httpInterface.execute(new HttpGet("https://www.youtube.com/embed/" + videoId))) {
       log.info("Requested PLAYER_JS_URL from embed video " + videoId);
@@ -293,19 +276,8 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
 
       String fetchedPlayerScript = JsonBrowser.parse("{\"url\":\"" + encodedUrl + "\"}").get("url").text();
       log.info("Received PLAYER_JS_URL: " + fetchedPlayerScript);
-      cachedPlayerScript = new CachedPlayerScript(fetchedPlayerScript, now);
 
       return data.withPlayerScriptUrl(fetchedPlayerScript);
-    }
-  }
-
-  protected static class CachedPlayerScript {
-    public final String playerScriptUrl;
-    public final long timestamp;
-
-    public CachedPlayerScript(String playerScriptUrl, long timestamp) {
-      this.playerScriptUrl = playerScriptUrl;
-      this.timestamp = timestamp;
     }
   }
 }
