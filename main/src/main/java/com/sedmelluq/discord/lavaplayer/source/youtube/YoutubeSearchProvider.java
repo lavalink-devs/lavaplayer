@@ -3,6 +3,7 @@ package com.sedmelluq.discord.lavaplayer.source.youtube;
 import com.sedmelluq.discord.lavaplayer.tools.DataFormatTools;
 import com.sedmelluq.discord.lavaplayer.tools.ExceptionTools;
 import com.sedmelluq.discord.lavaplayer.tools.JsonBrowser;
+import com.sedmelluq.discord.lavaplayer.tools.PBJUtils;
 import com.sedmelluq.discord.lavaplayer.tools.http.ExtendedHttpConfigurable;
 import com.sedmelluq.discord.lavaplayer.tools.io.HttpClientTools;
 import com.sedmelluq.discord.lavaplayer.tools.io.HttpInterface;
@@ -199,7 +200,7 @@ public class YoutubeSearchProvider implements YoutubeSearchResultLoader {
 
     AudioTrackInfo info = new AudioTrackInfo(title, author, duration, videoId, false,
         WATCH_URL_PREFIX + videoId,
-            Collections.singletonMap("artworkUrl", PBJUtils.getBestThumbnail(json, videoId)));
+            Collections.singletonMap("artworkUrl", PBJUtils.getYouTubeThumbnail(json, videoId)));
 
     return trackFactory.apply(info);
   }

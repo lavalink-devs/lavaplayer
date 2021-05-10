@@ -1,6 +1,4 @@
-package com.sedmelluq.discord.lavaplayer.source.youtube;
-
-import com.sedmelluq.discord.lavaplayer.tools.JsonBrowser;
+package com.sedmelluq.discord.lavaplayer.tools;
 
 import java.util.List;
 
@@ -14,9 +12,13 @@ public class PBJUtils {
         return String.format("https://i.ytimg.com/vi_webp/%s/maxresdefault.webp", videoId);
     }
 
-    public static String getBestThumbnail(JsonBrowser videoData, String videoId) {
+    public static String getYouTubeThumbnail(JsonBrowser videoData, String videoId) {
         List<JsonBrowser> thumbnails = videoData.get("thumbnail").get("thumbnails").values();
         if (!thumbnails.isEmpty()) return thumbnails.get(thumbnails.size() - 1).get("url").text();
         return String.format("https://i.ytimg.com/vi_webp/%s/maxresdefault.webp", videoId);
+    }
+
+    public static String getSoundCloudThumbnail(JsonBrowser trackData) {
+        return trackData.get("artwork_url").text().replace("large.jpg", "original.jpg");
     }
 }

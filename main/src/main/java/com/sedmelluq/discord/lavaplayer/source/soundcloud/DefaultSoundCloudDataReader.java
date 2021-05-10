@@ -1,6 +1,7 @@
 package com.sedmelluq.discord.lavaplayer.source.soundcloud;
 
 import com.sedmelluq.discord.lavaplayer.tools.JsonBrowser;
+import com.sedmelluq.discord.lavaplayer.tools.PBJUtils;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -35,7 +36,7 @@ public class DefaultSoundCloudDataReader implements SoundCloudDataReader {
         identifier,
         false,
         trackData.get("permalink_url").text(),
-        Collections.singletonMap("artworkUrl", trackData.get("artwork_url").text())
+        Collections.singletonMap("artworkUrl", PBJUtils.getSoundCloudThumbnail(trackData))
     );
   }
 

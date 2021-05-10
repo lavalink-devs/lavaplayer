@@ -8,6 +8,7 @@ import com.sedmelluq.discord.lavaplayer.source.youtube.format.YoutubeTrackFormat
 import com.sedmelluq.discord.lavaplayer.tools.ExceptionTools;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.tools.JsonBrowser;
+import com.sedmelluq.discord.lavaplayer.tools.PBJUtils;
 import com.sedmelluq.discord.lavaplayer.tools.Units;
 import com.sedmelluq.discord.lavaplayer.tools.io.HttpInterface;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
@@ -99,7 +100,7 @@ public class DefaultYoutubeTrackDetails implements YoutubeTrackDetails {
         videoDetails.get("lengthSeconds")
     );
 
-    return buildTrackInfo(videoId, videoDetails.get("title").text(), videoDetails.get("author").text(), temporalInfo, PBJUtils.getBestThumbnail(videoDetails, videoId));
+    return buildTrackInfo(videoId, videoDetails.get("title").text(), videoDetails.get("author").text(), temporalInfo, PBJUtils.getYouTubeThumbnail(videoDetails, videoId));
   }
 
   private AudioTrackInfo loadLegacyTrackInfo() {
@@ -114,7 +115,7 @@ public class DefaultYoutubeTrackDetails implements YoutubeTrackDetails {
         args.get("length_seconds")
     );
 
-    return buildTrackInfo(videoId, args.get("title").text(), args.get("author").text(), temporalInfo, PBJUtils.getBestThumbnail(args, videoId));
+    return buildTrackInfo(videoId, args.get("title").text(), args.get("author").text(), temporalInfo, PBJUtils.getYouTubeThumbnail(args, videoId));
   }
 
   private AudioTrackInfo buildTrackInfo(String videoId, String title, String uploader, TemporalInfo temporalInfo, String thumbnail) {
