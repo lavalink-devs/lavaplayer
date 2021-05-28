@@ -252,6 +252,7 @@ public class DefaultAudioPlayerManager implements AudioPlayerManager {
     output.writeUTF(trackInfo.identifier);
     output.writeBoolean(trackInfo.isStream);
     DataFormatTools.writeNullableText(output, trackInfo.uri);
+    DataFormatTools.writeNullableText(output, trackInfo.artworkUrl);
 
     encodeTrackDetails(track, output);
     output.writeLong(track.getPosition());
@@ -269,7 +270,7 @@ public class DefaultAudioPlayerManager implements AudioPlayerManager {
     int version = (stream.getMessageFlags() & TRACK_INFO_VERSIONED) != 0 ? (input.readByte() & 0xFF) : 1;
 
     AudioTrackInfo trackInfo = new AudioTrackInfo(input.readUTF(), input.readUTF(), input.readLong(), input.readUTF(),
-        input.readBoolean(), version >= 2 ? DataFormatTools.readNullableText(input) : null);
+        input.readBoolean(), version >= 2 ? DataFormatTools.readNullableText(input) : null, DataFormatTools.readNullableText(input));
     AudioTrack track = decodeTrackDetails(trackInfo, input);
     long position = input.readLong();
 

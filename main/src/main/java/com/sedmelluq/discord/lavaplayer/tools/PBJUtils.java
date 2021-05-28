@@ -4,7 +4,7 @@ import java.util.List;
 
 public class PBJUtils {
 
-    public static String getYoutubeMusicThumbnail(JsonBrowser videoData, String videoId) {
+    public static String getYouTubeMusicThumbnail(JsonBrowser videoData, String videoId) {
         JsonBrowser thumbnails = videoData.get("thumbnail").get("thumbnails").index(0);
         if (!thumbnails.isNull()) return thumbnails.get("url").text().replaceFirst("=.*", "=w1000-h1000");
         return String.format("https://i.ytimg.com/vi_webp/%s/maxresdefault.webp", videoId);

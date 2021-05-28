@@ -117,7 +117,7 @@ public class BandcampAudioSourceManager implements AudioSourceManager, HttpConfi
         bandUrl + trackInfo.get("title_link").text(),
         false,
         trackPageUrl,
-        Collections.singletonMap("artworkUrl", artworkUrl)
+        artworkUrl
     ), this);
   }
 

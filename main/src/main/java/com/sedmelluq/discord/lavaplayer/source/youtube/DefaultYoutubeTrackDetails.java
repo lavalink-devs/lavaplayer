@@ -120,7 +120,7 @@ public class DefaultYoutubeTrackDetails implements YoutubeTrackDetails {
 
   private AudioTrackInfo buildTrackInfo(String videoId, String title, String uploader, TemporalInfo temporalInfo, String thumbnail) {
     return new AudioTrackInfo(title, uploader, temporalInfo.durationMillis, videoId, temporalInfo.isActiveStream,
-        "https://www.youtube.com/watch?v=" + videoId, Collections.singletonMap("artworkUrl", thumbnail));
+        "https://www.youtube.com/watch?v=" + videoId, thumbnail);
   }
 
   private static class TemporalInfo {

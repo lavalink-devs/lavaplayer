@@ -154,8 +154,7 @@ public class YoutubeSearchProvider implements YoutubeSearchResultLoader {
     String author = contentElement.select(".yt-lockup-byline > a").text();
 
     AudioTrackInfo info = new AudioTrackInfo(title, author, duration, videoId, false,
-        WATCH_URL_PREFIX + videoId,
-            Collections.singletonMap("artworkUrl", String.format("https://i.ytimg.com/vi_webp/%s/maxresdefault.webp", videoId)));
+        WATCH_URL_PREFIX + videoId, String.format("https://i.ytimg.com/vi_webp/%s/maxresdefault.webp", videoId));
 
     tracks.add(trackFactory.apply(info));
   }
@@ -199,8 +198,7 @@ public class YoutubeSearchProvider implements YoutubeSearchResultLoader {
     String videoId = json.get("videoId").text();
 
     AudioTrackInfo info = new AudioTrackInfo(title, author, duration, videoId, false,
-        WATCH_URL_PREFIX + videoId,
-            Collections.singletonMap("artworkUrl", PBJUtils.getYouTubeThumbnail(json, videoId)));
+        WATCH_URL_PREFIX + videoId, PBJUtils.getYouTubeThumbnail(json, videoId));
 
     return trackFactory.apply(info);
   }
@@ -267,8 +265,7 @@ public class YoutubeSearchProvider implements YoutubeSearchResultLoader {
     long duration = DataFormatTools.durationTextToMillis(lastElement.get("text").text());
 
     AudioTrackInfo info = new AudioTrackInfo(title, author, duration, videoId, false,
-            WATCH_URL_PREFIX + videoId,
-            Collections.singletonMap("artworkUrl", PBJUtils.getYoutubeMusicThumbnail(thumbnail, videoId)));
+            WATCH_URL_PREFIX + videoId, PBJUtils.getYouTubeMusicThumbnail(thumbnail, videoId));
 
     return trackFactory.apply(info);
   }

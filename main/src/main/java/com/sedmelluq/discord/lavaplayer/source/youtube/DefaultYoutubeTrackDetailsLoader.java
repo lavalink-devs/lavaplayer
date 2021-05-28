@@ -264,7 +264,6 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
   ) throws IOException {
 
     try (CloseableHttpResponse response = httpInterface.execute(new HttpGet("https://www.youtube.com/embed/" + videoId))) {
-      log.info("Requested PLAYER_JS_URL from embed video " + videoId);
       HttpClientTools.assertSuccessWithContent(response, "youtube embed video id");
 
       String responseText = EntityUtils.toString(response.getEntity());
@@ -275,7 +274,6 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
       }
 
       String fetchedPlayerScript = JsonBrowser.parse("{\"url\":\"" + encodedUrl + "\"}").get("url").text();
-      log.info("Received PLAYER_JS_URL: " + fetchedPlayerScript);
 
       return data.withPlayerScriptUrl(fetchedPlayerScript);
     }

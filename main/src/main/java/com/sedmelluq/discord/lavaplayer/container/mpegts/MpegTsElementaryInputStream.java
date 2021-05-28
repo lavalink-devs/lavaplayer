@@ -81,6 +81,11 @@ public class MpegTsElementaryInputStream extends InputStream {
       public String getUri() {
         return null;
       }
+
+      @Override
+      public String getArtworkUrl() {
+        return null;
+      }
     };
   }
 
