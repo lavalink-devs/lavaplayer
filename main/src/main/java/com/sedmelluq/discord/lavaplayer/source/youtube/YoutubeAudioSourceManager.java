@@ -16,7 +16,6 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
 import java.io.DataInput;
 import java.io.DataOutput;
-import java.io.IOException;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
@@ -47,6 +46,7 @@ public class YoutubeAudioSourceManager implements AudioSourceManager, HttpConfig
   private final boolean allowSearch;
   private final YoutubeTrackDetailsLoader trackDetailsLoader;
   private final YoutubeSearchResultLoader searchResultLoader;
+  private final YoutubeSearchMusicResultLoader searchMusicResultLoader;
   private final YoutubePlaylistLoader playlistLoader;
   private final YoutubeLinkRouter linkRouter;
   private final LoadingRoutes loadingRoutes;
@@ -67,6 +67,7 @@ public class YoutubeAudioSourceManager implements AudioSourceManager, HttpConfig
         allowSearch,
         new DefaultYoutubeTrackDetailsLoader(),
         new YoutubeSearchProvider(),
+        new YoutubeSearchMusicProvider(),
         new YoutubeSignatureCipherManager(),
         new DefaultYoutubePlaylistLoader(),
         new DefaultYoutubeLinkRouter(),
@@ -78,6 +79,7 @@ public class YoutubeAudioSourceManager implements AudioSourceManager, HttpConfig
       boolean allowSearch,
       YoutubeTrackDetailsLoader trackDetailsLoader,
       YoutubeSearchResultLoader searchResultLoader,
+      YoutubeSearchMusicResultLoader searchMusicResultLoader,
       YoutubeSignatureResolver signatureResolver,
       YoutubePlaylistLoader playlistLoader,
       YoutubeLinkRouter linkRouter,
@@ -90,6 +92,7 @@ public class YoutubeAudioSourceManager implements AudioSourceManager, HttpConfig
     this.trackDetailsLoader = trackDetailsLoader;
     this.signatureResolver = signatureResolver;
     this.searchResultLoader = searchResultLoader;
+    this.searchMusicResultLoader = searchMusicResultLoader;
     this.playlistLoader = playlistLoader;
     this.linkRouter = linkRouter;
     this.mixLoader = mixLoader;
@@ -97,7 +100,8 @@ public class YoutubeAudioSourceManager implements AudioSourceManager, HttpConfig
 
     combinedHttpConfiguration = new MultiHttpConfigurable(Arrays.asList(
         httpInterfaceManager,
-        searchResultLoader.getHttpConfiguration()
+        searchResultLoader.getHttpConfiguration(),
+        searchMusicResultLoader.getHttpConfiguration()
     ));
   }
 
@@ -184,6 +188,10 @@ public class YoutubeAudioSourceManager implements AudioSourceManager, HttpConfig
     return searchResultLoader.getHttpConfiguration();
   }
 
+  public ExtendedHttpConfigurable getSearchMusicHttpConfiguration() {
+    return searchMusicResultLoader.getHttpConfiguration();
+  }
+
   private AudioItem loadItemOnce(AudioReference reference) {
     return linkRouter.route(reference.identifier, loadingRoutes);
   }
@@ -197,7 +205,7 @@ public class YoutubeAudioSourceManager implements AudioSourceManager, HttpConfig
    */
   public AudioItem loadTrackWithVideoId(String videoId, boolean mustExist) {
     try (HttpInterface httpInterface = getHttpInterface()) {
-      YoutubeTrackDetails details = trackDetailsLoader.loadDetails(httpInterface, videoId, false);
+      YoutubeTrackDetails details = trackDetailsLoader.loadDetails(httpInterface, videoId, false, this);
 
       if (details == null) {
         if (mustExist) {
@@ -249,16 +257,25 @@ public class YoutubeAudioSourceManager implements AudioSourceManager, HttpConfig
     }
 
     @Override
-    public AudioItem search(String query, Boolean ytMusic) {
+    public AudioItem search(String query) {
       if (allowSearch) {
         return searchResultLoader.loadSearchResult(
-            query,
-            YoutubeAudioSourceManager.this::buildTrackFromInfo,
-            ytMusic
+                query,
+                YoutubeAudioSourceManager.this::buildTrackFromInfo
         );
-      } else {
-        return null;
       }
+      return null;
+    }
+
+    @Override
+    public AudioItem searchMusic(String query) {
+      if (allowSearch) {
+        return searchMusicResultLoader.loadSearchMusicResult(
+                query,
+                YoutubeAudioSourceManager.this::buildTrackFromInfo
+        );
+      }
+      return null;
     }
 
     @Override
@@ -268,7 +285,7 @@ public class YoutubeAudioSourceManager implements AudioSourceManager, HttpConfig
           HttpClientTools.assertSuccessWithContent(response, "playlist response");
           HttpClientContext context = httpInterface.getContext();
           // youtube currently transforms watch_video links into a link with a video id and a list id.
-          // because thats what happens, we can simply re-process with the redirected link
+          // because that's what happens, we can simply re-process with the redirected link
           List<URI> redirects = context.getRedirectLocations();
           if (redirects != null && !redirects.isEmpty()) {
             return new AudioReference(redirects.get(0).toString(), null);

@@ -8,6 +8,7 @@ import java.util.List;
  */
 public class YoutubeSignatureCipher {
   private final List<YoutubeCipherOperation> operations = new ArrayList<>();
+  String scriptTimestamp = "";
 
   /**
    * @param text Text to apply the cipher on
@@ -51,5 +52,12 @@ public class YoutubeSignatureCipher {
    */
   public boolean isEmpty() {
     return operations.isEmpty();
+  }
+
+  /**
+   * @param timestamp The timestamp in cipher
+   */
+  public void setTimestamp(String timestamp) {
+    scriptTimestamp = timestamp;
   }
 }

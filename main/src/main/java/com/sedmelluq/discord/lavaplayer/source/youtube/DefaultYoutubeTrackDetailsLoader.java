@@ -19,6 +19,10 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.URLEncoder;
 
+import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.PLAYER_PAYLOAD;
+import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.PLAYER_URL;
+import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.VERIFY_AGE_PAYLOAD;
+import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.VERIFY_AGE_URL;
 import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeTrackJsonData.fromEmbedParts;
 import static com.sedmelluq.discord.lavaplayer.tools.ExceptionTools.throwWithDebugInfo;
 import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.COMMON;
@@ -28,8 +32,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoader {
   private static final Logger log = LoggerFactory.getLogger(DefaultYoutubeTrackDetailsLoader.class);
 
-  private static final String REQUEST_URL = "https://www.youtube.com/youtubei/v1/verify_age?key=AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8";
-  private static final String REQUEST_PAYLOAD = "{\"context\":{\"client\":{\"clientName\":\"WEB\",\"clientVersion\":\"2.20210302.07.01\"}},\"nextEndpoint\":{\"urlEndpoint\":{\"url\":\"%s\"}},\"setControvercy\":true}";
   private static final String[] EMBED_CONFIG_PREFIXES = new String[] {
           "'WEB_PLAYER_CONTEXT_CONFIGS':",
           "\"WEB_PLAYER_CONTEXT_CONFIGS\":",
@@ -37,10 +39,12 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
           "\"PLAYER_CONFIG\":"
   };
 
+  private volatile CachedPlayerScript cachedPlayerScript = null;
+
   @Override
-  public YoutubeTrackDetails loadDetails(HttpInterface httpInterface, String videoId, boolean requireFormats) {
+  public YoutubeTrackDetails loadDetails(HttpInterface httpInterface, String videoId, boolean requireFormats, YoutubeAudioSourceManager sourceManager) {
     try {
-      return load(httpInterface, videoId, requireFormats);
+      return load(httpInterface, videoId, requireFormats, sourceManager);
     } catch (IOException e) {
       throw ExceptionTools.toRuntimeException(e);
     }
@@ -49,18 +53,19 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
   private YoutubeTrackDetails load(
       HttpInterface httpInterface,
       String videoId,
-      boolean requireFormats
+      boolean requireFormats,
+      YoutubeAudioSourceManager sourceManager
   ) throws IOException {
-    JsonBrowser mainInfo = loadTrackInfoFromMainPage(httpInterface, videoId);
+    JsonBrowser mainInfo = loadTrackInfoFromInnertube(httpInterface, videoId, sourceManager);
 
     try {
-      YoutubeTrackJsonData initialData = loadBaseResponse(mainInfo, httpInterface, videoId, requireFormats);
+      YoutubeTrackJsonData initialData = loadBaseResponse(mainInfo, httpInterface, videoId, requireFormats, sourceManager);
 
       if (initialData == null) {
         return null;
       }
 
-      YoutubeTrackJsonData finalData = augmentWithPlayerScript(initialData, httpInterface, videoId);
+      YoutubeTrackJsonData finalData = augmentWithPlayerScript(initialData, httpInterface, videoId, requireFormats);
       return new DefaultYoutubeTrackDetails(videoId, finalData);
     } catch (FriendlyException e) {
       throw e;
@@ -73,7 +78,8 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
       JsonBrowser mainInfo,
       HttpInterface httpInterface,
       String videoId,
-      boolean requireFormats
+      boolean requireFormats,
+      YoutubeAudioSourceManager sourceManager
   ) throws IOException {
     YoutubeTrackJsonData data = YoutubeTrackJsonData.fromMainResult(mainInfo);
     InfoStatus status = checkPlayabilityStatus(data.playerResponse);
@@ -83,7 +89,7 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
     }
 
     if (status == InfoStatus.CONTENT_CHECK_REQUIRED) {
-      JsonBrowser trackInfo = loadTrackInfoWithContentVerifyRequest(httpInterface, videoId);
+      JsonBrowser trackInfo = loadTrackInfoWithContentVerify(httpInterface, videoId);
       return YoutubeTrackJsonData.fromMainResult(trackInfo);
     }
 
@@ -92,7 +98,7 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
 
       return fromEmbedParts(
           basicInfo,
-          loadTrackArgsFromVideoInfoPage(httpInterface, videoId, basicInfo.get("sts").text())
+          loadTrackArgsFromVideoInfoPage(httpInterface, videoId, sourceManager)
       );
     } else {
       return data;
@@ -170,22 +176,24 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
     return unplayableReason;
   }
 
+  protected JsonBrowser loadTrackInfoFromInnertube(HttpInterface httpInterface, String videoId, YoutubeAudioSourceManager sourceManager) throws IOException {
+    if (cachedPlayerScript == null) fetchScript(videoId, httpInterface);
+
+    YoutubeSignatureCipher playerScriptTimestamp = sourceManager.getSignatureResolver().getCipherKeyAndTimestampFromScript(httpInterface,
+            cachedPlayerScript.playerScriptUrl);
+    HttpPost post = new HttpPost(PLAYER_URL);
+    StringEntity payload = new StringEntity(String.format(PLAYER_PAYLOAD, videoId, playerScriptTimestamp.scriptTimestamp), "UTF-8");
+    post.setEntity(payload);
+    try (CloseableHttpResponse response = httpInterface.execute(post)) {
+      return processResponse(response);
+    }
+  }
+
   protected JsonBrowser loadTrackInfoFromMainPage(HttpInterface httpInterface, String videoId) throws IOException {
     String url = "https://www.youtube.com/watch?v=" + videoId + "&pbj=1&hl=en";
 
     try (CloseableHttpResponse response = httpInterface.execute(new HttpGet(url))) {
-      HttpClientTools.assertSuccessWithContent(response, "video page response");
-
-      String responseText = EntityUtils.toString(response.getEntity(), UTF_8);
-
-      try {
-        return JsonBrowser.parse(responseText);
-      } catch (FriendlyException e) {
-        throw e;
-      } catch (Exception e) {
-        throw new FriendlyException("Received unexpected response from YouTube.", SUSPICIOUS,
-            new RuntimeException("Failed to parse: " + responseText, e));
-      }
+      return processResponse(response);
     }
   }
 
@@ -207,14 +215,16 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
             new IllegalStateException("Expected player config is not present in embed page."));
   }
 
-  protected JsonBrowser loadTrackArgsFromVideoInfoPage(HttpInterface httpInterface, String videoId, String sts) throws IOException {
+  protected JsonBrowser loadTrackArgsFromVideoInfoPage(HttpInterface httpInterface, String videoId, YoutubeAudioSourceManager sourceManager) throws IOException {
+    YoutubeSignatureCipher playerScriptTimestamp = sourceManager.getSignatureResolver().getCipherKeyAndTimestampFromScript(httpInterface,
+            cachedPlayerScript.playerScriptUrl);
     String videoApiUrl = "https://youtube.googleapis.com/v/" + videoId;
     String encodedApiUrl = URLEncoder.encode(videoApiUrl, UTF_8.name());
     String url = "https://www.youtube.com/get_video_info?video_id=" + videoId + "&eurl=" + encodedApiUrl +
-            "hl=en_GB&html5=1";
+            "&hl=en_GB&html5=1";
 
-    if (sts != null) {
-      url += "&sts=" + sts;
+    if (playerScriptTimestamp.scriptTimestamp != null) {
+      url += "&sts=" + playerScriptTimestamp.scriptTimestamp;
     }
 
     JsonBrowser values = JsonBrowser.newMap();
@@ -230,9 +240,9 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
     return values;
   }
 
-  protected JsonBrowser loadTrackInfoWithContentVerifyRequest(HttpInterface httpInterface, String videoId) throws IOException {
-    HttpPost post = new HttpPost(REQUEST_URL);
-    StringEntity payload = new StringEntity(String.format(REQUEST_PAYLOAD, "/watch?v=" + videoId), "UTF-8");
+  protected JsonBrowser loadTrackInfoWithContentVerify(HttpInterface httpInterface, String videoId) throws IOException {
+    HttpPost post = new HttpPost(VERIFY_AGE_URL);
+    StringEntity payload = new StringEntity(String.format(VERIFY_AGE_PAYLOAD, "/watch?v=" + videoId), "UTF-8");
     post.setEntity(payload);
     try (CloseableHttpResponse response = httpInterface.execute(post)) {
       HttpClientTools.assertSuccessWithContent(response, "content verify response");
@@ -257,11 +267,47 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
             new IllegalStateException("Expected response is not present."));
   }
 
+  protected JsonBrowser processResponse(CloseableHttpResponse response) throws IOException {
+    HttpClientTools.assertSuccessWithContent(response, "video page response");
+
+    String responseText = EntityUtils.toString(response.getEntity(), UTF_8);
+
+    try {
+      return JsonBrowser.parse(responseText);
+    } catch (FriendlyException e) {
+      throw e;
+    } catch (Exception e) {
+      throw new FriendlyException("Received unexpected response from YouTube.", SUSPICIOUS,
+              new RuntimeException("Failed to parse: " + responseText, e));
+    }
+  }
+
   protected YoutubeTrackJsonData augmentWithPlayerScript(
-      YoutubeTrackJsonData data,
-      HttpInterface httpInterface,
-      String videoId
+          YoutubeTrackJsonData data,
+          HttpInterface httpInterface,
+          String videoId,
+          boolean requireFormats
   ) throws IOException {
+    long now = System.currentTimeMillis();
+
+    if (data.playerScriptUrl != null) {
+      cachedPlayerScript = new CachedPlayerScript(data.playerScriptUrl, now);
+      return data;
+    } else if (!requireFormats) {
+      return data;
+    }
+
+    CachedPlayerScript cached = cachedPlayerScript;
+
+    if (cached != null && cached.timestamp + 600000L >= now) {
+      return data.withPlayerScriptUrl(cached.playerScriptUrl);
+    }
+
+    return data.withPlayerScriptUrl(fetchScript(videoId, httpInterface));
+  }
+
+  private String fetchScript(String videoId, HttpInterface httpInterface) throws IOException {
+    long now = System.currentTimeMillis();
 
     try (CloseableHttpResponse response = httpInterface.execute(new HttpGet("https://www.youtube.com/embed/" + videoId))) {
       HttpClientTools.assertSuccessWithContent(response, "youtube embed video id");
@@ -270,12 +316,23 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
       String encodedUrl = DataFormatTools.extractBetween(responseText, "\"jsUrl\":\"", "\"");
 
       if (encodedUrl == null) {
-        throw throwWithDebugInfo(log, null, "no PLAYER_JS_URL found", "html", responseText);
+        throw throwWithDebugInfo(log, null, "no jsUrl found", "html", responseText);
       }
 
       String fetchedPlayerScript = JsonBrowser.parse("{\"url\":\"" + encodedUrl + "\"}").get("url").text();
+      cachedPlayerScript = new CachedPlayerScript(fetchedPlayerScript, now);
 
-      return data.withPlayerScriptUrl(fetchedPlayerScript);
+      return fetchedPlayerScript;
+    }
+  }
+
+  protected static class CachedPlayerScript {
+    public final String playerScriptUrl;
+    public final long timestamp;
+
+    public CachedPlayerScript(String playerScriptUrl, long timestamp) {
+      this.playerScriptUrl = playerScriptUrl;
+      this.timestamp = timestamp;
     }
   }
 }

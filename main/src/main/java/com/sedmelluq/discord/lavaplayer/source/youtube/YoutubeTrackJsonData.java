@@ -4,6 +4,8 @@ import com.sedmelluq.discord.lavaplayer.tools.JsonBrowser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
+
 import static com.sedmelluq.discord.lavaplayer.tools.ExceptionTools.throwWithDebugInfo;
 import static com.sedmelluq.discord.lavaplayer.tools.JsonBrowser.NULL_BROWSER;
 
@@ -29,15 +31,23 @@ public class YoutubeTrackJsonData {
       JsonBrowser playerInfo = NULL_BROWSER;
       JsonBrowser playerResponse = NULL_BROWSER;
 
-      for (JsonBrowser child : result.values()) {
-        if (child.isMap()) {
-          if (playerInfo.isNull()) {
-            playerInfo = child.get("player");
-          }
+      List<JsonBrowser> json = result.values();
+      JsonBrowser lastElement = json.get(result.values().size() - 1);
+      if (!lastElement.get("page").isNull()) {
+        for (JsonBrowser child : result.values()) {
+          if (child.isMap()) {
+            if (playerInfo.isNull()) {
+              playerInfo = child.get("player");
+            }
 
-          if (playerResponse.isNull()) {
-            playerResponse = child.get("playerResponse");
+            if (playerResponse.isNull()) {
+              playerResponse = child.get("playerResponse");
+            }
           }
+        }
+      } else {
+        if (playerResponse.isNull()) {
+          playerResponse = result;
         }
       }
 
