@@ -17,7 +17,7 @@ public class YoutubeConstants {
     static final String SEARCH_PAYLOAD = BASE_PAYLOAD + "\"query\":\"%s\",\"params\":\"EgIQAQ==\"}";
 
     // YouTube Music constants
-    static final String MUSIC_BASE_URL = "https://music.youtube.com/youtubei/v1";
+    static final String MUSIC_BASE_URL = "https://music.youtube.com/youtubei/v1"; // Can be replaced with BASE_URL
     static final String MUSIC_INNERTUBE_API_KEY = "AIzaSyC9XL3ZjWddXya6X74dJoCTL-WEYFDNX30";
     static final String MUSIC_CLIENT_NAME = "WEB_REMIX";
     static final String MUSIC_CLIENT_VERSION = "1.20210524.00.00";

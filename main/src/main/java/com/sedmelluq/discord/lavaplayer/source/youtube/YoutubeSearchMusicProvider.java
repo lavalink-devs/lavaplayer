@@ -48,7 +48,7 @@ public class YoutubeSearchMusicProvider implements YoutubeSearchMusicResultLoade
    */
   @Override
   public AudioItem loadSearchMusicResult(String query, Function<AudioTrackInfo, AudioTrack> trackFactory) {
-    log.debug("Performing a search music with query {}", String.format(MUSIC_SEARCH_PAYLOAD, query.replace("\"", "\\\"")));
+    log.debug("Performing a search music with query {}", query);
 
     try (HttpInterface httpInterface = httpInterfaceManager.getInterface()) {
       HttpPost post = new HttpPost(MUSIC_SEARCH_URL);
@@ -125,6 +125,10 @@ public class YoutubeSearchMusicProvider implements YoutubeSearchMusicResultLoade
     String videoId = firstColumn.get("navigationEndpoint")
         .get("watchEndpoint")
         .get("videoId").text();
+    if (videoId == null) {
+      // If track is not available on YouTube Music videoId will be empty
+      return null;
+    }
     List<JsonBrowser> secondColumn = columns.index(1)
         .get("musicResponsiveListItemFlexColumnRenderer")
         .get("text")
