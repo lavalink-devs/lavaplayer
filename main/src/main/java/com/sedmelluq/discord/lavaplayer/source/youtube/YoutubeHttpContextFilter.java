@@ -3,16 +3,34 @@ package com.sedmelluq.discord.lavaplayer.source.youtube;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.tools.http.HttpContextFilter;
 import com.sedmelluq.discord.lavaplayer.tools.io.HttpClientTools;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.impl.client.BasicCookieStore;
 
+import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.YOUTUBE_ORIGIN;
 import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.COMMON;
 
 public class YoutubeHttpContextFilter implements HttpContextFilter {
   private static final String ATTRIBUTE_RESET_RETRY = "isResetRetry";
+
+  private static String PAPISID = null;
+  private static String PSID = null;
+  private static String PSIDCC = null;
+
+  public static void setPAPISID(String value) {
+    PAPISID = value;
+  }
+
+  public static void setPSID(String value) {
+    PSID = value;
+  }
+
+  public static void setPSIDCC(String value) {
+    PSIDCC = value;
+  }
 
   @Override
   public void onContextOpen(HttpClientContext context) {
@@ -47,6 +65,17 @@ public class YoutubeHttpContextFilter implements HttpContextFilter {
     request.setHeader("x-youtube-utc-offset", "0");
     request.setHeader("x-youtube-variants-checksum", "7a1198276cf2b23fc8321fac72aa876b");
     request.setHeader("accept-language", "en");
+    if (PAPISID != null && PSID != null && PSIDCC != null) {
+      long millis = System.currentTimeMillis();
+      String SAPISIDHASH = DigestUtils.sha1Hex(millis + " " + PAPISID + " " + YOUTUBE_ORIGIN);
+
+      request.setHeader("Cookie",
+              "__Secure-3PAPISID=" + PAPISID + " " +
+              "__Secure-3PSID=" + PSID + " " +
+              "__Secure-3PSIDCC=" + PSIDCC);
+      request.setHeader("Origin", YOUTUBE_ORIGIN);
+      request.setHeader("Authorization", "SAPISIDHASH " + millis + "_" + SAPISIDHASH);
+    }
   }
 
   @Override
