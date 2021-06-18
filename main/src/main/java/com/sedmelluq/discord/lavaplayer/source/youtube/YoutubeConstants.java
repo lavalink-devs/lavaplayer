@@ -16,6 +16,11 @@ public class YoutubeConstants {
     static final String VERIFY_AGE_PAYLOAD = BASE_PAYLOAD + "\"nextEndpoint\":{\"urlEndpoint\":{\"url\":\"%s\"}},\"setControvercy\":true}";
     static final String SEARCH_URL = BASE_URL + "/search?key=" + INNERTUBE_API_KEY;
     static final String SEARCH_PAYLOAD = BASE_PAYLOAD + "\"query\":\"%s\",\"params\":\"EgIQAQ==\"}";
+    static final String BROWSE_URL = BASE_URL + "/browse?key=" + INNERTUBE_API_KEY;
+    static final String BROWSE_CONTINUATION_PAYLOAD = BASE_PAYLOAD + "\"continuation\":\"%s\"}";
+    static final String BROWSE_PLAYLIST_PAYLOAD = BASE_PAYLOAD + "\"browseId\":\"VL%s\"}";
+    static final String NEXT_URL = BASE_URL + "/next?key=" + INNERTUBE_API_KEY;
+    static final String NEXT_PAYLOAD = BASE_PAYLOAD + "\"videoId\":\"%s\",\"playlistId\":\"%s\"}";
 
     // YouTube Music constants
     static final String MUSIC_BASE_URL = "https://music.youtube.com/youtubei/v1";
