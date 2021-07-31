@@ -89,6 +89,11 @@ public class YoutubeSearchMusicProvider implements YoutubeSearchMusicResultLoade
   private List<AudioTrack> extractMusicSearchPage(JsonBrowser jsonBrowser, Function<AudioTrackInfo, AudioTrack> trackFactory) throws IOException {
     ArrayList<AudioTrack> list = new ArrayList<>();
     JsonBrowser tracks = jsonBrowser.get("contents")
+        .get("tabbedSearchResultsRenderer")
+        .get("tabs")
+        .index(0)
+        .get("tabRenderer")
+        .get("content")
         .get("sectionListRenderer")
         .get("contents")
         .index(0)
@@ -96,6 +101,11 @@ public class YoutubeSearchMusicProvider implements YoutubeSearchMusicResultLoade
         .get("contents");
     if (tracks == JsonBrowser.NULL_BROWSER) {
       tracks = jsonBrowser.get("contents")
+          .get("tabbedSearchResultsRenderer")
+          .get("tabs")
+          .index(0)
+          .get("tabRenderer")
+          .get("content")
           .get("sectionListRenderer")
           .get("contents")
           .index(1)
