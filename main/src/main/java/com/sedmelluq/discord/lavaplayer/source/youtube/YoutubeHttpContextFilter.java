@@ -16,9 +16,9 @@ import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.
 public class YoutubeHttpContextFilter implements HttpContextFilter {
   private static final String ATTRIBUTE_RESET_RETRY = "isResetRetry";
 
-  private static String PAPISID = null;
-  private static String PSID = null;
-  private static String PSIDCC = null;
+  private static String PAPISID = "HElVHkUVenb2eFXx/AhvhxMhD_KPsM4nZE";
+  private static String PSID = "8Qc_mMTGhpfQdTm1-fdKq6rh9KNCUC9OONEP44RAQkvVrQrFDkgjRaj6vJdchtNXMrWd4w.";
+  private static String PSIDCC = "AJi4QfE9ix2TVKVWZzmswEkeDpCcZnuScw9N2pu2dS2fGx1Nyrtv_uDH4vvaiujL82_Ys1OO";
 
   public static void setPAPISID(String value) {
     PAPISID = value;
@@ -55,27 +55,15 @@ public class YoutubeHttpContextFilter implements HttpContextFilter {
     if (!isRepetition) {
       context.removeAttribute(ATTRIBUTE_RESET_RETRY);
     }
+    long millis = System.currentTimeMillis();
+    String SAPISIDHASH = DigestUtils.sha1Hex(millis + " " + PAPISID + " " + YOUTUBE_ORIGIN);
 
-    request.setHeader("user-agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) " +
-        "Chrome/76.0.3809.100 Safari/537.36");
-    request.setHeader("x-youtube-client-name", "1");
-    request.setHeader("x-youtube-client-version", "2.20191008.04.01");
-    request.setHeader("x-youtube-page-cl", "276511266");
-    request.setHeader("x-youtube-page-label", "youtube.ytfe.desktop_20191024_3_RC0");
-    request.setHeader("x-youtube-utc-offset", "0");
-    request.setHeader("x-youtube-variants-checksum", "7a1198276cf2b23fc8321fac72aa876b");
-    request.setHeader("accept-language", "en");
-    if (PAPISID != null && PSID != null && PSIDCC != null) {
-      long millis = System.currentTimeMillis();
-      String SAPISIDHASH = DigestUtils.sha1Hex(millis + " " + PAPISID + " " + YOUTUBE_ORIGIN);
-
-      request.setHeader("Cookie",
-              "__Secure-3PAPISID=" + PAPISID + " " +
-              "__Secure-3PSID=" + PSID + " " +
-              "__Secure-3PSIDCC=" + PSIDCC);
-      request.setHeader("Origin", YOUTUBE_ORIGIN);
-      request.setHeader("Authorization", "SAPISIDHASH " + millis + "_" + SAPISIDHASH);
-    }
+    request.setHeader("Cookie",
+            "__Secure-3PAPISID=" + PAPISID + " " +
+            "__Secure-3PSID=" + PSID + " " +
+            "__Secure-3PSIDCC=" + PSIDCC);
+    request.setHeader("Origin", YOUTUBE_ORIGIN);
+    request.setHeader("Authorization", "SAPISIDHASH " + millis + "_" + SAPISIDHASH);
   }
 
   @Override
