@@ -4,7 +4,6 @@ import com.sedmelluq.discord.lavaplayer.tools.JsonBrowser;
 import com.sedmelluq.discord.lavaplayer.tools.PBJUtils;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,8 +71,8 @@ public class DefaultSoundCloudDataReader implements SoundCloudDataReader {
   }
 
   @Override
-  public JsonBrowser findPlaylistData(JsonBrowser rootData) {
-    return findEntryOfKind(rootData, "playlist");
+  public JsonBrowser findPlaylistData(JsonBrowser rootData, String kind) {
+    return findEntryOfKind(rootData, kind);
   }
 
   @Override
@@ -92,12 +91,8 @@ public class DefaultSoundCloudDataReader implements SoundCloudDataReader {
   }
 
   protected JsonBrowser findEntryOfKind(JsonBrowser data, String kind) {
-    for (JsonBrowser value : data.values()) {
-      for (JsonBrowser entry : value.get("data").values()) {
-        if (entry.isMap() && kind.equals(entry.get("kind").text())) {
-          return entry;
-        }
-      }
+    if (data.isMap() && kind.equals(data.get("kind").text())) {
+      return data;
     }
 
     return null;

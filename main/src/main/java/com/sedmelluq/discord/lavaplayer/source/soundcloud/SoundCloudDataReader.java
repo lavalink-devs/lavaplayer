@@ -15,7 +15,7 @@ public interface SoundCloudDataReader {
 
   List<SoundCloudTrackFormat> readTrackFormats(JsonBrowser trackData);
 
-  JsonBrowser findPlaylistData(JsonBrowser rootData);
+  JsonBrowser findPlaylistData(JsonBrowser rootData, String kind);
 
   String readPlaylistName(JsonBrowser playlistData);
 

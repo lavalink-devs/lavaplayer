@@ -32,19 +32,19 @@ import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.
 public class DefaultSoundCloudPlaylistLoader implements SoundCloudPlaylistLoader {
   private static final Logger log = LoggerFactory.getLogger(DefaultSoundCloudPlaylistLoader.class);
 
-  protected static final String PLAYLIST_URL_REGEX = "^(?:http://|https://|)(?:www\\.|)(?:m\\.|)soundcloud\\.com/([a-zA-Z0-9-_]+)/sets/([a-zA-Z0-9-_]+)(?:\\?.*|)$";
+  protected static final String PLAYLIST_URL_REGEX = "^(?:http://|https://|)(?:www\\.|)(?:m\\.|)soundcloud\\.com/([a-zA-Z0-9-_]+)/sets/([a-zA-Z0-9-_]+:?[a-zA-Z0-9-_]+:?[a-zA-Z0-9-_]+)(?:\\?.*|)$";
   protected static final Pattern playlistUrlPattern = Pattern.compile(PLAYLIST_URL_REGEX);
 
-  protected final SoundCloudHtmlDataLoader htmlDataLoader;
+  protected final SoundCloudDataLoader dataLoader;
   protected final SoundCloudDataReader dataReader;
   protected final SoundCloudFormatHandler formatHandler;
 
   public DefaultSoundCloudPlaylistLoader(
-      SoundCloudHtmlDataLoader htmlDataLoader,
+      SoundCloudDataLoader dataLoader,
       SoundCloudDataReader dataReader,
       SoundCloudFormatHandler formatHandler
   ) {
-    this.htmlDataLoader = htmlDataLoader;
+    this.dataLoader = dataLoader;
     this.dataReader = dataReader;
     this.formatHandler = formatHandler;
   }
@@ -70,8 +70,9 @@ public class DefaultSoundCloudPlaylistLoader implements SoundCloudPlaylistLoader
       Function<AudioTrackInfo, AudioTrack> trackFactory
   ) {
     try (HttpInterface httpInterface = httpInterfaceManager.getInterface()) {
-      JsonBrowser rootData = htmlDataLoader.load(httpInterface, playlistWebUrl);
-      JsonBrowser playlistData = dataReader.findPlaylistData(rootData);
+      JsonBrowser rootData = dataLoader.load(httpInterface, playlistWebUrl);
+      String kind = rootData.get("kind").text();
+      JsonBrowser playlistData = dataReader.findPlaylistData(rootData, kind);
 
       return new BasicAudioPlaylist(
           dataReader.readPlaylistName(playlistData),

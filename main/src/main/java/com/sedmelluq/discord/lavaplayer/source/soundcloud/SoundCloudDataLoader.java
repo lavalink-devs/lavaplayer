@@ -4,6 +4,6 @@ import com.sedmelluq.discord.lavaplayer.tools.JsonBrowser;
 import com.sedmelluq.discord.lavaplayer.tools.io.HttpInterface;
 import java.io.IOException;
 
-public interface SoundCloudHtmlDataLoader {
+public interface SoundCloudDataLoader {
   JsonBrowser load(HttpInterface httpInterface, String url) throws IOException;
 }
