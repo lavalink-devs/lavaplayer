@@ -25,11 +25,6 @@ import com.sedmelluq.discord.lavaplayer.track.playback.AudioTrackExecutor;
 import com.sedmelluq.discord.lavaplayer.track.playback.LocalAudioTrackExecutor;
 import com.sedmelluq.lava.common.tools.DaemonThreadFactory;
 import com.sedmelluq.lava.common.tools.ExecutorTools;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
@@ -53,6 +48,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.FAULT;
 import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.SUSPICIOUS;
@@ -104,9 +103,9 @@ public class DefaultAudioPlayerManager implements AudioPlayerManager {
 
     // Executors
     trackPlaybackExecutorService = new ThreadPoolExecutor(1, Integer.MAX_VALUE, 10, TimeUnit.SECONDS,
-        new SynchronousQueue<>(), new DaemonThreadFactory("playback"));
+            new SynchronousQueue<>(), new DaemonThreadFactory("playback"));
     trackInfoExecutorService = ExecutorTools.createEagerlyScalingExecutor(1, DEFAULT_LOADER_POOL_SIZE,
-        TimeUnit.SECONDS.toMillis(30), LOADER_QUEUE_CAPACITY, new DaemonThreadFactory("info-loader"));
+            TimeUnit.SECONDS.toMillis(30), LOADER_QUEUE_CAPACITY, new DaemonThreadFactory("info-loader"));
     scheduledExecutorService = Executors.newScheduledThreadPool(1, new DaemonThreadFactory("manager"));
     orderedInfoExecutor = new OrderedExecutor(trackInfoExecutorService);
 
@@ -184,20 +183,20 @@ public class DefaultAudioPlayerManager implements AudioPlayerManager {
   }
 
   @Override
-  public Future<Void> loadItem(final String identifier, final AudioLoadResultHandler resultHandler) {
+  public Future<Void> loadItem(final AudioReference reference, final AudioLoadResultHandler resultHandler) {
     try {
-      return trackInfoExecutorService.submit(createItemLoader(identifier, resultHandler));
+      return trackInfoExecutorService.submit(createItemLoader(reference, resultHandler));
     } catch (RejectedExecutionException e) {
-      return handleLoadRejected(identifier, resultHandler, e);
+      return handleLoadRejected(reference.identifier, resultHandler, e);
     }
   }
 
   @Override
-  public Future<Void> loadItemOrdered(Object orderingKey, final String identifier, final AudioLoadResultHandler resultHandler) {
+  public Future<Void> loadItemOrdered(Object orderingKey, final AudioReference reference, final AudioLoadResultHandler resultHandler) {
     try {
-      return orderedInfoExecutor.submit(orderingKey, createItemLoader(identifier, resultHandler));
+      return orderedInfoExecutor.submit(orderingKey, createItemLoader(reference, resultHandler));
     } catch (RejectedExecutionException e) {
-      return handleLoadRejected(identifier, resultHandler, e);
+      return handleLoadRejected(reference.identifier, resultHandler, e);
     }
   }
 
@@ -210,20 +209,20 @@ public class DefaultAudioPlayerManager implements AudioPlayerManager {
     return ExecutorTools.COMPLETED_VOID;
   }
 
-  private Callable<Void> createItemLoader(final String identifier, final AudioLoadResultHandler resultHandler) {
+  private Callable<Void> createItemLoader(final AudioReference reference, final AudioLoadResultHandler resultHandler) {
     return () -> {
       boolean[] reported = new boolean[1];
 
       try {
-        if (!checkSourcesForItem(new AudioReference(identifier, null), resultHandler, reported)) {
-          log.debug("No matches for track with identifier {}.", identifier);
+        if (!checkSourcesForItem(reference, resultHandler, reported)) {
+          log.debug("No matches for track with identifier {}.", reference.identifier);
           resultHandler.noMatches();
         }
       } catch (Throwable throwable) {
         if (reported[0]) {
-          log.warn("Load result handler for {} threw an exception", identifier, throwable);
+          log.warn("Load result handler for {} threw an exception", reference.identifier, throwable);
         } else {
-          dispatchItemLoadFailure(identifier, resultHandler, throwable);
+          dispatchItemLoadFailure(reference.identifier, resultHandler, throwable);
         }
 
         ExceptionTools.rethrowErrors(throwable);
@@ -270,7 +269,7 @@ public class DefaultAudioPlayerManager implements AudioPlayerManager {
     int version = (stream.getMessageFlags() & TRACK_INFO_VERSIONED) != 0 ? (input.readByte() & 0xFF) : 1;
 
     AudioTrackInfo trackInfo = new AudioTrackInfo(input.readUTF(), input.readUTF(), input.readLong(), input.readUTF(),
-        input.readBoolean(), version >= 2 ? DataFormatTools.readNullableText(input) : null, DataFormatTools.readNullableText(input));
+            input.readBoolean(), version >= 2 ? DataFormatTools.readNullableText(input) : null, DataFormatTools.readNullableText(input));
     AudioTrack track = decodeTrackDetails(trackInfo, input);
     long position = input.readLong();
 
