@@ -8,7 +8,7 @@ public class YoutubeConstants {
     static final String INNERTUBE_API_KEY = "AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8";
     static final String CLIENT_NAME = "ANDROID";
     static final String CLIENT_VERSION = "16.24";
-    static final String BASE_PAYLOAD = "{\"context\":{\"client\":{\"clientName\":\"" + CLIENT_NAME + "\",\"clientVersion\":\"" + CLIENT_VERSION + "\"}},";
+    static final String BASE_PAYLOAD = "{\"context\":{\"client\":{\"clientName\":\"" + CLIENT_NAME + "\",\"clientVersion\":\"" + CLIENT_VERSION + "\",\"screenDensityFloat\":1,\"screenHeightPoints\":1080,\"screenPixelDensity\":1,\"screenWidthPoints\":1920}},";
 
     static final String PLAYER_URL = BASE_URL + "/player?key=" + INNERTUBE_API_KEY;
     static final String PLAYER_PAYLOAD = BASE_PAYLOAD + "\"racyCheckOk\":true,\"contentCheckOk\":true,\"videoId\":\"%s\",\"playbackContext\":{\"contentPlaybackContext\":{\"signatureTimestamp\":%s}}}";
