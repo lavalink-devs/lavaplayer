@@ -65,9 +65,4 @@ public class AudioReference implements AudioItem, AudioTrackInfoProvider {
   public String getUri() {
     return identifier;
   }
-
-  @Override
-  public String getArtworkUrl() {
-    return null;
-  }
 }

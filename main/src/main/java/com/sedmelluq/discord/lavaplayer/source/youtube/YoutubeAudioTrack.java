@@ -126,7 +126,7 @@ public class YoutubeAudioTrack extends DelegatedAudioTrack {
     if (bestFormat == null) {
       StringJoiner joiner = new StringJoiner(", ");
       formats.forEach(format -> joiner.add(format.getType().toString()));
-      throw new IllegalStateException("No supported audio streams available, available types: " + joiner);
+      throw new IllegalStateException("No supported audio streams available, available types: " + joiner.toString());
     }
 
     return bestFormat;

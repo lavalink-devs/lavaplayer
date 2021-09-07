@@ -1,6 +1,6 @@
 package com.sedmelluq.discord.lavaplayer.source.youtube;
 
-import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
+import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManager;
 import com.sedmelluq.discord.lavaplayer.tools.ExceptionTools;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
@@ -126,7 +126,7 @@ public class YoutubeAudioSourceManager implements AudioSourceManager, HttpConfig
   }
 
   @Override
-  public AudioItem loadItem(DefaultAudioPlayerManager manager, AudioReference reference) {
+  public AudioItem loadItem(AudioPlayerManager manager, AudioReference reference) {
     try {
       return loadItemOnce(reference);
     } catch (FriendlyException exception) {
@@ -260,10 +260,11 @@ public class YoutubeAudioSourceManager implements AudioSourceManager, HttpConfig
     public AudioItem search(String query) {
       if (allowSearch) {
         return searchResultLoader.loadSearchResult(
-                query,
-                YoutubeAudioSourceManager.this::buildTrackFromInfo
+            query,
+            YoutubeAudioSourceManager.this::buildTrackFromInfo
         );
       }
+
       return null;
     }
 
@@ -271,10 +272,11 @@ public class YoutubeAudioSourceManager implements AudioSourceManager, HttpConfig
     public AudioItem searchMusic(String query) {
       if (allowSearch) {
         return searchMusicResultLoader.loadSearchMusicResult(
-                query,
-                YoutubeAudioSourceManager.this::buildTrackFromInfo
+            query,
+            YoutubeAudioSourceManager.this::buildTrackFromInfo
         );
       }
+
       return null;
     }
 
@@ -285,7 +287,7 @@ public class YoutubeAudioSourceManager implements AudioSourceManager, HttpConfig
           HttpClientTools.assertSuccessWithContent(response, "playlist response");
           HttpClientContext context = httpInterface.getContext();
           // youtube currently transforms watch_video links into a link with a video id and a list id.
-          // because that's what happens, we can simply re-process with the redirected link
+          // because thats what happens, we can simply re-process with the redirected link
           List<URI> redirects = context.getRedirectLocations();
           if (redirects != null && !redirects.isEmpty()) {
             return new AudioReference(redirects.get(0).toString(), null);

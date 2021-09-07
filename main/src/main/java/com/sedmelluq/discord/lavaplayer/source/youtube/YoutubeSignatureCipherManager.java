@@ -132,13 +132,12 @@ public class YoutubeSignatureCipherManager implements YoutubeSignatureResolver {
     return matcher.replaceFirst("/signature/" + cipher.apply(matcher.group(1)) + "/");
   }
 
-  @Override
   public YoutubeSignatureCipher getCipherKeyAndTimestampFromScript(HttpInterface httpInterface, String cipherScriptUrl) throws IOException {
     YoutubeSignatureCipher cipherKey = cipherCache.get(cipherScriptUrl);
 
     if (cipherKey == null) {
       synchronized (cipherLoadLock) {
-        log.debug("Parsing cipher and timestamp from player script {}", cipherScriptUrl);
+        log.debug("Parsing cipher and timestamp from player script {}.", cipherScriptUrl);
 
         try (CloseableHttpResponse response = httpInterface.execute(new HttpGet(parseTokenScriptUrl(cipherScriptUrl)))) {
           validateResponseCode(cipherScriptUrl, response);

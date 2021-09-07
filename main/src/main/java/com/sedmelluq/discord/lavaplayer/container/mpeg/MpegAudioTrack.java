@@ -8,10 +8,9 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
 import com.sedmelluq.discord.lavaplayer.track.BaseAudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.playback.AudioProcessingContext;
 import com.sedmelluq.discord.lavaplayer.track.playback.LocalAudioTrackExecutor;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.List;
 
 import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.FAULT;
 import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.SUSPICIOUS;
@@ -63,10 +62,7 @@ public class MpegAudioTrack extends BaseAudioTrack {
       trackConsumer = selectAudioTrack(file.getTrackList(), context);
 
       if (trackConsumer == null) {
-        StringBuilder error = new StringBuilder();
-        error.append("The audio codec used in the track is not supported, options:\n");
-        file.getTrackList().forEach(track -> error.append(track.handler).append("|").append(track.codecName).append("\n"));
-        throw new FriendlyException(error.toString(), SUSPICIOUS, null);
+        throw new FriendlyException("The audio codec used in the track is not supported.", SUSPICIOUS, null);
       } else {
         log.debug("Starting to play track with codec {}", trackConsumer.getTrack().codecName);
       }
@@ -89,6 +85,7 @@ public class MpegAudioTrack extends BaseAudioTrack {
         return new MpegAacTrackConsumer(context, track);
       }
     }
+
     return null;
   }
 }

@@ -32,9 +32,6 @@ public class SoundCloudHttpContextFilter implements HttpContextFilter {
 
   @Override
   public void onRequest(HttpClientContext context, HttpUriRequest request, boolean isRepetition) {
-    request.setHeader("user-agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) " +
-            "Chrome/76.0.3809.100 Safari/537.36");
-
     retryCounter.handleUpdate(context, isRepetition);
 
     if (clientIdTracker.isIdFetchContext(context)) {

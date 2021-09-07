@@ -1,11 +1,11 @@
 package com.sedmelluq.discord.lavaplayer.source.http;
 
+import com.sedmelluq.discord.lavaplayer.container.MediaContainerDescriptor;
 import com.sedmelluq.discord.lavaplayer.container.MediaContainerDetection;
 import com.sedmelluq.discord.lavaplayer.container.MediaContainerDetectionResult;
 import com.sedmelluq.discord.lavaplayer.container.MediaContainerHints;
-import com.sedmelluq.discord.lavaplayer.container.MediaContainerDescriptor;
 import com.sedmelluq.discord.lavaplayer.container.MediaContainerRegistry;
-import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
+import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.source.ProbingAudioSourceManager;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.tools.Units;
@@ -20,10 +20,6 @@ import com.sedmelluq.discord.lavaplayer.track.AudioReference;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
 import com.sedmelluq.discord.lavaplayer.track.info.AudioTrackInfoBuilder;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.impl.client.HttpClientBuilder;
-
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -31,6 +27,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.impl.client.HttpClientBuilder;
 
 import static com.sedmelluq.discord.lavaplayer.container.MediaContainerDetectionResult.refer;
 import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.COMMON;
@@ -70,7 +69,7 @@ public class HttpAudioSourceManager extends ProbingAudioSourceManager implements
   }
 
   @Override
-  public AudioItem loadItem(DefaultAudioPlayerManager manager, AudioReference reference) {
+  public AudioItem loadItem(AudioPlayerManager manager, AudioReference reference) {
     AudioReference httpReference = getAsHttpReference(reference);
     if (httpReference == null) {
       return null;

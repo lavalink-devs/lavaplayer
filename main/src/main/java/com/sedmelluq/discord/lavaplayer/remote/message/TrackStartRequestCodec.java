@@ -6,7 +6,6 @@ import com.sedmelluq.discord.lavaplayer.format.Pcm16AudioDataFormat;
 import com.sedmelluq.discord.lavaplayer.format.StandardAudioDataFormats;
 import com.sedmelluq.discord.lavaplayer.player.AudioConfiguration;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
-
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -76,7 +75,7 @@ public class TrackStartRequestCodec implements RemoteMessageCodec<TrackStartRequ
   @Override
   public TrackStartRequestMessage decode(DataInput in, int version) throws IOException {
     long executorId = in.readLong();
-    AudioTrackInfo trackInfo = new AudioTrackInfo(in.readUTF(), in.readUTF(), in.readLong(), in.readUTF(), in.readBoolean(), null, null);
+    AudioTrackInfo trackInfo = new AudioTrackInfo(in.readUTF(), in.readUTF(), in.readLong(), in.readUTF(), in.readBoolean(), null);
 
     byte[] encodedTrack = new byte[in.readInt()];
     in.readFully(encodedTrack);

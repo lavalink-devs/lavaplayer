@@ -72,7 +72,7 @@ public class YoutubeIpRotatorFilter implements HttpContextFilter {
 
         return limitedRetry(context);
       }
-    } else if (statusCode == 429) {
+    } else if (isRateLimited(response)) {
       log.warn("YouTube rate limit reached, marking address {} as failing and retry",
           routePlanner.getLastAddress(context));
       routePlanner.markAddressFailing(context);
@@ -85,6 +85,11 @@ public class YoutubeIpRotatorFilter implements HttpContextFilter {
     } else {
       return false;
     }
+  }
+
+  private boolean isRateLimited(HttpResponse response) {
+    int statusCode = response.getStatusLine().getStatusCode();
+    return statusCode == 429;
   }
 
   @Override

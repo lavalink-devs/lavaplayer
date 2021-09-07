@@ -9,6 +9,7 @@ import com.sedmelluq.discord.lavaplayer.player.event.TrackEndEvent;
 import com.sedmelluq.discord.lavaplayer.player.event.TrackExceptionEvent;
 import com.sedmelluq.discord.lavaplayer.player.event.TrackStartEvent;
 import com.sedmelluq.discord.lavaplayer.player.event.TrackStuckEvent;
+import com.sedmelluq.discord.lavaplayer.tools.CopyOnUpdateIdentityList;
 import com.sedmelluq.discord.lavaplayer.tools.ExceptionTools;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
@@ -16,20 +17,15 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
 import com.sedmelluq.discord.lavaplayer.track.InternalAudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.TrackStateListener;
 import com.sedmelluq.discord.lavaplayer.track.playback.AudioFrame;
-import com.sedmelluq.discord.lavaplayer.track.playback.AudioFrameProvider;
 import com.sedmelluq.discord.lavaplayer.track.playback.AudioFrameProviderTools;
 import com.sedmelluq.discord.lavaplayer.track.playback.AudioTrackExecutor;
 import com.sedmelluq.discord.lavaplayer.track.playback.LocalAudioTrackExecutor;
 import com.sedmelluq.discord.lavaplayer.track.playback.MutableAudioFrame;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason.CLEANUP;
 import static com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason.FINISHED;
@@ -50,7 +46,7 @@ public class DefaultAudioPlayer implements AudioPlayer, TrackStateListener {
   private volatile InternalAudioTrack shadowTrack;
   private final AtomicBoolean paused;
   private final DefaultAudioPlayerManager manager;
-  private final List<AudioEventListener> listeners;
+  private final CopyOnUpdateIdentityList<AudioEventListener> listeners;
   private final Object trackSwitchLock;
   private final AudioPlayerOptions options;
 
@@ -61,7 +57,7 @@ public class DefaultAudioPlayer implements AudioPlayer, TrackStateListener {
     this.manager = manager;
     activeTrack = null;
     paused = new AtomicBoolean();
-    listeners = new ArrayList<>();
+    listeners = new CopyOnUpdateIdentityList<>();
     trackSwitchLock = new Object();
     options = new AudioPlayerOptions();
   }
@@ -351,11 +347,7 @@ public class DefaultAudioPlayer implements AudioPlayer, TrackStateListener {
    */
   public void removeListener(AudioEventListener listener) {
     synchronized (trackSwitchLock) {
-      for (Iterator<AudioEventListener> iterator = listeners.iterator(); iterator.hasNext(); ) {
-        if (iterator.next() == listener) {
-          iterator.remove();
-        }
-      }
+      listeners.remove(listener);
     }
   }
 
@@ -363,7 +355,7 @@ public class DefaultAudioPlayer implements AudioPlayer, TrackStateListener {
     log.debug("Firing an event with class {}", event.getClass().getSimpleName());
 
     synchronized (trackSwitchLock) {
-      for (AudioEventListener listener : listeners) {
+      for (AudioEventListener listener : listeners.items) {
         try {
           listener.onEvent(event);
         } catch (Exception e) {

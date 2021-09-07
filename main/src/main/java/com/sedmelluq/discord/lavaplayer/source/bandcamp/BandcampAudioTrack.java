@@ -10,15 +10,14 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
 import com.sedmelluq.discord.lavaplayer.track.DelegatedAudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.playback.LocalAudioTrackExecutor;
+import java.io.IOException;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.net.URI;
-import java.nio.charset.StandardCharsets;
 
 /**
  * Audio track that handles processing Bandcamp tracks.
@@ -54,10 +53,7 @@ public class BandcampAudioTrack extends DelegatedAudioTrack {
 
   private String getTrackMediaUrl(HttpInterface httpInterface) throws IOException {
     try (CloseableHttpResponse response = httpInterface.execute(new HttpGet(trackInfo.identifier))) {
-      int statusCode = response.getStatusLine().getStatusCode();
-      if (!HttpClientTools.isSuccessWithContent(statusCode)) {
-        throw new IOException("Invalid status code for track page: " + statusCode);
-      }
+      HttpClientTools.assertSuccessWithContent(response, "track page");
 
       String responseText = IOUtils.toString(response.getEntity().getContent(), StandardCharsets.UTF_8);
       JsonBrowser trackInfo = sourceManager.readTrackListInformation(responseText);

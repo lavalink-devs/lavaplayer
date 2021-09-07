@@ -1,6 +1,6 @@
 package com.sedmelluq.discord.lavaplayer.source.soundcloud;
 
-import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
+import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManager;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.tools.JsonBrowser;
@@ -112,7 +112,7 @@ public class SoundCloudAudioSourceManager implements AudioSourceManager, HttpCon
   }
 
   @Override
-  public AudioItem loadItem(DefaultAudioPlayerManager manager, AudioReference reference) {
+  public AudioItem loadItem(AudioPlayerManager manager, AudioReference reference) {
     AudioItem track = processAsSingleTrack(reference);
 
     if (track == null) {

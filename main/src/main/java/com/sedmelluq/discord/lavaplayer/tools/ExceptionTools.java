@@ -1,15 +1,14 @@
 package com.sedmelluq.discord.lavaplayer.tools;
 
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity;
-import java.util.UUID;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Contains common helper methods for dealing with exceptions.
@@ -132,7 +131,7 @@ public class ExceptionTools {
   ) {
     ErrorDebugInfo debugInfo = new ErrorDebugInfo(log, UUID.randomUUID().toString(), cause, message, name, value);
     debugInfoHandler.handle(debugInfo);
-    return new RuntimeException(message + " EID: " + debugInfo.errorId + ", " + name + "<redacted>", cause);
+    return new RuntimeException(message + " EID: " + debugInfo.errorId + ", " + name + " <redacted>", cause);
   }
 
   /**

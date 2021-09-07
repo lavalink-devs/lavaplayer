@@ -1,5 +1,139 @@
 # Change Log
 
+## [1.3.78] -- 2021-06-28
+### Fixed
+- Fixed loading YouTube tracks with age verification.
+- Fixed SoundCloud Client ID detection which broke loading SoundCloud tracks.
+
+## [1.3.77] -- 2021-05-25
+### Fixed
+- Fixed playing YouTube tracks which require a separate verification request (PR #615 by Walkyst).
+- Fixed quotes in YouTube Music search breaking the request (PR #618 by Walkyst).
+- Fixed playing age restricted YouTube tracks (PR #627 by Walkyst).
+- Fixed SoundCloud URLs not working if they end with a slash (PR #626 by NavyCake).
+
+### Added
+- Added a method to load tracks from the player manager by AudioReference (PR #620 by duncte123).
+
+## [1.3.76] -- 2021-04-05
+### Fixed
+- Fixed using natives dependency which may have had outdated files in the new repository.
+
+## [1.3.75] -- 2021-04-02
+### Fixed
+- Fix loading YouTube playlists not working due to non-error alerts.
+
+## [1.3.74] -- 2021-04-01
+### Fixed
+- Fix playing YouTube tracks by using a hardcoded consent cookie.
+
+## [1.3.73] -- 2021-03-07
+### Fixed
+- Fix for YouTube playlists with pagination not loading (PR #592 by Walkyst)
+
+## [1.3.72] -- 2021-03-03
+### Fixed
+- Fixed a specific MP3 frame type (version 2, layer 1, 144kbps) being decoded incorrectly.
+
+## [1.3.71] -- 2021-02-15
+### Fixed
+- Fixed YouTube music search failing if some results did not include duration.
+
+## [1.3.70] -- 2021-02-15
+### Fixed
+- Fixed a bug with MP4 AAC decoding introduced in 1.3.68.
+
+## [1.3.69] -- 2021-02-13
+### Fixed
+- Fixed YouTube age restricted videos which broke due to embed page content change.
+
+## [1.3.68] -- 2021-02-13
+### Added
+- Added support for AAC profiles other than AAC-LC in MP4 files.
+
+## [1.3.67] -- 2021-01-30
+### Added
+- Added support for `music.youtube.com` URLs (PR 562 by Walkyst).
+
+### Changed
+- Internal changes to allow custom `AudioPlayerManager` implementations (PR 572 by ToxicMushroom).
+
+## [1.3.66] -- 2020-12-30
+### Changed
+- All YouTube requests are now retried once if they get a connection reset during connection establishment.
+
+## [1.3.65] -- 2020-12-20
+### Added
+- Attached LP, OS and JDK version information to all FriendlyExceptions as a suppressed exception.
+
+## [1.3.64] -- 2020-12-17
+### Fixed
+- Fixed SoundCloud not working due to a change in the site (PR 570 by reptar25).
+
+## [1.3.63] -- 2020-12-01
+### Added
+- Added option to override logging handler for errors with large payloads.
+
+### Removed
+- Removed Mixer implementation, source manager class kept for now to not cause a breaking change.
+
+### Changed
+- YouTube playlist loader logs response content if content type is not JSON.
+
+## [1.3.62] -- 2020-11-30
+### Changed
+- Status code 429 from YouTube now causes an exception which explains YouTube block.
+- GC logging no longer warns about pauses shorter than 200ms.
+
+## [1.3.61] -- 2020-11-19
+### Fixed
+- Fixed age restricted YouTube videos (PR 559 by Walkyst).
+- Fixed YouTube search results using current locale language (PR 557 by madeyoga).
+
+## [1.3.60] -- 2020-11-11
+### Fixed
+- Fixed removing/adding player listeners failing when done from within listener callback.
+
+## [1.3.59] -- 2020-11-07
+### Fixed
+- Fixed YouTube playlist pagination being broken (PR 552 by Xavinlol).
+
+## [1.3.58] -- 2020-11-06
+### Fixed
+- Fixed AAC streams possibly detected as MP3 even if their mime type is set to audio/aac.
+
+## [1.3.57] -- 2020-11-06
+### Added
+- Added support for SoundCloud tracks which only have MP3 HLS format available.
+
+## [1.3.56] -- 2020-11-05
+### Fixed
+- Fixed some YouTube live streams caused by MP4 audio data being skipped in MP4 with no sidx.
+
+## [1.3.55] -- 2020-10-31
+### Fixed
+- Fixed no exception thrown when native lib loading fails.
+- Fixed seeking on MKV files with cues in the end of the file.
+
+## [1.3.54] -- 2020-10-29
+### Fixed
+- Fixed YouTube VOD duration set to unknown.
+
+## [1.3.53] -- 2020-10-26
+### Fixed
+- Fixed Bandcamp track and album loading which broke due to url changes (PR 527 by Walkyst).
+- Fixed Twitch stream loading failure which broke due to access token changes (PR 410 by kimcore).
+- Fixed Twitch stream including ads which also broke stream start sometimes.
+
+## [1.3.52] -- 2020-10-25
+### Fixed
+- Fixed a redundant request made for YouTube age-restricted tracks.
+
+## [1.3.51] -- 2020-10-25
+### Fixed
+- Fixed various issues with YouTube track loading and searches.
+- Fixed YouTube playlist track titles being null (PR 534 by gmfonseca).
+
 ## [1.3.50] -- 2020-06-17
 ### Fixed
 - Fixed YT search sometimes not finding anything because of YT providing different format (PR 492 by Frederikam).

@@ -8,14 +8,12 @@ import com.sedmelluq.discord.lavaplayer.source.youtube.format.YoutubeTrackFormat
 import com.sedmelluq.discord.lavaplayer.tools.ExceptionTools;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.tools.JsonBrowser;
-import com.sedmelluq.discord.lavaplayer.tools.PBJUtils;
 import com.sedmelluq.discord.lavaplayer.tools.Units;
 import com.sedmelluq.discord.lavaplayer.tools.io.HttpInterface;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.List;
 
 import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.COMMON;
 import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.SUSPICIOUS;
@@ -99,7 +97,7 @@ public class DefaultYoutubeTrackDetails implements YoutubeTrackDetails {
         videoDetails.get("lengthSeconds")
     );
 
-    return buildTrackInfo(videoId, videoDetails.get("title").text(), videoDetails.get("author").text(), temporalInfo, PBJUtils.getYouTubeThumbnail(videoDetails, videoId));
+    return buildTrackInfo(videoId, videoDetails.get("title").text(), videoDetails.get("author").text(), temporalInfo);
   }
 
   private AudioTrackInfo loadLegacyTrackInfo() {
@@ -114,12 +112,12 @@ public class DefaultYoutubeTrackDetails implements YoutubeTrackDetails {
         args.get("length_seconds")
     );
 
-    return buildTrackInfo(videoId, args.get("title").text(), args.get("author").text(), temporalInfo, PBJUtils.getYouTubeThumbnail(args, videoId));
+    return buildTrackInfo(videoId, args.get("title").text(), args.get("author").text(), temporalInfo);
   }
 
-  private AudioTrackInfo buildTrackInfo(String videoId, String title, String uploader, TemporalInfo temporalInfo, String thumbnail) {
+  private AudioTrackInfo buildTrackInfo(String videoId, String title, String uploader, TemporalInfo temporalInfo) {
     return new AudioTrackInfo(title, uploader, temporalInfo.durationMillis, videoId, temporalInfo.isActiveStream,
-        "https://www.youtube.com/watch?v=" + videoId, thumbnail);
+        "https://www.youtube.com/watch?v=" + videoId);
   }
 
   private static class TemporalInfo {

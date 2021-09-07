@@ -3,7 +3,6 @@ package com.sedmelluq.discord.lavaplayer.source.youtube;
 import com.sedmelluq.discord.lavaplayer.tools.DataFormatTools;
 import com.sedmelluq.discord.lavaplayer.tools.ExceptionTools;
 import com.sedmelluq.discord.lavaplayer.tools.JsonBrowser;
-import com.sedmelluq.discord.lavaplayer.tools.PBJUtils;
 import com.sedmelluq.discord.lavaplayer.tools.http.ExtendedHttpConfigurable;
 import com.sedmelluq.discord.lavaplayer.tools.io.HttpClientTools;
 import com.sedmelluq.discord.lavaplayer.tools.io.HttpInterface;
@@ -21,8 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
-import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.SEARCH_URL;
 import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.SEARCH_PAYLOAD;
+import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.SEARCH_URL;
 import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.WATCH_URL_PREFIX;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -87,16 +86,16 @@ public class YoutubeSearchProvider implements YoutubeSearchResultLoader {
   private List<AudioTrack> extractSearchPage(JsonBrowser jsonBrowser, Function<AudioTrackInfo, AudioTrack> trackFactory) throws IOException {
     ArrayList<AudioTrack> list = new ArrayList<>();
     jsonBrowser.get("contents")
-        .get("sectionListRenderer")
-        .get("contents")
-        .index(0)
-        .get("itemSectionRenderer")
-        .get("contents")
-        .values()
-        .forEach(jsonTrack -> {
-          AudioTrack track = extractPolymerData(jsonTrack, trackFactory);
-          if (track != null) list.add(track);
-        });
+            .get("sectionListRenderer")
+            .get("contents")
+            .index(0)
+            .get("itemSectionRenderer")
+            .get("contents")
+            .values()
+            .forEach(jsonTrack -> {
+              AudioTrack track = extractPolymerData(jsonTrack, trackFactory);
+              if (track != null) list.add(track);
+            });
     return list;
   }
 
@@ -113,7 +112,7 @@ public class YoutubeSearchProvider implements YoutubeSearchResultLoader {
     String videoId = json.get("videoId").text();
 
     AudioTrackInfo info = new AudioTrackInfo(title, author, duration, videoId, false,
-        WATCH_URL_PREFIX + videoId, PBJUtils.getYouTubeThumbnail(json, videoId));
+            WATCH_URL_PREFIX + videoId);
 
     return trackFactory.apply(info);
   }

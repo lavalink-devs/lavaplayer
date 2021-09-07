@@ -4,8 +4,6 @@ import com.sedmelluq.discord.lavaplayer.tools.JsonBrowser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-
 import static com.sedmelluq.discord.lavaplayer.tools.ExceptionTools.throwWithDebugInfo;
 import static com.sedmelluq.discord.lavaplayer.tools.JsonBrowser.NULL_BROWSER;
 
@@ -30,24 +28,18 @@ public class YoutubeTrackJsonData {
     try {
       JsonBrowser playerInfo = NULL_BROWSER;
       JsonBrowser playerResponse = NULL_BROWSER;
-
-      List<JsonBrowser> json = result.values();
-      JsonBrowser lastElement = json.get(result.values().size() - 1);
-      if (!lastElement.get("page").isNull()) {
-        for (JsonBrowser child : result.values()) {
-          if (child.isMap()) {
-            if (playerInfo.isNull()) {
-              playerInfo = child.get("player");
-            }
-
-            if (playerResponse.isNull()) {
-              playerResponse = child.get("playerResponse");
-            }
+      for (JsonBrowser child : result.values()) {
+        if (child.isMap()) {
+          if (playerInfo.isNull()) {
+            playerInfo = child.get("player");
           }
-        }
-      } else {
-        if (playerResponse.isNull()) {
-          playerResponse = result;
+          if (playerResponse.isNull()) {
+            playerResponse = child.get("playerResponse");
+          }
+        } else {
+          if (playerResponse.isNull()) {
+            playerResponse = result;
+          }
         }
       }
 
@@ -61,18 +53,6 @@ public class YoutubeTrackJsonData {
     }
 
     throw throwWithDebugInfo(log, null, "Neither player nor playerResponse in result", "json", result.format());
-  }
-
-  public static YoutubeTrackJsonData fromEmbedParts(JsonBrowser embedInfo, JsonBrowser videoInfo) {
-    String playerScriptUrl = embedInfo.get("assets").get("js").text();
-    String playerResponseText = videoInfo.get("player_response").text();
-
-    if (playerResponseText == null) {
-      String embeddedPlayerResponseText = embedInfo.get("args").get("embedded_player_response").text();
-      return new YoutubeTrackJsonData(parsePlayerResponse(embeddedPlayerResponseText), videoInfo, playerScriptUrl);
-    }
-
-    return new YoutubeTrackJsonData(parsePlayerResponse(playerResponseText), videoInfo, playerScriptUrl);
   }
 
   private static YoutubeTrackJsonData fromPolymerPlayerInfo(JsonBrowser playerInfo, JsonBrowser playerResponse) {
