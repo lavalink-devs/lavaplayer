@@ -45,6 +45,7 @@ public class SoundCloudAudioSourceManager implements AudioSourceManager, HttpCon
   private static final int DEFAULT_SEARCH_RESULTS = 10;
   private static final int MAXIMUM_SEARCH_RESULTS = 200;
 
+  private static final String MOBILE_URL_REGEX = "^(?:http://|https://|)soundcloud\\.app\\.goo\\.gl/([a-zA-Z0-9-_]+)/?(?:\\?.*|)$";
   private static final String TRACK_URL_REGEX = "^(?:http://|https://|)(?:www\\.|)(?:m\\.|)soundcloud\\.com/([a-zA-Z0-9-_]+)/([a-zA-Z0-9-_]+)/?(?:\\?.*|)$";
   private static final String UNLISTED_URL_REGEX = "^(?:http://|https://|)(?:www\\.|)(?:m\\.|)soundcloud\\.com/([a-zA-Z0-9-_]+)/([a-zA-Z0-9-_]+)/s-([a-zA-Z0-9-_]+)(?:\\?.*|)$";
   private static final String LIKED_URL_REGEX = "^(?:http://|https://|)(?:www\\.|)(?:m\\.|)soundcloud\\.com/([a-zA-Z0-9-_]+)/likes/?(?:\\?.*|)$";
@@ -53,6 +54,7 @@ public class SoundCloudAudioSourceManager implements AudioSourceManager, HttpCon
   private static final String SEARCH_PREFIX_DEFAULT = "scsearch:";
   private static final String SEARCH_REGEX = SEARCH_PREFIX + "\\[([0-9]{1,9}),([0-9]{1,9})\\]:\\s*(.*)\\s*";
 
+  private static final Pattern mobileUrlPattern = Pattern.compile(MOBILE_URL_REGEX);
   private static final Pattern trackUrlPattern = Pattern.compile(TRACK_URL_REGEX);
   private static final Pattern unlistedUrlPattern = Pattern.compile(UNLISTED_URL_REGEX);
   private static final Pattern likedUrlPattern = Pattern.compile(LIKED_URL_REGEX);
@@ -113,6 +115,11 @@ public class SoundCloudAudioSourceManager implements AudioSourceManager, HttpCon
 
   @Override
   public AudioItem loadItem(AudioPlayerManager manager, AudioReference reference) {
+    Matcher mobileUrlMatcher = mobileUrlPattern.matcher(reference.identifier);
+    if (mobileUrlMatcher.matches()) {
+      reference = SoundCloudHelper.redirectMobileLink(httpInterfaceManager.getInterface(), reference);
+    }
+
     AudioItem track = processAsSingleTrack(reference);
 
     if (track == null) {
