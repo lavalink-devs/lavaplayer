@@ -48,7 +48,8 @@ public class XmContainerProbe implements MediaContainerProbe {
         Units.DURATION_MS_UNKNOWN,
         reference.identifier,
         true,
-        reference.identifier
+        reference.identifier,
+        null
     ));
   }
 
