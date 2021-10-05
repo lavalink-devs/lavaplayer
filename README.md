@@ -1,26 +1,31 @@
 # LavaPlayer - Audio player library for Discord
 
+### **This is forked version of LavaPlayer, original repo here https://github.com/sedmelluq/lavaplayer**
+Currently LavaPlayer repo is not actively maintained so decided create this fork, if main repo will be maintained again this fork will follow up and include all updates from it
+
+Custom branch used for my own updates and usage, it include playback and searching on Yandex Music, provide thumbnails from all available audio sources in `AudioTrackInfo` exclude http one (this is mainly breaking change, because it affect how all tracks decoded/encoded)
+
 LavaPlayer is an audio player library written in Java which can load audio tracks from various sources and convert them into a stream of Opus frames. It is designed for use with Discord bots, but it can be used anywhere where Opus format output is required.
 
 **Please read the [FAQ](FAQ.md) in case of issues.**
 
 #### Maven package
 
-Replace `x.y.z` with the latest version number: 1.3.77 
+Replace `x.y.z` with the latest version number: [![](https://jitpack.io/v/walkyst/lavaplayer-fork.svg)](https://jitpack.io/#walkyst/lavaplayer-fork)
 
-* Repository: https://m2.dv8tion.net/releases
-* Artifact: **com.sedmelluq:lavaplayer:x.y.z**
+* Repository: https://jitpack.io
+* Artifact: **com.github.walkyst:lavaplayer-fork:x.y.z**
 
 Using in Gradle:
 ```gradle
 repositories {
   maven {
-    url 'https://m2.dv8tion.net/releases'
+    url 'https://jitpack.io'
   }
 }
 
 dependencies {
-  implementation 'com.sedmelluq:lavaplayer:x.y.z'
+  implementation 'com.github.walkyst:lavaplayer-fork:x.y.z'
 }
 ```
 
@@ -28,16 +33,15 @@ Using in Maven:
 ```xml
 <repositories>
   <repository>
-    <id>dv8tion</id>
-    <name>m2-dv8tion</name>
-    <url>https://m2.dv8tion.net/releases</url>
+    <id>jitpack</id>
+    <url>https://jitpack.io</url>
   </repository>
 </repositories>
 
 <dependencies>
   <dependency>
-    <groupId>com.sedmelluq</groupId>
-    <artifactId>lavaplayer</artifactId>
+    <groupId>com.github.walkyst</groupId>
+    <artifactId>lavaplayer-fork</artifactId>
     <version>x.y.z</version>
   </dependency>
 </dependencies>
