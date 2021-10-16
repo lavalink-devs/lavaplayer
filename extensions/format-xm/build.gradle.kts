@@ -6,13 +6,9 @@ plugins {
 val moduleName = "lavaplayer-ext-format-xm"
 version = "0.1.0"
 
-repositories {
-  maven(url = "https://dl.bintray.com/gabixdev/kyoko")
-}
-
 dependencies {
   compileOnly(project(":main"))
-  implementation("com.github.micromod:ibxm:a73")
+  implementation(files("./lib/ibxm-a74.jar"))
 }
 
 val sourcesJar by tasks.registering(Jar::class) {
