@@ -20,6 +20,7 @@ import java.util.function.Function;
 
 import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.NEXT_PAYLOAD;
 import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.NEXT_URL;
+import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.WATCH_URL_PREFIX;
 import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.SUSPICIOUS;
 
 /**
@@ -86,7 +87,7 @@ public class YoutubeMixProvider implements YoutubeMixLoader {
       String durationStr = renderer.get("lengthText").get("runs").index(0).get("text").text();
       long duration = DataFormatTools.durationTextToMillis(durationStr);
       String identifier = renderer.get("videoId").text();
-      String uri = "https://youtube.com/watch?v=" + identifier;
+      String uri = WATCH_URL_PREFIX + identifier;
 
       AudioTrackInfo trackInfo = new AudioTrackInfo(title, author, duration, identifier, false, uri);
       tracks.add(trackFactory.apply(trackInfo));

@@ -20,6 +20,7 @@ import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.P
 import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.PLAYER_URL;
 import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.VERIFY_AGE_PAYLOAD;
 import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.VERIFY_AGE_URL;
+import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.WATCH_URL_PREFIX;
 import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeHttpContextFilter.PBJ_PARAMETER;
 import static com.sedmelluq.discord.lavaplayer.tools.ExceptionTools.throwWithDebugInfo;
 import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.COMMON;
@@ -170,7 +171,7 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
   }
 
   protected JsonBrowser loadTrackInfoFromMainPage(HttpInterface httpInterface, String videoId) throws IOException {
-    String url = "https://www.youtube.com/watch?v=" + videoId + PBJ_PARAMETER + "&hl=en";
+    String url = WATCH_URL_PREFIX + videoId + PBJ_PARAMETER + "&hl=en";
 
     try (CloseableHttpResponse response = httpInterface.execute(new HttpGet(url))) {
       return processResponse(response);
