@@ -21,6 +21,7 @@ import java.util.function.Function;
 
 import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.NEXT_PAYLOAD;
 import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.NEXT_URL;
+import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.WATCH_URL_PREFIX;
 import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.SUSPICIOUS;
 
 /**
@@ -81,6 +82,11 @@ public class YoutubeMixProvider implements YoutubeMixLoader {
   ) {
     for (JsonBrowser video : browser.values()) {
       JsonBrowser renderer = video.get("playlistPanelVideoRenderer");
+
+      if (!renderer.get("unplayableText").isNull()) {
+        return;
+      }
+
       String title = renderer.get("title").get("runs").index(0).get("text").text();
       String author = renderer.get("longBylineText").get("runs").index(0).get("text").text();
       String durationStr = renderer.get("lengthText").get("runs").index(0).get("text").text();
