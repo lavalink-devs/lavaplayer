@@ -3,6 +3,7 @@ package com.sedmelluq.discord.lavaplayer.natives.aac;
 import com.sedmelluq.discord.lavaplayer.tools.io.BitStreamWriter;
 import com.sedmelluq.discord.lavaplayer.tools.io.ByteBufferOutputStream;
 import com.sedmelluq.lava.common.natives.NativeResourceHolder;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -60,7 +61,7 @@ public class AacDecoder extends NativeResourceHolder {
 
     long buffer = 0;
     for (int i = 0; i < config.length; i++) {
-      buffer |= config[i] << (i << 3);
+      buffer |= ((long) config[i]) << (i << 3);
     }
 
     configureRaw(buffer);
