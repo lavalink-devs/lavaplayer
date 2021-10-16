@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.BROWSE_CONTINUATION_PAYLOAD;
 import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.BROWSE_PLAYLIST_PAYLOAD;
 import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.BROWSE_URL;
+import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.WATCH_URL_PREFIX;
 import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.COMMON;
 
 public class DefaultYoutubePlaylistLoader implements YoutubePlaylistLoader {
@@ -169,7 +170,7 @@ public class DefaultYoutubePlaylistLoader implements YoutubePlaylistLoader {
         long duration = Units.secondsToMillis(lengthSeconds.asLong(Units.DURATION_SEC_UNKNOWN));
 
         AudioTrackInfo info = new AudioTrackInfo(title, author, duration, videoId, false,
-            "https://www.youtube.com/watch?v=" + videoId, PBJUtils.getYouTubeThumbnail(item, videoId));
+            WATCH_URL_PREFIX + videoId, PBJUtils.getYouTubeThumbnail(item, videoId));
 
         tracks.add(trackFactory.apply(info));
       }

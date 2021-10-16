@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
+import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.WATCH_URL_PREFIX;
 import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.COMMON;
 import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.SUSPICIOUS;
 import static com.sedmelluq.discord.lavaplayer.tools.Units.DURATION_MS_UNKNOWN;
@@ -119,7 +120,7 @@ public class DefaultYoutubeTrackDetails implements YoutubeTrackDetails {
 
   private AudioTrackInfo buildTrackInfo(String videoId, String title, String uploader, TemporalInfo temporalInfo, String thumbnail) {
     return new AudioTrackInfo(title, uploader, temporalInfo.durationMillis, videoId, temporalInfo.isActiveStream,
-        "https://www.youtube.com/watch?v=" + videoId, thumbnail);
+        WATCH_URL_PREFIX + videoId, thumbnail);
   }
 
   private static class TemporalInfo {
