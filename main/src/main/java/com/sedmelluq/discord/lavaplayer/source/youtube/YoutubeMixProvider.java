@@ -82,6 +82,11 @@ public class YoutubeMixProvider implements YoutubeMixLoader {
   ) {
     for (JsonBrowser video : browser.values()) {
       JsonBrowser renderer = video.get("playlistPanelVideoRenderer");
+
+      if (!renderer.get("unplayableText").isNull()) {
+        return;
+      }
+
       String title = renderer.get("title").get("runs").index(0).get("text").text();
       String author = renderer.get("longBylineText").get("runs").index(0).get("text").text();
       String durationStr = renderer.get("lengthText").get("runs").index(0).get("text").text();
