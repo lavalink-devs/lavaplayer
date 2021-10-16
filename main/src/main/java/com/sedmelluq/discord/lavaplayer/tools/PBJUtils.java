@@ -1,6 +1,5 @@
 package com.sedmelluq.discord.lavaplayer.tools;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class PBJUtils {
@@ -13,17 +12,16 @@ public class PBJUtils {
 
     public static String getYouTubeThumbnail(JsonBrowser videoData, String videoId) {
         List<JsonBrowser> thumbnails = videoData.get("thumbnail").get("thumbnails").values();
-        if (!thumbnails.isEmpty()){
+        if (!thumbnails.isEmpty()) {
             String lastThumbnail = thumbnails.get(thumbnails.size() - 1).get("url").text();
-            if(lastThumbnail.contains("maxresdefault"))return lastThumbnail;
-            ArrayList<JsonBrowser> bestThumbnails = new ArrayList<>();
-            for (JsonBrowser thumbnail : thumbnails) {
-                if(thumbnail.get("url").text().contains("?sqp=")) bestThumbnails.add(thumbnail);
+
+            if (lastThumbnail.contains("maxresdefault")) {
+                return lastThumbnail;
+            } else {
+                return String.format("https://i.ytimg.com/vi/%s/mqdefault.jpg", videoId);
             }
-            if(!bestThumbnails.isEmpty())return bestThumbnails.get(bestThumbnails.size() - 1).get("url").text();
-            return lastThumbnail;
         }
-        return String.format("https://i.ytimg.com/vi_webp/%s/maxresdefault.webp", videoId);
+        return String.format("https://i.ytimg.com/vi/%s/mqdefault.jpg", videoId);
     }
 
     public static String getSoundCloudThumbnail(JsonBrowser trackData) {
