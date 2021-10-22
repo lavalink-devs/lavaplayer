@@ -48,12 +48,14 @@ public class YoutubeSearchProvider implements YoutubeSearchResultLoader {
    */
   @Override
   public AudioItem loadSearchResult(String query, Function<AudioTrackInfo, AudioTrack> trackFactory) {
-    log.debug("Performing a search with query {}", query);
+    String escapedQuery = query.replaceAll("\"|\\\\", "");
+    log.debug("Performing a search with query {}", escapedQuery);
 
     try (HttpInterface httpInterface = httpInterfaceManager.getInterface()) {
       HttpPost post = new HttpPost(SEARCH_URL);
-      StringEntity payload = new StringEntity(String.format(SEARCH_PAYLOAD, query.replace("\"", "\\\"")), "UTF-8");
+      StringEntity payload = new StringEntity(String.format(SEARCH_PAYLOAD, escapedQuery), "UTF-8");
       post.setEntity(payload);
+
       try (CloseableHttpResponse response = httpInterface.execute(post)) {
         HttpClientTools.assertSuccessWithContent(response, "search response");
 
