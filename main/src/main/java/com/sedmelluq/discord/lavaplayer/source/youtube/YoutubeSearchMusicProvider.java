@@ -47,11 +47,12 @@ public class YoutubeSearchMusicProvider implements YoutubeSearchMusicResultLoade
    */
   @Override
   public AudioItem loadSearchMusicResult(String query, Function<AudioTrackInfo, AudioTrack> trackFactory) {
-    log.debug("Performing a search music with query {}", query);
+    String escapedQuery = query.replaceAll("\"|\\\\", "");
+    log.debug("Performing a search music with query {}", escapedQuery);
 
     try (HttpInterface httpInterface = httpInterfaceManager.getInterface()) {
       HttpPost post = new HttpPost(MUSIC_SEARCH_URL);
-      StringEntity payload = new StringEntity(String.format(MUSIC_SEARCH_PAYLOAD, query.replace("\"", "\\\"")), "UTF-8");
+      StringEntity payload = new StringEntity(String.format(MUSIC_SEARCH_PAYLOAD, escapedQuery), "UTF-8");
       post.setHeader("Referer", "music.youtube.com");
       post.setEntity(payload);
 
