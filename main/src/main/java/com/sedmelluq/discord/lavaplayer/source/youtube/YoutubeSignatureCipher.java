@@ -60,4 +60,11 @@ public class YoutubeSignatureCipher {
   public void setTimestamp(String timestamp) {
     scriptTimestamp = timestamp;
   }
+
+  /**
+   * @return The current script timestamp
+   */
+  public String getScriptTimestamp() {
+    return scriptTimestamp;
+  }
 }
