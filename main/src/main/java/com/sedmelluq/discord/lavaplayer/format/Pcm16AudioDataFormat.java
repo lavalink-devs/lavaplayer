@@ -30,7 +30,7 @@ public class Pcm16AudioDataFormat extends AudioDataFormat {
 
   @Override
   public String codecName() {
-    return CODEC_NAME_BE;
+    return bigEndian ? CODEC_NAME_BE : CODEC_NAME_LE;
   }
 
   @Override
