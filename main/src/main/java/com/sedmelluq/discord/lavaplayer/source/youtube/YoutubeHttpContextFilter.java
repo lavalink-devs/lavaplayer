@@ -55,7 +55,7 @@ public class YoutubeHttpContextFilter implements HttpContextFilter {
       long millis = System.currentTimeMillis();
       String SAPISIDHASH = DigestUtils.sha1Hex(millis + " " + PAPISID + " " + YOUTUBE_ORIGIN);
 
-      request.setHeader("Cookie", "Secure-3PAPISID=" + PAPISID + " Secure-3PSID=" + PSID);
+      request.setHeader("Cookie", "__Secure-3PAPISID=" + PAPISID + " __Secure-3PSID=" + PSID);
       request.setHeader("Origin", YOUTUBE_ORIGIN);
       request.setHeader("Authorization", "SAPISIDHASH " + millis + "" + SAPISIDHASH);
     }
