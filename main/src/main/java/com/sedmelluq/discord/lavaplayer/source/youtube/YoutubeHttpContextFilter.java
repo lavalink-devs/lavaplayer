@@ -57,7 +57,7 @@ public class YoutubeHttpContextFilter implements HttpContextFilter {
 
       request.setHeader("Cookie", "__Secure-3PAPISID=" + PAPISID + " __Secure-3PSID=" + PSID);
       request.setHeader("Origin", YOUTUBE_ORIGIN);
-      request.setHeader("Authorization", "SAPISIDHASH " + millis + "" + SAPISIDHASH);
+      request.setHeader("Authorization", "SAPISIDHASH " + millis + "_" + SAPISIDHASH);
     }
   }
 
