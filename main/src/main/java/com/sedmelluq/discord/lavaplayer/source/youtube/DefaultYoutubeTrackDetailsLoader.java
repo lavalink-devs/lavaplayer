@@ -78,7 +78,7 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
 
     if (status == InfoStatus.REQUIRES_LOGIN) {
       throw new FriendlyException("This video requires age verification.", SUSPICIOUS,
-              new IllegalStateException("You did not configured right YoutubeHttpContextFilter, check #link# issue for fixing this."));
+              new IllegalStateException("You did not configured right YoutubeHttpContextFilter, check https://github.com/Walkyst/lavaplayer-fork/issues/18 issue for fixing this."));
     }
 
     if (status == InfoStatus.CONTENT_CHECK_REQUIRED) {
