@@ -43,6 +43,7 @@ public class YoutubeAudioSourceManager implements AudioSourceManager, HttpConfig
   private final HttpInterfaceManager httpInterfaceManager;
   private final ExtendedHttpConfigurable combinedHttpConfiguration;
   private final YoutubeMixLoader mixLoader;
+  private final YoutubeAccessTokenTracker accessTokenTracker;
   private final boolean allowSearch;
   private final YoutubeTrackDetailsLoader trackDetailsLoader;
   private final YoutubeSearchResultLoader searchResultLoader;
@@ -55,16 +56,20 @@ public class YoutubeAudioSourceManager implements AudioSourceManager, HttpConfig
    * Create an instance with default settings.
    */
   public YoutubeAudioSourceManager() {
-    this(true);
+    this(true, null, null);
   }
 
   /**
    * Create an instance.
    * @param allowSearch Whether to allow search queries as identifiers
+   * @param email Email of Google account to auth in, required for playing age restricted tracks
+   * @param password Password of Google account to auth in, required for playing age restricted tracks
    */
-  public YoutubeAudioSourceManager(boolean allowSearch) {
+  public YoutubeAudioSourceManager(boolean allowSearch, String email, String password) {
     this(
         allowSearch,
+        email,
+        password,
         new DefaultYoutubeTrackDetailsLoader(),
         new YoutubeSearchProvider(),
         new YoutubeSearchMusicProvider(),
@@ -77,6 +82,8 @@ public class YoutubeAudioSourceManager implements AudioSourceManager, HttpConfig
 
   public YoutubeAudioSourceManager(
       boolean allowSearch,
+      String email,
+      String password,
       YoutubeTrackDetailsLoader trackDetailsLoader,
       YoutubeSearchResultLoader searchResultLoader,
       YoutubeSearchMusicResultLoader searchMusicResultLoader,
@@ -86,6 +93,8 @@ public class YoutubeAudioSourceManager implements AudioSourceManager, HttpConfig
       YoutubeMixLoader mixLoader
   ) {
     httpInterfaceManager = HttpClientTools.createDefaultThreadLocalManager();
+    accessTokenTracker = new YoutubeAccessTokenTracker(email, password);
+    YoutubeHttpContextFilter.tokenTracker = accessTokenTracker;
     httpInterfaceManager.setHttpContextFilter(new YoutubeHttpContextFilter());
 
     this.allowSearch = allowSearch;
@@ -157,6 +166,14 @@ public class YoutubeAudioSourceManager implements AudioSourceManager, HttpConfig
   @Override
   public void shutdown() {
     ExceptionTools.closeWithWarnings(httpInterfaceManager);
+  }
+
+  public String getMasterAccessToken() {
+    return accessTokenTracker.getMasterToken();
+  }
+
+  public String getAccessToken() {
+    return accessTokenTracker.getAccessToken();
   }
 
   /**
