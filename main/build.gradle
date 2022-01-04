@@ -18,7 +18,8 @@ repositories {
 
 dependencies {
   compile 'com.sedmelluq:lava-common:1.1.2'
-  compile 'com.sedmelluq:lavaplayer-natives:1.3.13'
+  //compile 'com.sedmelluq:lavaplayer-natives:1.3.13'
+  compile 'com.github.walkyst:lavaplayer-natives-fork:1.0.0'
 
   compile "org.slf4j:slf4j-api:$slf4jVersion"
 
