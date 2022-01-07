@@ -53,8 +53,8 @@ public class YoutubeAccessTokenTracker {
   private long accessTokenRefreshInterval = DEFAULT_ACCESS_TOKEN_REFRESH_INTERVAL;
   private boolean loggedAgeRestrictionsWarning = false;
 
-  public YoutubeAccessTokenTracker(String email, String password) {
-    this.httpInterfaceManager = HttpClientTools.createCookielessThreadLocalManager();
+  public YoutubeAccessTokenTracker(HttpInterfaceManager httpInterfaceManager, String email, String password) {
+    this.httpInterfaceManager = httpInterfaceManager;
     this.email = email;
     this.password = password;
   }
