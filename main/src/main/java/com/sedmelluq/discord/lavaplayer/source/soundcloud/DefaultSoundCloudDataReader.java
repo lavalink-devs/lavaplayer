@@ -31,7 +31,7 @@ public class DefaultSoundCloudDataReader implements SoundCloudDataReader {
     return new AudioTrackInfo(
         trackData.get("title").safeText(),
         trackData.get("user").get("username").safeText(),
-        trackData.get("duration").as(Integer.class),
+        trackData.get("full_duration").as(Integer.class),
         identifier,
         false,
         trackData.get("permalink_url").text(),
