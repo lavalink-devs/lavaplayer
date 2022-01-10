@@ -17,8 +17,8 @@ repositories {
 
 dependencies {
   compileOnly(project(":main"))
-  implementation(":ibxm:a74:jar")
-  implementation("org.slf4j:slf4j-api:1.7.32")
+  implementation("com.github.micromod:ibxm:a74:jar")
+  implementation("org.slf4j:slf4j-api:1.7.25")
 }
 
 val sourcesJar by tasks.registering(Jar::class) {
