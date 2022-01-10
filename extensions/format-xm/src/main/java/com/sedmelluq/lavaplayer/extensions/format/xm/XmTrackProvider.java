@@ -24,7 +24,7 @@ public class XmTrackProvider {
 
     while ((blockCount = ibxm.getAudio(buffer)) > 0) {
       for (int i = 0; i < blocksInBuffer; i++) {
-        shortBuffer[i] = (short) buffer[i];
+        shortBuffer[i] = (short) Math.max(-32678, Math.min(buffer[i], 32767));
       }
 
       downstream.process(shortBuffer, 0, blockCount * 2);

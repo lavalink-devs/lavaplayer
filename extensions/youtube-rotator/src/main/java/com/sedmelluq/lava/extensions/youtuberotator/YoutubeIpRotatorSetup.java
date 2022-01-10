@@ -42,9 +42,7 @@ public class YoutubeIpRotatorSetup {
   public YoutubeIpRotatorSetup forSource(YoutubeAudioSourceManager sourceManager) {
     forConfiguration(sourceManager.getMainHttpConfiguration(), false);
     forConfiguration(sourceManager.getSearchHttpConfiguration(), true);
-
     DEFAULT_DELEGATE.setTokenTracker(sourceManager.getAccessTokenTracker());
-
     return this;
   }
 
