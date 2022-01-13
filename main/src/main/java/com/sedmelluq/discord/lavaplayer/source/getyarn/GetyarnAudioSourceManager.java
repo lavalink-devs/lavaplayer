@@ -1,6 +1,6 @@
 package com.sedmelluq.discord.lavaplayer.source.getyarn;
 
-import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
+import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManager;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.tools.io.HttpClientTools;
@@ -54,7 +54,7 @@ public class GetyarnAudioSourceManager implements HttpConfigurable, AudioSourceM
   }
 
   @Override
-  public AudioItem loadItem(DefaultAudioPlayerManager manager, AudioReference reference) {
+  public AudioItem loadItem(AudioPlayerManager manager, AudioReference reference) {
     final Matcher m = GETYARN_REGEX.matcher(reference.identifier);
 
     if (!m.matches()) {

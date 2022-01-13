@@ -1,6 +1,6 @@
 package com.sedmelluq.discord.lavaplayer.source.nico;
 
-import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
+import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManager;
 import com.sedmelluq.discord.lavaplayer.tools.DataFormatTools;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
@@ -70,7 +70,7 @@ public class NicoAudioSourceManager implements AudioSourceManager, HttpConfigura
   }
 
   @Override
-  public AudioItem loadItem(DefaultAudioPlayerManager manager, AudioReference reference) {
+  public AudioItem loadItem(AudioPlayerManager manager, AudioReference reference) {
     Matcher trackMatcher = trackUrlPattern.matcher(reference.identifier);
 
     if (trackMatcher.matches()) {
