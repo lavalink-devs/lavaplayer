@@ -51,4 +51,16 @@ public class AudioTrackInfo {
     this.uri = uri;
     this.artworkUrl = artworkUrl;
   }
+
+  /**
+   * @param title Track title
+   * @param author Track author, if known
+   * @param length Length of the track in milliseconds
+   * @param identifier Audio source specific track identifier
+   * @param isStream True if this track is a stream
+   * @param uri URL of the track or path to its file.
+   */
+  public AudioTrackInfo(String title, String author, long length, String identifier, boolean isStream, String uri) {
+    this(title, author, length, identifier, isStream, uri, null);
+  }
 }
