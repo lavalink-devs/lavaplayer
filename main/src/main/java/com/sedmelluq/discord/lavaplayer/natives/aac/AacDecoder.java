@@ -42,10 +42,10 @@ public class AacDecoder extends NativeResourceHolder {
    * @param channels Number of channels.
    * @throws IllegalStateException If the decoder has already been closed.
    */
-  public void configure(int objectType, int frequency, int channels) {
+  public int configure(int objectType, int frequency, int channels) {
     long buffer = encodeConfiguration(objectType, frequency, channels);
 
-    configureRaw(buffer);
+    return configureRaw(buffer);
   }
 
   /**
@@ -54,7 +54,7 @@ public class AacDecoder extends NativeResourceHolder {
    * @param config Raw ASC format configuration
    * @throws IllegalStateException If the decoder has already been closed.
    */
-  public void configure(byte[] config) {
+  public int configure(byte[] config) {
     if (config.length > 8) {
       throw new IllegalArgumentException("Cannot process a header larger than size 8");
     }
@@ -64,20 +64,17 @@ public class AacDecoder extends NativeResourceHolder {
       buffer |= ((long) config[i]) << (i << 3);
     }
 
-    configureRaw(buffer);
+    return configureRaw(buffer);
   }
 
-  private synchronized void configureRaw(long buffer) {
+  private synchronized int configureRaw(long buffer) {
     checkNotReleased();
 
     if (ByteOrder.nativeOrder() == ByteOrder.BIG_ENDIAN) {
       buffer = Long.reverseBytes(buffer);
     }
 
-    int error;
-    if ((error = library.configure(instance, buffer)) != 0) {
-      throw new IllegalStateException("Configuring failed with error " + error);
-    }
+    return library.configure(instance, buffer);
   }
 
   private static long encodeConfiguration(int objectType, int frequency, int channels) {

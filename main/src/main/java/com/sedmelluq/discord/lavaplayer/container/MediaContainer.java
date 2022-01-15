@@ -13,9 +13,7 @@ import com.sedmelluq.discord.lavaplayer.container.playlists.PlsPlaylistContainer
 import com.sedmelluq.discord.lavaplayer.container.wav.WavContainerProbe;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Lists currently supported containers and their probes.

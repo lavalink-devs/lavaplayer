@@ -5,53 +5,71 @@ import com.sedmelluq.discord.lavaplayer.filter.AudioPipelineFactory;
 import com.sedmelluq.discord.lavaplayer.filter.PcmFormat;
 import com.sedmelluq.discord.lavaplayer.natives.aac.AacDecoder;
 import com.sedmelluq.discord.lavaplayer.track.playback.AudioProcessingContext;
+import net.sourceforge.jaad.aac.Decoder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.ShortBuffer;
-import java.util.function.Consumer;
 
 public class AacPacketRouter {
+  private static final Logger log = LoggerFactory.getLogger(AacPacketRouter.class);
+
   private final AudioProcessingContext context;
-  private final Consumer<AacDecoder> decoderConfigurer;
 
   private Long initialRequestedTimecode;
   private Long initialProvidedTimecode;
-  private ShortBuffer outputBuffer;
   private AudioPipeline downstream;
-  private AacDecoder decoder;
+  private ShortBuffer outputBuffer;
 
-  public AacPacketRouter(AudioProcessingContext context, Consumer<AacDecoder> decoderConfigurer) {
+  public AacDecoder nativeDecoder;
+  public Decoder embeddedDecoder;
+
+  public AacPacketRouter(AudioProcessingContext context) {
     this.context = context;
-    this.decoderConfigurer = decoderConfigurer;
   }
 
   public void processInput(ByteBuffer inputBuffer) throws InterruptedException {
-    if (decoder == null) {
-      decoder = new AacDecoder();
-      decoderConfigurer.accept(decoder);
-    }
+    if (embeddedDecoder == null) {
+      nativeDecoder.fill(inputBuffer);
 
-    decoder.fill(inputBuffer);
+      if (downstream == null) {
+        log.debug("Using native decoder");
+        AacDecoder.StreamInfo streamInfo = nativeDecoder.resolveStreamInfo();
 
-    if (downstream == null) {
-      AacDecoder.StreamInfo streamInfo = decoder.resolveStreamInfo();
+        if (streamInfo != null) {
+          downstream = AudioPipelineFactory.create(context, new PcmFormat(streamInfo.channels, streamInfo.sampleRate));
+          outputBuffer = ByteBuffer.allocateDirect(2 * streamInfo.frameSize * streamInfo.channels)
+              .order(ByteOrder.nativeOrder()).asShortBuffer();
 
-      if (streamInfo != null) {
-        downstream = AudioPipelineFactory.create(context, new PcmFormat(streamInfo.channels, streamInfo.sampleRate));
-        outputBuffer = ByteBuffer.allocateDirect(2 * streamInfo.frameSize * streamInfo.channels)
-            .order(ByteOrder.nativeOrder()).asShortBuffer();
+          if (initialRequestedTimecode != null) {
+            downstream.seekPerformed(initialRequestedTimecode, initialProvidedTimecode);
+          }
+        }
+      }
+
+      if (downstream != null) {
+        while (nativeDecoder.decode(outputBuffer, false)) {
+          downstream.process(outputBuffer);
+          outputBuffer.clear();
+        }
+      }
+    } else {
+      if (downstream == null) {
+        log.debug("Using embedded decoder");
+        downstream = AudioPipelineFactory.create(context, new PcmFormat(
+            embeddedDecoder.getAudioFormat().getChannels(),
+            (int) embeddedDecoder.getAudioFormat().getSampleRate()
+        ));
 
         if (initialRequestedTimecode != null) {
           downstream.seekPerformed(initialRequestedTimecode, initialProvidedTimecode);
         }
       }
-    }
 
-    if (downstream != null) {
-      while (decoder.decode(outputBuffer, false)) {
-        downstream.process(outputBuffer);
-        outputBuffer.clear();
+      if (downstream != null) {
+        downstream.process(embeddedDecoder.decodeFrame(inputBuffer.array()));
       }
     }
   }
@@ -64,15 +82,15 @@ public class AacPacketRouter {
       this.initialProvidedTimecode = providedTimecode;
     }
 
-    if (decoder != null) {
-      decoder.close();
-      decoder = null;
+    if (nativeDecoder != null) {
+      nativeDecoder.close();
+      nativeDecoder = null;
     }
   }
 
   public void flush() throws InterruptedException {
     if (downstream != null) {
-      while (decoder.decode(outputBuffer, true)) {
+      while (nativeDecoder.decode(outputBuffer, true)) {
         downstream.process(outputBuffer);
         outputBuffer.clear();
       }
@@ -85,8 +103,8 @@ public class AacPacketRouter {
         downstream.close();
       }
     } finally {
-      if (decoder != null) {
-        decoder.close();
+      if (nativeDecoder != null) {
+        nativeDecoder.close();
       }
     }
   }
