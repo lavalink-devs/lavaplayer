@@ -59,10 +59,10 @@ public class MpegAacTrackConsumer implements MpegTrackConsumer {
   public void consume(ReadableByteChannel channel, int length) throws InterruptedException {
     if (packetRouter.nativeDecoder == null) {
       packetRouter.nativeDecoder = new AacDecoder();
+      inputBuffer = ByteBuffer.allocateDirect(4096);
     }
 
     if (configureDecoder(packetRouter.nativeDecoder)) {
-      inputBuffer = ByteBuffer.allocateDirect(4096);
       processInput(channel, length);
     } else {
       if (packetRouter.embeddedDecoder == null) {
@@ -71,9 +71,9 @@ public class MpegAacTrackConsumer implements MpegTrackConsumer {
         } else {
           packetRouter.embeddedDecoder = Decoder.create(AacDecoder.AAC_LC, track.sampleRate, track.channelCount);
         }
+        inputBuffer = ByteBuffer.allocate(4096);
       }
 
-      inputBuffer = ByteBuffer.allocate(4096);
       processInput(channel, length);
     }
   }

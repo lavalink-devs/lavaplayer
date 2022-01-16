@@ -56,17 +56,17 @@ public class MatroskaAacTrackConsumer implements MatroskaTrackConsumer {
   public void consume(ByteBuffer data) throws InterruptedException {
     if (packetRouter.nativeDecoder == null) {
       packetRouter.nativeDecoder = new AacDecoder();
+      inputBuffer = ByteBuffer.allocateDirect(4096);
     }
 
     if (configureDecoder(packetRouter.nativeDecoder)) {
-      inputBuffer = ByteBuffer.allocateDirect(4096);
       processInput(data);
     } else {
       if (packetRouter.embeddedDecoder == null) {
         packetRouter.embeddedDecoder = Decoder.create(track.codecPrivate);
+        inputBuffer = ByteBuffer.allocate(4096);
       }
 
-      inputBuffer = ByteBuffer.allocate(4096);
       processInput(data);
     }
   }
