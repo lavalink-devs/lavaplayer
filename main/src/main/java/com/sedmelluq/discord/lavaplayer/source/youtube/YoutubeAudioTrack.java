@@ -107,6 +107,9 @@ public class YoutubeAudioTrack extends DelegatedAudioTrack {
       return false;
     } else if (other == null) {
       return true;
+    } else if (info.mimeType.equals("audio/webm") && format.getAudioChannels() > 2) {
+      // Opus with more than 2 audio channels is unsupported by LavaPlayer currently.
+      return false;
     } else if (info.ordinal() != other.getInfo().ordinal()) {
       return info.ordinal() < other.getInfo().ordinal();
     } else {

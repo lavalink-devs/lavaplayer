@@ -51,6 +51,7 @@ public class LegacyStreamMapFormatsExtractor implements OfflineYoutubeTrackForma
             ContentType.parse(format.get("type")),
             qualityToBitrateValue(format.get("quality")),
             Long.parseLong(contentLength),
+            2,
             url,
             format.get("s"),
             format.getOrDefault("sp", DEFAULT_SIGNATURE_KEY)

@@ -61,6 +61,7 @@ public class StreamingDataFormatsExtractor implements OfflineYoutubeTrackFormatE
               ContentType.parse(formatJson.get("mimeType").text()),
               formatJson.get("bitrate").asLong(Units.BITRATE_UNKNOWN),
               contentLength,
+              formatJson.get("audioChannels").asLong(2),
               cipherInfo.getOrDefault("url", formatJson.get("url").text()),
               cipherInfo.get("s"),
               cipherInfo.getOrDefault("sp", DEFAULT_SIGNATURE_KEY)
