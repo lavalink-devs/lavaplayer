@@ -26,20 +26,39 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.AUTH_URL;
-import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.CHECKIN_ACCOUNT;
-import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.LOGIN_ACCOUNT;
-import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.MASTER_TOKEN_PAYLOAD;
+import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.ANDROID_AUTH_URL;
+import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.CHECKIN_ACCOUNT_URL;
+import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.LOGIN_ACCOUNT_URL;
+import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.SAVE_ACCOUNT_URL;
+import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.TOKEN_PAYLOAD;
+import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.TOKEN_REFRESH_PAYLOAD;
+import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.TV_AUTH_CODE_PAYLOAD;
+import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.TV_AUTH_CODE_URL;
+import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.TV_AUTH_TOKEN_PAYLOAD;
+import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.TV_AUTH_TOKEN_REFRESH_PAYLOAD;
+import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.TV_AUTH_TOKEN_URL;
+import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.YOUTUBE_ORIGIN;
 import static com.sedmelluq.discord.lavaplayer.tools.DataFormatTools.convertToMapLayout;
+import static com.sedmelluq.discord.lavaplayer.tools.ExceptionTools.throwWithDebugInfo;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class YoutubeAccessTokenTracker {
   private static final Logger log = LoggerFactory.getLogger(YoutubeAccessTokenTracker.class);
 
+  private static final String AUTH_SCRIPT_REGEX = "<script id=\"base-js\" src=\"(.*?)\" nonce=\".*?\"><\\/script>";
+  private static final String IDENTITY_REGEX = "var .+?=(\\{clientId:\"(.+?)\",.+?:\"(.+?)\"})";
+
+  private static final Pattern authScriptPattern = Pattern.compile(AUTH_SCRIPT_REGEX);
+  private static final Pattern identityPattern = Pattern.compile(IDENTITY_REGEX);
+
   private static final String TOKEN_FETCH_CONTEXT_ATTRIBUTE = "yt-raw";
-  private static final long MASTER_TOKEN_REFRESH_INTERVAL = TimeUnit.DAYS.toMillis(7); // Not sure how long it is active after receiving, so let it be 7 days for now
+  private static final long MASTER_TOKEN_REFRESH_INTERVAL = TimeUnit.DAYS.toMillis(7);
   private static final long DEFAULT_ACCESS_TOKEN_REFRESH_INTERVAL = TimeUnit.HOURS.toMillis(1);
 
   private final Object tokenLock = new Object();
@@ -52,6 +71,8 @@ public class YoutubeAccessTokenTracker {
   private long lastAccessTokenUpdate;
   private long accessTokenRefreshInterval = DEFAULT_ACCESS_TOKEN_REFRESH_INTERVAL;
   private boolean loggedAgeRestrictionsWarning = false;
+  private boolean masterTokenFromTV = false;
+  private volatile CachedAuthScript cachedAuthScript = null;
 
   public YoutubeAccessTokenTracker(HttpInterfaceManager httpInterfaceManager, String email, String password) {
     this.httpInterfaceManager = httpInterfaceManager;
@@ -66,7 +87,7 @@ public class YoutubeAccessTokenTracker {
     synchronized (tokenLock) {
       if (DataFormatTools.isNullOrEmpty(email) && DataFormatTools.isNullOrEmpty(password)) {
         if (!loggedAgeRestrictionsWarning) {
-          log.warn("YouTube auth tokens can't be retrieved because email and password is not set in YoutubeAudioSourceManager, age restricted videos will throw exceptions");
+          log.warn("YouTube auth tokens can't be retrieved because email and password is not set in YoutubeAudioSourceManager, age restricted videos will throw exceptions.");
           loggedAgeRestrictionsWarning = true;
         }
         return;
@@ -83,12 +104,15 @@ public class YoutubeAccessTokenTracker {
       lastMasterTokenUpdate = now;
       log.info("Updating YouTube master token (current is {}).", masterToken);
 
-      try {
-        fetchMasterToken();
-        log.info("Updating YouTube master token succeeded, new token is {}.", masterToken);
-      } catch (Exception e) {
-        log.error("YouTube master token update failed.", e);
-      }
+      // Don't block main thread since if first auth method failed then we go to second and it's require waiting when user is complete auth.
+      CompletableFuture.runAsync(() -> {
+        try {
+          masterToken = fetchMasterToken();
+          log.info("Updating YouTube master token succeeded, new token is {}.", masterToken);
+        } catch (Exception e) {
+          log.error("YouTube master token update failed.", e);
+        }
+      });
     }
   }
 
@@ -99,13 +123,11 @@ public class YoutubeAccessTokenTracker {
     synchronized (tokenLock) {
       if (DataFormatTools.isNullOrEmpty(email) && DataFormatTools.isNullOrEmpty(password)) {
         if (!loggedAgeRestrictionsWarning) {
-          log.warn("YouTube auth tokens can't be retrieved because email and password is not set in YoutubeAudioSourceManager, age restricted videos will throw exceptions");
+          log.warn("YouTube auth tokens can't be retrieved because email and password is not set in YoutubeAudioSourceManager, age restricted videos will throw exceptions.");
           loggedAgeRestrictionsWarning = true;
         }
         return;
       }
-
-      getMasterToken();
 
       if (DataFormatTools.isNullOrEmpty(masterToken) && loggedAgeRestrictionsWarning) {
         return;
@@ -121,10 +143,10 @@ public class YoutubeAccessTokenTracker {
       log.info("Updating YouTube access token (current is {}).", accessToken);
 
       try {
-        fetchAccessToken();
+        accessToken = fetchAccessToken();
         log.info("Updating YouTube access token succeeded, new token is {}, next update will be after {} seconds.",
-                accessToken,
-                TimeUnit.MILLISECONDS.toSeconds(accessTokenRefreshInterval)
+            accessToken,
+            TimeUnit.MILLISECONDS.toSeconds(accessTokenRefreshInterval)
         );
       } catch (Exception e) {
         log.error("YouTube access token update failed.", e);
@@ -156,25 +178,25 @@ public class YoutubeAccessTokenTracker {
     return context.getAttribute(TOKEN_FETCH_CONTEXT_ATTRIBUTE) == Boolean.TRUE;
   }
 
-  private void fetchMasterToken() throws IOException {
+  private String fetchMasterToken() throws IOException {
     try (HttpInterface httpInterface = httpInterfaceManager.getInterface()) {
       httpInterface.getContext().setAttribute(TOKEN_FETCH_CONTEXT_ATTRIBUTE, true);
 
-      masterToken = requestMasterToken(httpInterface);
+      return requestMasterToken(httpInterface);
     }
   }
 
-  private void fetchAccessToken() throws IOException {
+  private String fetchAccessToken() throws IOException {
     try (HttpInterface httpInterface = httpInterfaceManager.getInterface()) {
       httpInterface.getContext().setAttribute(TOKEN_FETCH_CONTEXT_ATTRIBUTE, true);
 
-      accessToken = requestAccessToken(httpInterface);
+      return requestAccessToken(httpInterface);
     }
   }
 
   private String requestMasterToken(HttpInterface httpInterface) throws IOException {
-    HttpPost masterTokenPost = new HttpPost(LOGIN_ACCOUNT);
-    StringEntity masterTokenPayload = new StringEntity(String.format(MASTER_TOKEN_PAYLOAD, email, password));
+    HttpPost masterTokenPost = new HttpPost(LOGIN_ACCOUNT_URL);
+    StringEntity masterTokenPayload = new StringEntity(String.format(TOKEN_PAYLOAD, email, password));
     masterTokenPost.setEntity(masterTokenPayload);
 
     try (CloseableHttpResponse masterTokenResponse = httpInterface.execute(masterTokenPost)) {
@@ -187,11 +209,16 @@ public class YoutubeAccessTokenTracker {
 
       HttpClientTools.assertSuccessWithContent(masterTokenResponse, "login account response [" + jsonBrowser.get("exception").safeText() + "]");
 
-      String services = jsonBrowser.get("services").text();
-      if (!jsonBrowser.get("continueUrl").isNull()) {
-        return continueUrl(httpInterface, jsonBrowser);
-      } else if (!services.contains("android") || !services.contains("youtube")) {
-        createAndroidAccount(httpInterface, jsonBrowser);
+      if (jsonBrowser.get("tv").asBoolean(false)) {
+        masterTokenFromTV = true;
+        return jsonBrowser.get("refresh_token").text();
+      } else {
+        String services = jsonBrowser.get("services").text();
+        if (!jsonBrowser.get("continueUrl").isNull()) {
+          return continueUrl(httpInterface, jsonBrowser);
+        } else if (!services.contains("android") || !services.contains("youtube")) {
+          createAndroidAccount(httpInterface, jsonBrowser);
+        }
       }
 
       return jsonBrowser.get("aas_et").text();
@@ -199,29 +226,49 @@ public class YoutubeAccessTokenTracker {
   }
 
   private String requestAccessToken(HttpInterface httpInterface) throws IOException {
-    List<NameValuePair> params = new ArrayList<>();
-    params.add(new BasicNameValuePair("app", "com.google.android.youtube"));
-    params.add(new BasicNameValuePair("client_sig", "24bb24c05e47e0aefa68a58a766179d9b613a600"));
-    params.add(new BasicNameValuePair("google_play_services_version", "214516005"));
-    params.add(new BasicNameValuePair("service", "oauth2:https://www.googleapis.com/auth/youtube"));
-    params.add(new BasicNameValuePair("Token", masterToken));
-    HttpPost post = new HttpPost(buildUri(AUTH_URL, params));
+    if (masterTokenFromTV) {
+      if (cachedAuthScript == null) fetchTVScript(httpInterface);
 
-    try (CloseableHttpResponse response = httpInterface.execute(post)) {
-      HttpClientTools.assertSuccessWithContent(response, "access token response");
-      response.getEntity().getContent();
+      HttpPost post = new HttpPost(TV_AUTH_TOKEN_URL);
+      post.setEntity(new StringEntity(String.format(TV_AUTH_TOKEN_REFRESH_PAYLOAD,
+          cachedAuthScript.clientId,
+          cachedAuthScript.clientSecret,
+          masterToken
+      ), "UTF-8"));
 
-      Map<String, String> map = convertToMapLayout(EntityUtils.toString(response.getEntity()));
-      accessTokenRefreshInterval = TimeUnit.SECONDS.toMillis(Long.parseLong(map.get("ExpiresInDurationSec")));
-      return map.get("Auth");
+      try (CloseableHttpResponse response = httpInterface.execute(post)) {
+        HttpClientTools.assertSuccessWithContent(response, "access token tv response");
+
+        String responseText = EntityUtils.toString(response.getEntity(), UTF_8);
+        JsonBrowser responseJson = JsonBrowser.parse(responseText);
+
+        accessTokenRefreshInterval = TimeUnit.SECONDS.toMillis(responseJson.get("expires_in").asLong(DEFAULT_ACCESS_TOKEN_REFRESH_INTERVAL));
+        return responseJson.get("access_token").text();
+      }
+    } else {
+      List<NameValuePair> params = new ArrayList<>();
+      params.add(new BasicNameValuePair("app", "com.google.android.youtube"));
+      params.add(new BasicNameValuePair("client_sig", "24bb24c05e47e0aefa68a58a766179d9b613a600"));
+      params.add(new BasicNameValuePair("google_play_services_version", "214516005"));
+      params.add(new BasicNameValuePair("service", "oauth2:https://www.googleapis.com/auth/youtube"));
+      params.add(new BasicNameValuePair("Token", masterToken));
+      HttpPost post = new HttpPost(buildUri(ANDROID_AUTH_URL, params));
+
+      try (CloseableHttpResponse response = httpInterface.execute(post)) {
+        HttpClientTools.assertSuccessWithContent(response, "access token android response");
+
+        Map<String, String> map = convertToMapLayout(EntityUtils.toString(response.getEntity()));
+        accessTokenRefreshInterval = TimeUnit.SECONDS.toMillis(Long.parseLong(map.get("ExpiresInDurationSec")));
+        return map.get("Auth");
+      }
     }
   }
 
   private void createAndroidAccount(HttpInterface httpInterface, JsonBrowser jsonBrowser) throws IOException {
-    log.info("Account " + jsonBrowser.get("email").text() + " don't have Android profile, creating new one...");
+    log.info("Account " + jsonBrowser.get("email").text() + " don't have Android or YouTube profile, creating new one...");
 
-    HttpPost post = new HttpPost(CHECKIN_ACCOUNT);
-    StringEntity payload = new StringEntity(String.format(MASTER_TOKEN_PAYLOAD, email, password));
+    HttpPost post = new HttpPost(CHECKIN_ACCOUNT_URL);
+    StringEntity payload = new StringEntity(String.format(TOKEN_PAYLOAD, email, password));
     post.setEntity(payload);
 
     try (CloseableHttpResponse response = httpInterface.execute(post)) {
@@ -255,7 +302,8 @@ public class YoutubeAccessTokenTracker {
         params.add(new BasicNameValuePair("Token", oauthToken));
         params.add(new BasicNameValuePair("ACCESS_TOKEN", "1"));
         params.add(new BasicNameValuePair("service", "ac2dm"));
-        HttpPost post = new HttpPost(buildUri(AUTH_URL, params));
+        HttpPost post = new HttpPost(buildUri(ANDROID_AUTH_URL, params));
+
         try (CloseableHttpResponse exchangeResponse = httpInterface.execute(post)) {
           HttpClientTools.assertSuccessWithContent(exchangeResponse, "exchange oauth2 token response");
 
@@ -265,7 +313,121 @@ public class YoutubeAccessTokenTracker {
       }
     }
 
-    throw new RuntimeException("Can't find oauth_token in continueUrl response");
+    // In case if first auth method failed, start trying second one
+    log.warn("First auth method failed, trying second one...");
+    return requestAuthCode(httpInterface, fetchTVScript(httpInterface));
+  }
+
+  private CachedAuthScript fetchTVScript(HttpInterface httpInterface) throws IOException {
+    HttpGet get = new HttpGet(YOUTUBE_ORIGIN + "/tv");
+    get.setHeader("User-Agent", "Mozilla/5.0 (ChromiumStylePlatform) Cobalt/Version");
+
+    try (CloseableHttpResponse response = httpInterface.execute(get)) {
+      HttpClientTools.assertSuccessWithContent(response, "youtube tv page response");
+
+      String responseText = EntityUtils.toString(response.getEntity());
+      Matcher authScript = authScriptPattern.matcher(responseText);
+
+      if (!authScript.find()) {
+        throw throwWithDebugInfo(log, null, "no base-js found", "html", responseText);
+      }
+
+      return extractIdentity(httpInterface, authScript.group(1));
+    }
+  }
+
+  private CachedAuthScript extractIdentity(HttpInterface httpInterface, String scriptUrl) throws IOException {
+    try (CloseableHttpResponse response = httpInterface.execute(new HttpGet(YOUTUBE_ORIGIN + scriptUrl))) {
+      HttpClientTools.assertSuccessWithContent(response, "tv script response");
+
+      String responseText = EntityUtils.toString(response.getEntity());
+      Matcher identity = identityPattern.matcher(responseText);
+
+      if (!identity.find()) {
+        throw throwWithDebugInfo(log, null, "no identity in base-js found", "js", responseText);
+      }
+
+      return cachedAuthScript = new CachedAuthScript(JsonBrowser.parse(identity.group(1)));
+    }
+  }
+
+  private String requestAuthCode(HttpInterface httpInterface, CachedAuthScript script) throws IOException {
+    HttpPost post = new HttpPost(TV_AUTH_CODE_URL);
+    post.setEntity(new StringEntity(String.format(TV_AUTH_CODE_PAYLOAD, script.clientId, UUID.randomUUID()), "UTF-8"));
+
+    try (CloseableHttpResponse response = httpInterface.execute(post)) {
+      HttpClientTools.assertSuccessWithContent(response, "auth code response");
+
+      String responseText = EntityUtils.toString(response.getEntity(), UTF_8);
+      JsonBrowser responseJson = JsonBrowser.parse(responseText);
+
+      return waitForAuth(httpInterface, responseJson, script);
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private String waitForAuth(HttpInterface httpInterface, JsonBrowser json, CachedAuthScript script) throws IOException, InterruptedException {
+    log.info("Open your browser, go to {} and enter code {}, this is required to complete auth in provided account," +
+            " usually this needed to be done once," +
+            " LavaPlayer will wait and check for auth completion every 5 seconds.",
+        json.get("verification_url").text(),
+        json.get("user_code").text()
+    );
+    Thread.sleep(5000L);
+
+    HttpPost authPost = new HttpPost(TV_AUTH_TOKEN_URL);
+    authPost.setEntity(new StringEntity(String.format(TV_AUTH_TOKEN_PAYLOAD,
+        script.clientId,
+        script.clientSecret,
+        json.get("device_code").text()
+    ), "UTF-8"));
+
+    try (CloseableHttpResponse authResponse = httpInterface.execute(authPost)) {
+      HttpClientTools.assertSuccessWithContent(authResponse, "auth wait response");
+
+      String responseText = EntityUtils.toString(authResponse.getEntity(), UTF_8);
+      JsonBrowser responseJson = JsonBrowser.parse(responseText);
+      JsonBrowser errorJson = responseJson.get("error");
+
+      if (!errorJson.isNull()) {
+        String text = errorJson.text();
+        if ("authorization_pending".equals(text)) {
+          return waitForAuth(httpInterface, json, script);
+        } else if ("expired_token".equals(text)) {
+          log.warn("Token was expired, new one will be generated...");
+          return requestAuthCode(httpInterface, script);
+        } else if ("access_denied".equals(text)) {
+          throw new RuntimeException("Auth access was denied, second auth method failed.");
+        } else if ("slow_down".equals(text)) {
+          throw new RuntimeException("You are being rate limited, second auth method failed.");
+        } else {
+          throw new RuntimeException(String.format("Unknown response from auth (%s)", errorJson.text()));
+        }
+      } else {
+        String refreshToken = responseJson.get("refresh_token").text();
+        HttpPost savePost = new HttpPost(SAVE_ACCOUNT_URL);
+        savePost.setEntity(new StringEntity(String.format(TOKEN_REFRESH_PAYLOAD,
+            email,
+            password,
+            refreshToken
+        ), "UTF-8"));
+
+        try (CloseableHttpResponse saveResponse = httpInterface.execute(savePost)) {
+          HttpClientTools.assertSuccessWithContent(saveResponse, "auth save response");
+
+          accessToken = responseJson.get("access_token").text();
+          accessTokenRefreshInterval = TimeUnit.SECONDS.toMillis(responseJson.get("expires_in").asLong(DEFAULT_ACCESS_TOKEN_REFRESH_INTERVAL));
+          lastAccessTokenUpdate = System.currentTimeMillis();
+          masterTokenFromTV = true;
+          log.info("Auth was successful and updating YouTube access token succeeded, new token is {}, next update will be after {} seconds.",
+              accessToken,
+              TimeUnit.MILLISECONDS.toSeconds(accessTokenRefreshInterval)
+          );
+          return refreshToken;
+        }
+      }
+    }
   }
 
   private URI buildUri(String url, List<NameValuePair> params) {
@@ -275,6 +437,16 @@ public class YoutubeAccessTokenTracker {
               .build();
     } catch (URISyntaxException e) {
       throw new RuntimeException(e);
+    }
+  }
+
+  protected static class CachedAuthScript {
+    public final String clientId;
+    public final String clientSecret;
+
+    public CachedAuthScript(JsonBrowser authScript) {
+      this.clientId = authScript.get("clientId").text();
+      this.clientSecret = authScript.get("qg").text();
     }
   }
 }

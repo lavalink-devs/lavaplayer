@@ -2,6 +2,7 @@ package com.sedmelluq.discord.lavaplayer.source.youtube;
 
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManager;
+import com.sedmelluq.discord.lavaplayer.tools.DataFormatTools;
 import com.sedmelluq.discord.lavaplayer.tools.ExceptionTools;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.tools.http.ExtendedHttpConfigurable;
@@ -97,6 +98,11 @@ public class YoutubeAudioSourceManager implements AudioSourceManager, HttpConfig
     YoutubeHttpContextFilter youtubeHttpContextFilter = new YoutubeHttpContextFilter();
     youtubeHttpContextFilter.setTokenTracker(accessTokenTracker);
     httpInterfaceManager.setHttpContextFilter(youtubeHttpContextFilter);
+
+    if (!DataFormatTools.isNullOrEmpty(email) && !DataFormatTools.isNullOrEmpty(password)) {
+      // Prepare master token on startup
+      accessTokenTracker.updateMasterToken();
+    }
 
     this.allowSearch = allowSearch;
     this.trackDetailsLoader = trackDetailsLoader;
