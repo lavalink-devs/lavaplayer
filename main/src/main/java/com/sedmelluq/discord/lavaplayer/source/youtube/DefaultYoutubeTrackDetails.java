@@ -96,8 +96,9 @@ public class DefaultYoutubeTrackDetails implements YoutubeTrackDetails {
     }
 
     TemporalInfo temporalInfo = TemporalInfo.fromRawData(
-        videoDetails.get("isLiveContent").asBoolean(false),
-        videoDetails.get("lengthSeconds")
+        !playabilityStatus.get("liveStreamability").isNull(),
+        videoDetails.get("lengthSeconds"),
+        false
     );
 
     return buildTrackInfo(videoId, videoDetails.get("title").text(), videoDetails.get("author").text(), temporalInfo, PBJUtils.getYouTubeThumbnail(videoDetails, videoId));
@@ -112,7 +113,8 @@ public class DefaultYoutubeTrackDetails implements YoutubeTrackDetails {
 
     TemporalInfo temporalInfo = TemporalInfo.fromRawData(
         "1".equals(args.get("live_playback").text()),
-        args.get("length_seconds")
+        args.get("length_seconds"),
+        true
     );
 
     return buildTrackInfo(videoId, args.get("title").text(), args.get("author").text(), temporalInfo, PBJUtils.getYouTubeThumbnail(args, videoId));
@@ -132,11 +134,19 @@ public class DefaultYoutubeTrackDetails implements YoutubeTrackDetails {
       this.durationMillis = durationMillis;
     }
 
-    public static TemporalInfo fromRawData(boolean wasLiveStream, JsonBrowser durationSecondsField) {
+    public static TemporalInfo fromRawData(boolean wasLiveStream, JsonBrowser durationSecondsField, boolean legacy) {
       long durationValue = durationSecondsField.asLong(0L);
+      boolean isActiveStream;
       // VODs are not really live streams, even though that field in JSON claims they are. If it is actually live, then
       // duration is also missing or 0.
-      boolean isActiveStream = wasLiveStream && durationValue == 0;
+      if (wasLiveStream && !legacy) {
+        // Premiers have total duration info field but acting as usual stream so when we try play it we don't know
+        // current position of it since YT don't provide such info so assume duration is unknown.
+        isActiveStream = true;
+        durationValue = 0;
+      } else {
+        isActiveStream = wasLiveStream && durationValue == 0;
+      }
 
       return new TemporalInfo(
           isActiveStream,
