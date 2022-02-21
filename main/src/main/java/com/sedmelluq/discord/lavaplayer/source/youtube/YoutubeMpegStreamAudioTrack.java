@@ -29,7 +29,7 @@ import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.
  * responds to a segment request with 204.
  */
 public class YoutubeMpegStreamAudioTrack extends MpegAudioTrack {
-  private static final RequestConfig streamingRequestConfig = RequestConfig.custom().setConnectTimeout(10000).build();
+  private static final RequestConfig streamingRequestConfig = RequestConfig.custom().setSocketTimeout(2000).setConnectionRequestTimeout(2000).setConnectTimeout(2000).build();
   private static final long EMPTY_RETRY_THRESHOLD_MS = 400;
   private static final long EMPTY_RETRY_INTERVAL_MS = 50;
 
@@ -119,13 +119,14 @@ public class YoutubeMpegStreamAudioTrack extends MpegAudioTrack {
 
       stream.releaseConnection();
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      // IOException here usually means that stream is about to end.
+      return false;
     }
 
     return true;
   }
 
-  private void processSegmentStream(SeekableInputStream stream, AudioProcessingContext context, TrackState state) throws InterruptedException {
+  private void processSegmentStream(SeekableInputStream stream, AudioProcessingContext context, TrackState state) throws InterruptedException, IOException {
     MpegFileLoader file = new MpegFileLoader(stream);
     file.parseHeaders();
 

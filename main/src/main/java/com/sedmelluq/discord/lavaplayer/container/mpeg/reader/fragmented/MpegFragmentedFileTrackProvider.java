@@ -1,9 +1,9 @@
 package com.sedmelluq.discord.lavaplayer.container.mpeg.reader.fragmented;
 
+import com.sedmelluq.discord.lavaplayer.container.mpeg.MpegTrackConsumer;
 import com.sedmelluq.discord.lavaplayer.container.mpeg.reader.MpegFileTrackProvider;
 import com.sedmelluq.discord.lavaplayer.container.mpeg.reader.MpegReader;
 import com.sedmelluq.discord.lavaplayer.container.mpeg.reader.MpegSectionInfo;
-import com.sedmelluq.discord.lavaplayer.container.mpeg.MpegTrackConsumer;
 import com.sedmelluq.discord.lavaplayer.container.mpeg.reader.MpegVersionedSectionInfo;
 import com.sedmelluq.discord.lavaplayer.tools.Units;
 import com.sedmelluq.discord.lavaplayer.tools.io.DetachedByteChannel;
@@ -47,32 +47,29 @@ public class MpegFragmentedFileTrackProvider implements MpegFileTrackProvider {
   }
 
   @Override
-  public void provideFrames() throws InterruptedException {
+  public void provideFrames() throws InterruptedException, IOException {
     MpegSectionInfo moof;
 
-    try (ReadableByteChannel channel = new DetachedByteChannel(Channels.newChannel(reader.seek))) {
-      while ((moof = reader.nextChild(root)) != null) {
-        if (!"moof".equals(moof.type)) {
-          reader.skip(moof);
-          continue;
-        }
-
-        MpegTrackFragmentHeader fragment = parseTrackMovieFragment(moof, consumer.getTrack().trackId);
-        MpegSectionInfo mdat = reader.nextChild(root);
-
-        long timecode = fragment.baseTimecode;
-        reader.seek.seek(moof.offset + fragment.dataOffset);
-
-        for (int i = 0; i < fragment.sampleSizes.length; i++) {
-          handleSeeking(consumer, timecode);
-
-          consumer.consume(channel, fragment.sampleSizes[i]);
-        }
-
-        reader.skip(mdat);
+    ReadableByteChannel channel = new DetachedByteChannel(Channels.newChannel(reader.seek));
+    while ((moof = reader.nextChild(root)) != null) {
+      if (!"moof".equals(moof.type)) {
+        reader.skip(moof);
+        continue;
       }
-    } catch (IOException e) {
-      throw new RuntimeException(e);
+
+      MpegTrackFragmentHeader fragment = parseTrackMovieFragment(moof, consumer.getTrack().trackId);
+      MpegSectionInfo mdat = reader.nextChild(root);
+
+      long timecode = fragment.baseTimecode;
+      reader.seek.seek(moof.offset + fragment.dataOffset);
+
+      for (int i = 0; i < fragment.sampleSizes.length; i++) {
+        handleSeeking(consumer, timecode);
+
+        consumer.consume(channel, fragment.sampleSizes[i]);
+      }
+
+      reader.skip(mdat);
     }
   }
 

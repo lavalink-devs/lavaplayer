@@ -136,6 +136,8 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
       return InfoStatus.REQUIRES_LOGIN;
     } else if ("CONTENT_CHECK_REQUIRED".equals(status)) {
       return InfoStatus.CONTENT_CHECK_REQUIRED;
+    } else if ("LIVE_STREAM_OFFLINE".equals(status)) {
+      throw new FriendlyException(getUnplayableReason(statusBlock), COMMON, null);
     } else {
       throw new FriendlyException("This video cannot be viewed anonymously.", COMMON, null);
     }
@@ -146,6 +148,7 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
     REQUIRES_LOGIN,
     DOES_NOT_EXIST,
     CONTENT_CHECK_REQUIRED,
+    LIVE_STREAM_OFFLINE,
     NON_EMBEDDABLE
   }
 

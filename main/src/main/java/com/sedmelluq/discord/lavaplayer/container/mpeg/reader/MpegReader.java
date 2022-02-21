@@ -42,25 +42,22 @@ public class MpegReader {
    * Reads the header of the next child element. Assumes position is at the start of a header or at the end of the section.
    * @param parent The section from which to read child sections from
    * @return The element if there were any more child elements
+   * @throws IOException When network exception is happened
    */
-  public MpegSectionInfo nextChild(MpegSectionInfo parent) {
+  public MpegSectionInfo nextChild(MpegSectionInfo parent) throws IOException {
     if (parent.offset + parent.length <= seek.getPosition() + 8) {
       return null;
     }
 
-    try {
-      long offset = seek.getPosition();
-      Integer lengthField = tryReadInt();
+    long offset = seek.getPosition();
+    Integer lengthField = tryReadInt();
 
-      if (lengthField == null) {
-        return null;
-      }
-
-      long length = Integer.toUnsignedLong(lengthField);
-      return new MpegSectionInfo(offset, length, readFourCC());
-    } catch (IOException e) {
-      throw new RuntimeException(e);
+    if (lengthField == null) {
+      return null;
     }
+
+    long length = Integer.toUnsignedLong(lengthField);
+    return new MpegSectionInfo(offset, length, readFourCC());
   }
 
   /**
