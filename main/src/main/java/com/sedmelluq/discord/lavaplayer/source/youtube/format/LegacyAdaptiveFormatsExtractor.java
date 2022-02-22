@@ -34,6 +34,7 @@ public class LegacyAdaptiveFormatsExtractor implements OfflineYoutubeTrackFormat
           Long.parseLong(format.get("clen")),
           2,
           format.get("url"),
+          "",
           format.get("s"),
           format.getOrDefault("sp", DEFAULT_SIGNATURE_KEY)
       ));

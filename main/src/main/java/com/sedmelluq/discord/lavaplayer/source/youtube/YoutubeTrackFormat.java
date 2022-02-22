@@ -15,6 +15,7 @@ public class YoutubeTrackFormat {
   private final long contentLength;
   private final long audioChannels;
   private final String url;
+  private final String nParameter;
   private final String signature;
   private final String signatureKey;
 
@@ -23,18 +24,27 @@ public class YoutubeTrackFormat {
    * @param bitrate Bitrate of the format
    * @param contentLength Length in bytes of the media
    * @param url Base URL for the playback of this format
+   * @param nParameter n parameter for this format
    * @param signature Cipher signature for this format
    * @param signatureKey The key to use for deciphered signature in the final playback URL
    */
-  public YoutubeTrackFormat(ContentType type, long bitrate, long contentLength, long audioChannels, String url, String signature,
-                            String signatureKey) {
-
+  public YoutubeTrackFormat(
+      ContentType type,
+      long bitrate,
+      long contentLength,
+      long audioChannels,
+      String url,
+      String nParameter,
+      String signature,
+      String signatureKey
+  ) {
     this.info = YoutubeFormatInfo.get(type);
     this.type = type;
     this.bitrate = bitrate;
     this.contentLength = contentLength;
     this.audioChannels = audioChannels;
     this.url = url;
+    this.nParameter = nParameter;
     this.signature = signature;
     this.signatureKey = signatureKey;
   }
@@ -83,6 +93,13 @@ public class YoutubeTrackFormat {
    */
   public long getContentLength() {
     return contentLength;
+  }
+
+  /**
+   * @return n parameter for this format
+   */
+  public String getNParameter() {
+    return nParameter;
   }
 
   /**

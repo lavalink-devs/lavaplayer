@@ -2,6 +2,7 @@ package com.sedmelluq.discord.lavaplayer.source.youtube.format;
 
 import com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeTrackFormat;
 import com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeTrackJsonData;
+import com.sedmelluq.discord.lavaplayer.tools.DataFormatTools;
 import com.sedmelluq.discord.lavaplayer.tools.JsonBrowser;
 import com.sedmelluq.discord.lavaplayer.tools.Units;
 import java.util.ArrayList;
@@ -39,6 +40,7 @@ public class StreamingDataFormatsExtractor implements OfflineYoutubeTrackFormatE
 
     if (!formats.isNull() && formats.isList()) {
       for (JsonBrowser formatJson : formats.values()) {
+        String url = formatJson.get("url").text();
         String cipher = formatJson.get("cipher").text();
 
         if (cipher == null) {
@@ -48,6 +50,13 @@ public class StreamingDataFormatsExtractor implements OfflineYoutubeTrackFormatE
         Map<String, String> cipherInfo = cipher != null
             ? decodeUrlEncodedItems(cipher, true)
             : Collections.emptyMap();
+
+        Map<String, String> urlMap;
+        if (DataFormatTools.isNullOrEmpty(url)) {
+          urlMap = decodeUrlEncodedItems(cipherInfo.get("url"), false);
+        } else {
+          urlMap = decodeUrlEncodedItems(url, false);
+        }
 
         try {
           long contentLength = formatJson.get("contentLength").asLong(CONTENT_LENGTH_UNKNOWN);
@@ -62,7 +71,8 @@ public class StreamingDataFormatsExtractor implements OfflineYoutubeTrackFormatE
               formatJson.get("bitrate").asLong(Units.BITRATE_UNKNOWN),
               contentLength,
               formatJson.get("audioChannels").asLong(2),
-              cipherInfo.getOrDefault("url", formatJson.get("url").text()),
+              cipherInfo.getOrDefault("url", url),
+              urlMap.get("n"),
               cipherInfo.get("s"),
               cipherInfo.getOrDefault("sp", DEFAULT_SIGNATURE_KEY)
           ));

@@ -181,7 +181,7 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
   ) throws IOException {
     if (cachedPlayerScript == null) fetchScript(videoId, httpInterface);
 
-    YoutubeSignatureCipher playerScriptTimestamp = sourceManager.getSignatureResolver().getCipherKeyAndTimestampFromScript(
+    YoutubeSignatureCipher playerScriptTimestamp = sourceManager.getSignatureResolver().getExtractedScript(
             httpInterface,
             cachedPlayerScript.playerScriptUrl
     );
