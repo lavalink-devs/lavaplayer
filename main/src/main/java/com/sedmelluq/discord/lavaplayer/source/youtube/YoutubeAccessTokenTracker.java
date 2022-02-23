@@ -51,8 +51,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class YoutubeAccessTokenTracker {
   private static final Logger log = LoggerFactory.getLogger(YoutubeAccessTokenTracker.class);
 
-  private static final String AUTH_SCRIPT_REGEX = "<script id=\"base-js\" src=\"(.*?)\" nonce=\".*?\"><\\/script>";
-  private static final String IDENTITY_REGEX = "var .+?=(\\{clientId:\"(.+?)\",.+?:\"(.+?)\"})";
+  private static final String AUTH_SCRIPT_REGEX = "<script id=\"base-js\" src=\"(.*?)\" nonce=\".*?\"></script>";
+  private static final String IDENTITY_REGEX = "\\{clientId:\"(.+?)\",.+?:\"(.+?)\"}";
 
   private static final Pattern authScriptPattern = Pattern.compile(AUTH_SCRIPT_REGEX);
   private static final Pattern identityPattern = Pattern.compile(IDENTITY_REGEX);
@@ -347,7 +347,7 @@ public class YoutubeAccessTokenTracker {
         throw throwWithDebugInfo(log, null, "no identity in base-js found", "js", responseText);
       }
 
-      return cachedAuthScript = new CachedAuthScript(JsonBrowser.parse(identity.group(1)));
+      return cachedAuthScript = new CachedAuthScript(identity.group(1), identity.group(2));
     }
   }
 
@@ -444,9 +444,9 @@ public class YoutubeAccessTokenTracker {
     public final String clientId;
     public final String clientSecret;
 
-    public CachedAuthScript(JsonBrowser authScript) {
-      this.clientId = authScript.get("clientId").text();
-      this.clientSecret = authScript.get("qg").text();
+    public CachedAuthScript(String clientId, String clientSecret) {
+      this.clientId = clientId;
+      this.clientSecret = clientSecret;
     }
   }
 }
