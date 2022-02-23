@@ -72,7 +72,7 @@ public class YoutubeSignatureCipherManager implements YoutubeSignatureResolver {
   private static final Pattern timestampPattern = Pattern.compile("(signatureTimestamp|sts)[\\:](\\d+)");
   private static final Pattern nFunctionPattern = Pattern.compile(
       "function\\(\\s*(\\w+)\\s*\\)\\s*\\{var" +
-          "\\s*(\\w+)=\\1\\.split\\(\"\"\\),\\s*(\\w+)=\\[.+\\];\\3\\[\\d+\\].+" +
+          "\\s*(\\w+)=\\1\\.split\\(\"\"\\),\\s*(\\w+)=\\[.+\\];\\s*\\3\\[\\d+\\].+" +
           "try\\{\\3.+\\}catch\\(\\s*(\\w+)\\s*\\)\\s*\\" +
           "{\\s*return\"enhanced_except_.+\"\\s*\\+\\s*\\1\\s*}\\s*return\\s*\\2\\.join\\(\"\"\\)\\};", Pattern.DOTALL
   );
@@ -229,8 +229,8 @@ public class YoutubeSignatureCipherManager implements YoutubeSignatureResolver {
     Matcher matcher = extractor.matcher(functions.group(1));
 
     if (!nFunction.find()) {
+      // Don't throw any exceptions here since if n function is not extracted audio still can be played
       dumpProblematicScript(script, sourceUrl, "no n function match");
-      throw new IllegalStateException("Must find n function from script: " + sourceUrl);
     }
 
     if (!scriptTimestamp.find()) {
