@@ -23,6 +23,7 @@ public class YoutubeTrackFormat {
    * @param type Mime type of the format
    * @param bitrate Bitrate of the format
    * @param contentLength Length in bytes of the media
+   * @param audioChannels Number of audio channels
    * @param url Base URL for the playback of this format
    * @param nParameter n parameter for this format
    * @param signature Cipher signature for this format
