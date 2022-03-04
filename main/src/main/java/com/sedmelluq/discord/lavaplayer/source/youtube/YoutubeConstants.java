@@ -15,7 +15,7 @@ public class YoutubeConstants {
     static final String BASE_PAYLOAD = "{\"context\":{\"client\":{\"clientName\":\"%s\",\"clientVersion\":\"%s\"";
     static final String DEFAULT_BASE_PAYLOAD = String.format(BASE_PAYLOAD, CLIENT_ANDROID_NAME, CLIENT_ANDROID_VERSION);
     static final String SCREEN_PART_PAYLOAD = ",\"screenDensityFloat\":1,\"screenHeightPoints\":1080,\"screenPixelDensity\":1,\"screenWidthPoints\":1920";
-    static final String EMBED_PART_PAYLOAD = ",\"clientScreen\":\"" + CLIENT_SCREEN + "\"},\"thirdParty\":{\"embedUrl\":\"" + YOUTUBE_ORIGIN + "\"";
+    static final String EMBED_PART_PAYLOAD = ",\"clientScreen\":\"" + CLIENT_SCREEN + "\"},\"thirdParty\":{\"embedUrl\":\"https://google.com\"";
     static final String CLOSE_BASE_PAYLOAD = "}},";
     static final String CLOSE_PLAYER_PAYLOAD = "\"racyCheckOk\":true,\"contentCheckOk\":true,\"videoId\":\"%s\",\"playbackContext\":{\"contentPlaybackContext\":{\"signatureTimestamp\":%s}}}";
 
