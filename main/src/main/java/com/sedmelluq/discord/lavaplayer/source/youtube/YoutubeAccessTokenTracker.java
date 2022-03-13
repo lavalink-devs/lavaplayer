@@ -107,7 +107,7 @@ public class YoutubeAccessTokenTracker {
       // Don't block main thread since if first auth method failed then we go to second and it's require waiting when user is complete auth.
       CompletableFuture.runAsync(() -> {
         try {
-          Thread.sleep(1500L);
+          Thread.sleep(100L);
           masterToken = fetchMasterToken();
           log.info("Updating YouTube master token succeeded, new token is {}.", masterToken);
         } catch (Exception e) {
