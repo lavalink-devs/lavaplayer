@@ -123,29 +123,29 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
     } else if ("OK".equals(status)) {
       return InfoStatus.INFO_PRESENT;
     } else if ("ERROR".equals(status)) {
-      String reason = statusBlock.get("reason").text();
+      String errorReason = statusBlock.get("reason").text();
 
-      if ("This video is unavailable".equals(reason)) {
+      if (errorReason.contains("This video is unavailable")) {
         return InfoStatus.DOES_NOT_EXIST;
       } else {
-        throw new FriendlyException(reason, COMMON, null);
+        throw new FriendlyException(errorReason, COMMON, null);
       }
     } else if ("UNPLAYABLE".equals(status)) {
       String unplayableReason = getUnplayableReason(statusBlock);
 
-      if ("Playback on other websites has been disabled by the video owner.".equals(unplayableReason)) {
+      if (unplayableReason.contains("Playback on other websites has been disabled by the video owner")) {
         return InfoStatus.NON_EMBEDDABLE;
       }
 
       throw new FriendlyException(unplayableReason, COMMON, null);
     } else if ("LOGIN_REQUIRED".equals(status)) {
-      String errorReason = statusBlock.get("reason").text();
+      String loginReason = statusBlock.get("reason").text();
 
-      if ("This video is private".equals(errorReason)) {
+      if (loginReason.contains("This video is private")) {
         throw new FriendlyException("This is a private video.", COMMON, null);
       }
 
-      if ("This video may be inappropriate for some users.".equals(errorReason)) {
+      if (loginReason.contains("This video may be inappropriate for some users")) {
         throw new FriendlyException("This video requires age verification.", SUSPICIOUS,
                 new IllegalStateException("You did not set email and password in YoutubeAudioSourceManager."));
       }
