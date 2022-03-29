@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import static com.sedmelluq.discord.lavaplayer.container.Formats.MIME_AUDIO_WEBM;
 import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.COMMON;
+import static com.sedmelluq.discord.lavaplayer.tools.Units.CONTENT_LENGTH_UNKNOWN;
 
 /**
  * Audio track that handles processing Youtube videos as audio tracks.
@@ -44,7 +45,9 @@ public class YoutubeAudioTrack extends DelegatedAudioTrack {
       log.debug("Starting track from URL: {}", format.signedUrl);
 
       if (trackInfo.isStream) {
-        processStream(localExecutor, format);
+        processStream(localExecutor, format, false);
+      } else if (format.details.getContentLength() == CONTENT_LENGTH_UNKNOWN) {
+        processStream(localExecutor, format, true);
       } else {
         processStatic(localExecutor, httpInterface, format);
       }
@@ -61,12 +64,12 @@ public class YoutubeAudioTrack extends DelegatedAudioTrack {
     }
   }
 
-  private void processStream(LocalAudioTrackExecutor localExecutor, FormatWithUrl format) throws Exception {
+  private void processStream(LocalAudioTrackExecutor localExecutor, FormatWithUrl format, boolean staticStream) throws Exception {
     if (MIME_AUDIO_WEBM.equals(format.details.getType().getMimeType())) {
       throw new FriendlyException("YouTube WebM streams are currently not supported.", COMMON, null);
     } else {
       try (HttpInterface streamingInterface = sourceManager.getHttpInterface()) {
-        processDelegate(new YoutubeMpegStreamAudioTrack(trackInfo, streamingInterface, format.signedUrl), localExecutor);
+        processDelegate(new YoutubeMpegStreamAudioTrack(trackInfo, streamingInterface, format.signedUrl, staticStream), localExecutor);
       }
     }
   }

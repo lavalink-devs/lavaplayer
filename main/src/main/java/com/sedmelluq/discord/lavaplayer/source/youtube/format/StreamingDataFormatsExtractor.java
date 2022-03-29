@@ -27,7 +27,13 @@ public class StreamingDataFormatsExtractor implements OfflineYoutubeTrackFormatE
       return Collections.emptyList();
     }
 
+    JsonBrowser playabilityStatus = data.playerResponse.get("playabilityStatus");
     boolean isLive = data.playerResponse.get("videoDetails").get("isLive").asBoolean(false);
+    if ("OK".equals(playabilityStatus.get("status").text()) && playabilityStatus.get("reason").safeText().contains("This live event has ended")) {
+      // Long videos after ending of stream don't contain contentLength field because is not yet processed by YouTube
+      // This reason disappear after video being processed
+      isLive = true;
+    }
 
     List<YoutubeTrackFormat> formats = loadTrackFormatsFromStreamingData(streamingData.get("formats"), isLive);
     formats.addAll(loadTrackFormatsFromStreamingData(streamingData.get("adaptiveFormats"), isLive));
@@ -51,12 +57,9 @@ public class StreamingDataFormatsExtractor implements OfflineYoutubeTrackFormatE
             ? decodeUrlEncodedItems(cipher, true)
             : Collections.emptyMap();
 
-        Map<String, String> urlMap;
-        if (DataFormatTools.isNullOrEmpty(url)) {
-          urlMap = decodeUrlEncodedItems(cipherInfo.get("url"), false);
-        } else {
-          urlMap = decodeUrlEncodedItems(url, false);
-        }
+        Map<String, String> urlMap = DataFormatTools.isNullOrEmpty(url)
+            ? decodeUrlEncodedItems(cipherInfo.get("url"), false)
+            : decodeUrlEncodedItems(url, false);
 
         try {
           long contentLength = formatJson.get("contentLength").asLong(CONTENT_LENGTH_UNKNOWN);

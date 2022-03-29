@@ -15,6 +15,8 @@ import com.sedmelluq.discord.lavaplayer.track.playback.LocalAudioTrackExecutor;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.utils.URIBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URI;
@@ -29,23 +31,27 @@ import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.
  * responds to a segment request with 204.
  */
 public class YoutubeMpegStreamAudioTrack extends MpegAudioTrack {
+  private static final Logger log = LoggerFactory.getLogger(YoutubeMpegStreamAudioTrack.class);
   private static final RequestConfig streamingRequestConfig = RequestConfig.custom().setSocketTimeout(2000).setConnectionRequestTimeout(2000).setConnectTimeout(2000).build();
   private static final long EMPTY_RETRY_THRESHOLD_MS = 400;
   private static final long EMPTY_RETRY_INTERVAL_MS = 50;
 
   private final HttpInterface httpInterface;
   private final URI signedUrl;
+  private final boolean staticStream;
 
   /**
    * @param trackInfo Track info
    * @param httpInterface HTTP interface to use for loading segments
    * @param signedUrl URI of the base stream with signature resolved
+   * @param staticStream Video that is not yet converted to usual one after end of stream
    */
-  public YoutubeMpegStreamAudioTrack(AudioTrackInfo trackInfo, HttpInterface httpInterface, URI signedUrl) {
+  public YoutubeMpegStreamAudioTrack(AudioTrackInfo trackInfo, HttpInterface httpInterface, URI signedUrl, boolean staticStream) {
     super(trackInfo, null);
 
     this.httpInterface = httpInterface;
     this.signedUrl = signedUrl;
+    this.staticStream = staticStream;
 
     // YouTube does not return a segment until it is ready, this might trigger a connect timeout otherwise.
     httpInterface.getContext().setRequestConfig(streamingRequestConfig);
@@ -60,6 +66,10 @@ public class YoutubeMpegStreamAudioTrack extends MpegAudioTrack {
 
   private void execute(LocalAudioTrackExecutor localExecutor) throws InterruptedException {
     TrackState state = new TrackState(signedUrl);
+
+    if (staticStream && state.absoluteSequence == null) {
+      state.absoluteSequence = 0L;
+    }
 
     try {
       while (!state.finished) {
@@ -105,6 +115,8 @@ public class YoutubeMpegStreamAudioTrack extends MpegAudioTrack {
   ) throws InterruptedException {
     URI segmentUrl = getNextSegmentUrl(state);
 
+    log.debug("Segment URL: {}", segmentUrl.toString());
+
     try (YoutubePersistentHttpStream stream = new YoutubePersistentHttpStream(httpInterface, segmentUrl, Units.CONTENT_LENGTH_UNKNOWN)) {
       if (stream.checkStatusCode() == HttpStatus.SC_NO_CONTENT || stream.getContentLength() == 0) {
         return false;
@@ -130,7 +142,11 @@ public class YoutubeMpegStreamAudioTrack extends MpegAudioTrack {
     MpegFileLoader file = new MpegFileLoader(stream);
     file.parseHeaders();
 
-    state.absoluteSequence = extractAbsoluteSequenceFromEvent(file.getLastEventMessage());
+    if (staticStream) {
+      state.absoluteSequence++;
+    } else {
+      state.absoluteSequence = extractAbsoluteSequenceFromEvent(file.getLastEventMessage());
+    }
 
     if (state.trackConsumer == null) {
       state.trackConsumer = loadAudioTrack(file, context);
