@@ -212,6 +212,7 @@ public class MpegFileLoader {
     int version = reader.data.readUnsignedShort();
 
     switch (version) {
+      case 0:
       case 1: {
         reader.data.skipBytes(6);
 
