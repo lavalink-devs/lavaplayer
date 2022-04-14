@@ -208,17 +208,40 @@ public class MpegFileLoader {
   private void parseSoundTrackCodec(MpegSectionInfo codec, MpegTrackInfo.Builder trackInfo) throws IOException {
     reader.parseFlags(codec);
 
-    reader.data.readUnsignedShort(); // data_reference_index
-    reader.data.readUnsignedShort(); // apple: sound_version
-    reader.data.skipBytes(8); // reserved
+    reader.data.skipBytes(4);
+    int version = reader.data.readUnsignedShort();
 
-    trackInfo.setChannelCount(reader.data.readUnsignedShort());
+    switch (version) {
+      case 1: {
+        reader.data.skipBytes(6);
 
-    reader.data.readUnsignedShort(); // sample_size
-    reader.data.readUnsignedShort(); // apple stuff
+        trackInfo.setChannelCount(reader.data.readUnsignedShort());
 
-    trackInfo.setSampleRate(reader.data.readInt());
-    reader.data.readUnsignedShort();
+        reader.data.readUnsignedShort(); // sample_size
+        reader.data.readUnsignedShort(); // apple stuff
+
+        trackInfo.setSampleRate(reader.data.readInt());
+        reader.data.readUnsignedShort();
+        break;
+      }
+      case 2: {
+        reader.data.skipBytes(6);
+
+        reader.data.readUnsignedShort(); // Always3
+        reader.data.readUnsignedShort(); // Always16
+        reader.data.readShort(); // AlwaysMinus2
+        reader.data.readUnsignedShort(); // Always0
+        reader.data.readInt(); // Always65536
+
+        reader.data.skipBytes(2);
+
+        reader.data.readUnsignedShort(); // sizeOfStructOnly
+
+        trackInfo.setSampleRate((int) reader.data.readDouble());
+        trackInfo.setChannelCount(reader.data.readInt());
+        break;
+      }
+    }
 
     MpegSectionInfo esds = reader.nextChild(codec);
 
