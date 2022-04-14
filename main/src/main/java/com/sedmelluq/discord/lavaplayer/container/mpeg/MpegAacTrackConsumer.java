@@ -24,6 +24,7 @@ public class MpegAacTrackConsumer implements MpegTrackConsumer {
   private final AacPacketRouter packetRouter;
 
   private ByteBuffer inputBuffer;
+  private boolean configured;
 
   /**
    * @param context Configuration and output information for processing
@@ -60,9 +61,10 @@ public class MpegAacTrackConsumer implements MpegTrackConsumer {
     if (packetRouter.nativeDecoder == null) {
       packetRouter.nativeDecoder = new AacDecoder();
       inputBuffer = ByteBuffer.allocateDirect(4096);
+      configured = configureDecoder(packetRouter.nativeDecoder);
     }
 
-    if (configureDecoder(packetRouter.nativeDecoder)) {
+    if (configured) {
       processInput(channel, length);
     } else {
       if (packetRouter.embeddedDecoder == null) {
