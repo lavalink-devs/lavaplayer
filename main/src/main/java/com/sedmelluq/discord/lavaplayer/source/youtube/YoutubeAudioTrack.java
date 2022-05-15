@@ -67,7 +67,7 @@ public class YoutubeAudioTrack extends DelegatedAudioTrack {
       throw new FriendlyException("YouTube WebM streams are currently not supported.", COMMON, null);
     } else {
       try (HttpInterface streamingInterface = sourceManager.getHttpInterface()) {
-        processDelegate(new YoutubeMpegStreamAudioTrack(trackInfo, streamingInterface, format.signedUrl, format.details.getContentLength()), localExecutor);
+        processDelegate(new YoutubeMpegStreamAudioTrack(trackInfo, streamingInterface, format.signedUrl), localExecutor);
       }
     }
   }

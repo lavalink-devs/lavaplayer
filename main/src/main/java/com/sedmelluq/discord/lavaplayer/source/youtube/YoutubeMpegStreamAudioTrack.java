@@ -38,20 +38,17 @@ public class YoutubeMpegStreamAudioTrack extends MpegAudioTrack {
 
   private final HttpInterface httpInterface;
   private final URI signedUrl;
-  private final long contentLength;
 
   /**
    * @param trackInfo Track info
    * @param httpInterface HTTP interface to use for loading segments
    * @param signedUrl URI of the base stream with signature resolved
-   * @param contentLength The length of the resource in bytes
    */
-  public YoutubeMpegStreamAudioTrack(AudioTrackInfo trackInfo, HttpInterface httpInterface, URI signedUrl, long contentLength) {
+  public YoutubeMpegStreamAudioTrack(AudioTrackInfo trackInfo, HttpInterface httpInterface, URI signedUrl) {
     super(trackInfo, null);
 
     this.httpInterface = httpInterface;
     this.signedUrl = signedUrl;
-    this.contentLength = contentLength;
 
     // YouTube does not return a segment until it is ready, this might trigger a connect timeout otherwise.
     httpInterface.getContext().setRequestConfig(streamingRequestConfig);
@@ -67,7 +64,7 @@ public class YoutubeMpegStreamAudioTrack extends MpegAudioTrack {
   private void execute(LocalAudioTrackExecutor localExecutor) throws InterruptedException {
     TrackState state = new TrackState(signedUrl);
 
-    if (contentLength == CONTENT_LENGTH_UNKNOWN && state.absoluteSequence == null) {
+    if (!trackInfo.isStream && state.absoluteSequence == null) {
       state.absoluteSequence = 0L;
     }
 
@@ -142,7 +139,7 @@ public class YoutubeMpegStreamAudioTrack extends MpegAudioTrack {
     MpegFileLoader file = new MpegFileLoader(stream);
     file.parseHeaders();
 
-    if (contentLength == CONTENT_LENGTH_UNKNOWN) {
+    if (!trackInfo.isStream) {
       state.absoluteSequence++;
     } else {
       state.absoluteSequence = extractAbsoluteSequenceFromEvent(file.getLastEventMessage());
