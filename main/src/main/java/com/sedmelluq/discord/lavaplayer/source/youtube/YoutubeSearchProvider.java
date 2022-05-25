@@ -90,14 +90,15 @@ public class YoutubeSearchProvider implements YoutubeSearchResultLoader {
     jsonBrowser.get("contents")
             .get("sectionListRenderer")
             .get("contents")
-            .index(0)
-            .get("itemSectionRenderer")
-            .get("contents")
-            .values()
-            .forEach(jsonTrack -> {
-              AudioTrack track = extractPolymerData(jsonTrack, trackFactory);
-              if (track != null) list.add(track);
-            });
+            .values() // .index(0)
+            .forEach(content -> content.get("itemSectionRenderer")
+                    .get("contents")
+                    .values()
+                    .forEach(jsonTrack -> {
+                      AudioTrack track = extractPolymerData(jsonTrack, trackFactory);
+                      if (track != null) list.add(track);
+                    })
+            );
     return list;
   }
 
