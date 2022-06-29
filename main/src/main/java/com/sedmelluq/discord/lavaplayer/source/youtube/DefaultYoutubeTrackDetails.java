@@ -11,9 +11,10 @@ import com.sedmelluq.discord.lavaplayer.tools.JsonBrowser;
 import com.sedmelluq.discord.lavaplayer.tools.Units;
 import com.sedmelluq.discord.lavaplayer.tools.io.HttpInterface;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
-import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.WATCH_URL_PREFIX;
 import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.COMMON;
@@ -94,8 +95,9 @@ public class DefaultYoutubeTrackDetails implements YoutubeTrackDetails {
     }
 
     TemporalInfo temporalInfo = TemporalInfo.fromRawData(
-        videoDetails.get("isLiveContent").asBoolean(false),
-        videoDetails.get("lengthSeconds")
+        !playabilityStatus.get("liveStreamability").isNull(),
+        videoDetails.get("lengthSeconds"),
+        false
     );
 
     return buildTrackInfo(videoId, videoDetails.get("title").text(), videoDetails.get("author").text(), temporalInfo);
@@ -110,7 +112,8 @@ public class DefaultYoutubeTrackDetails implements YoutubeTrackDetails {
 
     TemporalInfo temporalInfo = TemporalInfo.fromRawData(
         "1".equals(args.get("live_playback").text()),
-        args.get("length_seconds")
+        args.get("length_seconds"),
+        true
     );
 
     return buildTrackInfo(videoId, args.get("title").text(), args.get("author").text(), temporalInfo);
@@ -130,11 +133,19 @@ public class DefaultYoutubeTrackDetails implements YoutubeTrackDetails {
       this.durationMillis = durationMillis;
     }
 
-    public static TemporalInfo fromRawData(boolean wasLiveStream, JsonBrowser durationSecondsField) {
+    public static TemporalInfo fromRawData(boolean wasLiveStream, JsonBrowser durationSecondsField, boolean legacy) {
       long durationValue = durationSecondsField.asLong(0L);
-      // VODs are not really live streams, even though that field in JSON claims they are. If it is actually live, then
-      // duration is also missing or 0.
-      boolean isActiveStream = wasLiveStream && durationValue == 0;
+      boolean isActiveStream;
+      if (wasLiveStream && !legacy) {
+        // Premiers have total duration info field but acting as usual stream so when we try play it we don't know
+        // current position of it since YT don't provide such info so assume duration is unknown.
+        isActiveStream = true;
+        durationValue = 0;
+      } else {
+        // VODs are not really live streams, even though that field in JSON claims they are. If it is actually live, then
+        // duration is also missing or 0.
+        isActiveStream = wasLiveStream && durationValue == 0;
+      }
 
       return new TemporalInfo(
           isActiveStream,

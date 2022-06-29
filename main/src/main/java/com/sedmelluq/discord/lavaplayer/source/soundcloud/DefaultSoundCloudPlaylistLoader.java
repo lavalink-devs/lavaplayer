@@ -32,7 +32,7 @@ import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.
 public class DefaultSoundCloudPlaylistLoader implements SoundCloudPlaylistLoader {
   private static final Logger log = LoggerFactory.getLogger(DefaultSoundCloudPlaylistLoader.class);
 
-  protected static final String PLAYLIST_URL_REGEX = "^(?:http://|https://|)(?:www\\.|)(?:m\\.|)soundcloud\\.com/([a-zA-Z0-9-_]+)/sets/([a-zA-Z0-9-_]+:?[a-zA-Z0-9-_]+:?[a-zA-Z0-9-_]+)/?([a-zA-Z0-9-_]+)?(?:\\?.*|)$";
+  protected static final String PLAYLIST_URL_REGEX = "^(?:http://|https://|)(?:www\\.|)(?:m\\.|)soundcloud\\.com/([a-zA-Z0-9-_:]+)/sets/([a-zA-Z0-9-_:]+)/?([a-zA-Z0-9-_:]+)?(?:\\?.*|)$";
   protected static final Pattern playlistUrlPattern = Pattern.compile(PLAYLIST_URL_REGEX);
 
   protected final SoundCloudDataLoader dataLoader;

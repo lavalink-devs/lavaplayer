@@ -88,17 +88,17 @@ public class YoutubeSearchProvider implements YoutubeSearchResultLoader {
   private List<AudioTrack> extractSearchPage(JsonBrowser jsonBrowser, Function<AudioTrackInfo, AudioTrack> trackFactory) throws IOException {
     ArrayList<AudioTrack> list = new ArrayList<>();
     jsonBrowser.get("contents")
-            .get("sectionListRenderer")
+        .get("sectionListRenderer")
+        .get("contents")
+        .values() // .index(0)
+        .forEach(content -> content.get("itemSectionRenderer")
             .get("contents")
-            .values() // .index(0)
-            .forEach(content -> content.get("itemSectionRenderer")
-                    .get("contents")
-                    .values()
-                    .forEach(jsonTrack -> {
-                      AudioTrack track = extractPolymerData(jsonTrack, trackFactory);
-                      if (track != null) list.add(track);
-                    })
-            );
+            .values()
+            .forEach(jsonTrack -> {
+              AudioTrack track = extractPolymerData(jsonTrack, trackFactory);
+              if (track != null) list.add(track);
+            })
+        );
     return list;
   }
 
@@ -115,7 +115,7 @@ public class YoutubeSearchProvider implements YoutubeSearchResultLoader {
     String videoId = json.get("videoId").text();
 
     AudioTrackInfo info = new AudioTrackInfo(title, author, duration, videoId, false,
-            WATCH_URL_PREFIX + videoId);
+        WATCH_URL_PREFIX + videoId);
 
     return trackFactory.apply(info);
   }

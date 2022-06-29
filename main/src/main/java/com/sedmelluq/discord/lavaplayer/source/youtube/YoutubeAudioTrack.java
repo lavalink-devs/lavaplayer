@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import static com.sedmelluq.discord.lavaplayer.container.Formats.MIME_AUDIO_WEBM;
 import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.COMMON;
+import static com.sedmelluq.discord.lavaplayer.tools.Units.CONTENT_LENGTH_UNKNOWN;
 
 /**
  * Audio track that handles processing Youtube videos as audio tracks.
@@ -43,7 +44,7 @@ public class YoutubeAudioTrack extends DelegatedAudioTrack {
 
       log.debug("Starting track from URL: {}", format.signedUrl);
 
-      if (trackInfo.isStream) {
+      if (trackInfo.isStream || format.details.getContentLength() == CONTENT_LENGTH_UNKNOWN) {
         processStream(localExecutor, format);
       } else {
         processStatic(localExecutor, httpInterface, format);
@@ -107,6 +108,9 @@ public class YoutubeAudioTrack extends DelegatedAudioTrack {
       return false;
     } else if (other == null) {
       return true;
+    } else if (info.mimeType.equals("audio/webm") && format.getAudioChannels() > 2) {
+      // Opus with more than 2 audio channels is unsupported by LavaPlayer currently.
+      return false;
     } else if (info.ordinal() != other.getInfo().ordinal()) {
       return info.ordinal() < other.getInfo().ordinal();
     } else {
@@ -126,7 +130,7 @@ public class YoutubeAudioTrack extends DelegatedAudioTrack {
     if (bestFormat == null) {
       StringJoiner joiner = new StringJoiner(", ");
       formats.forEach(format -> joiner.add(format.getType().toString()));
-      throw new IllegalStateException("No supported audio streams available, available types: " + joiner.toString());
+      throw new IllegalStateException("No supported audio streams available, available types: " + joiner);
     }
 
     return bestFormat;

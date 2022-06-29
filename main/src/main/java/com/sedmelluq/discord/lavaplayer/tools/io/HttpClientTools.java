@@ -5,13 +5,6 @@ import com.sedmelluq.discord.lavaplayer.tools.ExceptionTools;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.tools.JsonBrowser;
 import com.sedmelluq.discord.lavaplayer.tools.http.ExtendedHttpClientBuilder;
-import java.io.IOException;
-import java.net.SocketException;
-import java.net.SocketTimeoutException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
-import javax.net.ssl.SSLException;
 import org.apache.http.ConnectionClosedException;
 import org.apache.http.Header;
 import org.apache.http.HttpHeaders;
@@ -33,6 +26,15 @@ import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.net.ssl.SSLException;
+
+import java.io.IOException;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 
 import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.SUSPICIOUS;
 
@@ -152,7 +154,20 @@ public class HttpClientTools {
     int statusCode = response.getStatusLine().getStatusCode();
 
     if (!isSuccessWithContent(statusCode)) {
-      throw new IOException("Invalid status code for " + context +  ": " + statusCode);
+      throw new IOException("Invalid status code for " + context + ": " + statusCode);
+    }
+  }
+
+  /**
+   * @param response The response.
+   * @param context  Additional string to include in exception message.
+   * @return True if this status code indicates a redirect with a response body
+   */
+  public static void assertSuccessWithRedirectContent(HttpResponse response, String context) throws IOException {
+    int statusCode = response.getStatusLine().getStatusCode();
+
+    if (!isRedirectStatus(statusCode)) {
+      throw new IOException("Invalid status code for " + context + ": " + statusCode);
     }
   }
 

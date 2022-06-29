@@ -8,7 +8,7 @@ version = "0.1.0"
 
 dependencies {
   compileOnly(project(":main"))
-  implementation(files("./lib/ibxm-a74.jar"))
+  implementation("com.github.walkyst:ibxm-fork:a75")
 }
 
 val sourcesJar by tasks.registering(Jar::class) {
