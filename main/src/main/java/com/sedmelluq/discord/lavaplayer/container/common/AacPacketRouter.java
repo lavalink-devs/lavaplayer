@@ -85,6 +85,8 @@ public class AacPacketRouter {
     if (nativeDecoder != null) {
       nativeDecoder.close();
       nativeDecoder = null;
+    } else if (embeddedDecoder != null) {
+      embeddedDecoder = null;
     }
   }
 
@@ -105,6 +107,8 @@ public class AacPacketRouter {
     } finally {
       if (nativeDecoder != null) {
         nativeDecoder.close();
+      } else if (embeddedDecoder != null) {
+        embeddedDecoder = null;
       }
     }
   }
