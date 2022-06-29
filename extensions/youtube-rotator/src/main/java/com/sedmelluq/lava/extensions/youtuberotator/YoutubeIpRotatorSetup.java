@@ -13,7 +13,7 @@ import java.util.List;
 
 public class YoutubeIpRotatorSetup {
   private static final int DEFAULT_RETRY_LIMIT = 4;
-  private static final HttpContextFilter DEFAULT_DELEGATE = new YoutubeHttpContextFilter();
+  private static final YoutubeHttpContextFilter DEFAULT_DELEGATE = new YoutubeHttpContextFilter();
   private static final YoutubeIpRotatorRetryHandler RETRY_HANDLER = new YoutubeIpRotatorRetryHandler();
 
   private final AbstractRoutePlanner routePlanner;
@@ -43,6 +43,7 @@ public class YoutubeIpRotatorSetup {
     forConfiguration(sourceManager.getMainHttpConfiguration(), false);
     forConfiguration(sourceManager.getSearchHttpConfiguration(), true);
     forConfiguration(sourceManager.getSearchMusicHttpConfiguration(), true);
+    DEFAULT_DELEGATE.setTokenTracker(sourceManager.getAccessTokenTracker());
     return this;
   }
 

@@ -31,7 +31,7 @@ public class AudioSourceManagers {
    * @param containerRegistry Media container registry to be used by any probing sources.
    */
   public static void registerRemoteSources(AudioPlayerManager playerManager, MediaContainerRegistry containerRegistry) {
-    playerManager.registerSourceManager(new YoutubeAudioSourceManager(true));
+    playerManager.registerSourceManager(new YoutubeAudioSourceManager(true, null, null));
     playerManager.registerSourceManager(SoundCloudAudioSourceManager.createDefault());
     playerManager.registerSourceManager(new BandcampAudioSourceManager());
     playerManager.registerSourceManager(new VimeoAudioSourceManager());

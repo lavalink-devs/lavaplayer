@@ -14,6 +14,13 @@ import com.sedmelluq.discord.lavaplayer.track.AudioItem;
 import com.sedmelluq.discord.lavaplayer.track.AudioReference;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.HttpClientBuilder;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -22,21 +29,19 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.impl.client.HttpClientBuilder;
 
+import static com.sedmelluq.discord.lavaplayer.source.twitch.TwitchConstants.ACCESS_TOKEN_PAYLOAD;
+import static com.sedmelluq.discord.lavaplayer.source.twitch.TwitchConstants.DEFAULT_CLIENT_ID;
+import static com.sedmelluq.discord.lavaplayer.source.twitch.TwitchConstants.METADATA_PAYLOAD;
+import static com.sedmelluq.discord.lavaplayer.source.twitch.TwitchConstants.TWITCH_GRAPHQL_BASE_URL;
 import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.SUSPICIOUS;
 
 /**
  * Audio source manager which detects Twitch tracks by URL.
  */
 public class TwitchStreamAudioSourceManager implements AudioSourceManager, HttpConfigurable {
-  private static final String STREAM_NAME_REGEX = "^https://(?:www\\.|go\\.)?twitch.tv/([^/]+)$";
+  private static final String STREAM_NAME_REGEX = "^https://(?:www\\.|go\\.|m\\.)?twitch.tv/([^/]+)$";
   private static final Pattern streamNameRegex = Pattern.compile(STREAM_NAME_REGEX);
-
-  public static final String DEFAULT_CLIENT_ID = "jzkbprff40iqj646a697cyrvl0zt2m6";
 
   private final HttpInterfaceManager httpInterfaceManager;
   private final String twitchClientId;
@@ -73,48 +78,25 @@ public class TwitchStreamAudioSourceManager implements AudioSourceManager, HttpC
 
     JsonBrowser accessToken = fetchAccessToken(streamName);
 
-    if (accessToken == null || accessToken.get("token").isNull()) {
+    if (accessToken == null || accessToken.get("data").get("streamPlaybackAccessToken").get("value").isNull()) {
       return AudioReference.NO_TRACK;
     }
 
-    String channelId;
-    try {
-      JsonBrowser token = JsonBrowser.parse(accessToken.get("token").text());
-      channelId = token.get("channel_id").text();
-    } catch (IOException e) {
-      return null;
-    }
+    JsonBrowser channelInfo = fetchStreamChannelInfo(streamName).get("data").get("user");
 
-    JsonBrowser channelInfo = fetchStreamChannelInfo(channelId);
-
-    if (channelInfo == null || channelInfo.get("stream").isNull()) {
+    if (channelInfo == null || channelInfo.get("stream").get("type").isNull()) {
       return AudioReference.NO_TRACK;
     } else {
-      /*
-      --- HELIX STUFF
-      //Retrieve the data value list; this will have only one element since we're getting only one stream's information
-      List<JsonBrowser> dataList = channelInfo.get("data").values();
-
-      //The value list is empty if the stream is offline, even when hosting another channel
-      if (dataList.size() == 0){
-          return null;
-      }
-
-      //The first one has the title of the broadcast
-      JsonBrowser channelData = dataList.get(0);
-      String status = channelData.get("title").text();
-       */
-
-      JsonBrowser channelData = channelInfo.get("stream").get("channel");
-      String status = channelData.get("status").text();
+      String displayName = streamName;
+      String title = channelInfo.get("lastBroadcast").get("title").text();
 
       return new TwitchStreamAudioTrack(new AudioTrackInfo(
-              status,
-              streamName,
-              Units.DURATION_MS_UNKNOWN,
-              reference.identifier,
-              true,
-              reference.identifier
+          title,
+          displayName,
+          Units.DURATION_MS_UNKNOWN,
+          reference.identifier,
+          true,
+          reference.identifier
       ), this);
     }
   }
@@ -182,17 +164,16 @@ public class TwitchStreamAudioSourceManager implements AudioSourceManager, HttpC
   }
 
   private static HttpUriRequest addClientHeaders(HttpUriRequest request, String clientId) {
-    request.setHeader("Accept", "application/vnd.twitchtv.v5+json; charset=UTF-8");
     request.setHeader("Client-ID", clientId);
     return request;
   }
 
   private JsonBrowser fetchAccessToken(String name) {
     try (HttpInterface httpInterface = getHttpInterface()) {
-      // Get access token by channel name
-      HttpUriRequest request = createGetRequest("https://api.twitch.tv/api/channels/" + name + "/access_token");
-
-      return HttpClientTools.fetchResponseAsJson(httpInterface, request);
+      HttpPost post = new HttpPost(TWITCH_GRAPHQL_BASE_URL);
+      addClientHeaders(post, DEFAULT_CLIENT_ID);
+      post.setEntity(new StringEntity(String.format(ACCESS_TOKEN_PAYLOAD, name)));
+      return HttpClientTools.fetchResponseAsJson(httpInterface, post);
     } catch (IOException e) {
       throw new FriendlyException("Loading Twitch channel access token failed.", SUSPICIOUS, e);
     }
@@ -200,10 +181,10 @@ public class TwitchStreamAudioSourceManager implements AudioSourceManager, HttpC
 
   private JsonBrowser fetchStreamChannelInfo(String channelId) {
     try (HttpInterface httpInterface = getHttpInterface()) {
-      // helix/streams?user_login=name
-      HttpUriRequest request = createGetRequest("https://api.twitch.tv/kraken/streams/" + channelId + "?stream_type=all");
-
-      return HttpClientTools.fetchResponseAsJson(httpInterface, request);
+      HttpPost post = new HttpPost(TWITCH_GRAPHQL_BASE_URL);
+      addClientHeaders(post, DEFAULT_CLIENT_ID);
+      post.setEntity(new StringEntity(String.format(METADATA_PAYLOAD, channelId)));
+      return HttpClientTools.fetchResponseAsJson(httpInterface, post);
     } catch (IOException e) {
       throw new FriendlyException("Loading Twitch channel information failed.", SUSPICIOUS, e);
     }

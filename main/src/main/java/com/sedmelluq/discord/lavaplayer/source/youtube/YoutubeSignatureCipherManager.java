@@ -1,14 +1,18 @@
 package com.sedmelluq.discord.lavaplayer.source.youtube;
 
+import com.sedmelluq.discord.lavaplayer.tools.DataFormatTools;
 import com.sedmelluq.discord.lavaplayer.tools.io.HttpClientTools;
 import com.sedmelluq.discord.lavaplayer.tools.io.HttpInterface;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
+import org.mozilla.javascript.engine.RhinoScriptEngineFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.script.ScriptEngine;
+import javax.script.ScriptException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -66,12 +70,19 @@ public class YoutubeSignatureCipherManager implements YoutubeSignatureResolver {
   private static final Pattern slicePattern = Pattern.compile(PATTERN_PREFIX + SLICE_PART, Pattern.MULTILINE);
   private static final Pattern splicePattern = Pattern.compile(PATTERN_PREFIX + SPLICE_PART, Pattern.MULTILINE);
   private static final Pattern swapPattern = Pattern.compile(PATTERN_PREFIX + SWAP_PART, Pattern.MULTILINE);
+  private static final Pattern timestampPattern = Pattern.compile("(signatureTimestamp|sts)[\\:](\\d+)");
+  private static final Pattern nFunctionPattern = Pattern.compile(
+      "function\\(\\s*(\\w+)\\s*\\)\\s*\\{var" +
+          "\\s*(\\w+)=\\1\\.split\\(\"\"\\),\\s*(\\w+)=\\[.{0,2000}\\];\\s*\\3\\[\\d+\\].{0,1000}" +
+          "try\\{\\3.{0,1000}\\}catch\\(\\s*(\\w+)\\s*\\)\\s*\\" +
+          "{\\s*return\"enhanced_except_.{0,100}\"\\s*\\+\\s*\\1\\s*}\\s*return\\s*\\2\\.join\\(\"\"\\)\\};", Pattern.DOTALL
+  );
 
   private static final Pattern signatureExtraction = Pattern.compile("/s/([^/]+)/");
-  private static final Pattern timestampPattern = Pattern.compile("(signatureTimestamp|sts)[\\:](\\d+)");
 
   private final ConcurrentMap<String, YoutubeSignatureCipher> cipherCache;
   private final Set<String> dumpedScriptUrls;
+  private final ScriptEngine scriptEngine;
   private final Object cipherLoadLock;
 
   /**
@@ -80,6 +91,7 @@ public class YoutubeSignatureCipherManager implements YoutubeSignatureResolver {
   public YoutubeSignatureCipherManager() {
     this.cipherCache = new ConcurrentHashMap<>();
     this.dumpedScriptUrls = new HashSet<>();
+    this.scriptEngine = new RhinoScriptEngineFactory().getScriptEngine();
     this.cipherLoadLock = new Object();
   }
 
@@ -94,19 +106,26 @@ public class YoutubeSignatureCipherManager implements YoutubeSignatureResolver {
   @Override
   public URI resolveFormatUrl(HttpInterface httpInterface, String playerScript, YoutubeTrackFormat format) throws IOException {
     String signature = format.getSignature();
+    String nParameter = format.getNParameter();
     URI initialUrl = format.getUrl();
 
-    if (signature == null) {
-      return initialUrl;
+    URIBuilder uri = new URIBuilder(initialUrl);
+    YoutubeSignatureCipher cipher = getExtractedScript(httpInterface, playerScript);
+
+    if (!DataFormatTools.isNullOrEmpty(signature)) {
+      uri.setParameter(format.getSignatureKey(), cipher.apply(signature));
     }
 
-    YoutubeSignatureCipher cipher = getCipherKeyAndTimestampFromScript(httpInterface, playerScript);
+    if (!DataFormatTools.isNullOrEmpty(nParameter)) {
+      try {
+        uri.setParameter("n", cipher.transform(nParameter, scriptEngine));
+      } catch (ScriptException | NoSuchMethodException e) {
+        dumpProblematicScript(cipherCache.get(playerScript).rawScript, playerScript, String.format("Can't transform nParameter %s with %s script", nParameter, cipher.nFunction));
+      }
+    }
 
     try {
-      return new URIBuilder(initialUrl)
-          .setParameter("ratebypass", "yes")
-          .setParameter(format.getSignatureKey(), cipher.apply(signature))
-          .build();
+      return uri.setParameter("ratebypass", "yes").build();
     } catch (URISyntaxException e) {
       throw new RuntimeException(e);
     }
@@ -128,21 +147,22 @@ public class YoutubeSignatureCipherManager implements YoutubeSignatureResolver {
       return dashUrl;
     }
 
-    YoutubeSignatureCipher cipher = getCipherKeyAndTimestampFromScript(httpInterface, playerScript);
+    YoutubeSignatureCipher cipher = getExtractedScript(httpInterface, playerScript);
     return matcher.replaceFirst("/signature/" + cipher.apply(matcher.group(1)) + "/");
   }
 
-  public YoutubeSignatureCipher getCipherKeyAndTimestampFromScript(HttpInterface httpInterface, String cipherScriptUrl) throws IOException {
+  @Override
+  public YoutubeSignatureCipher getExtractedScript(HttpInterface httpInterface, String cipherScriptUrl) throws IOException {
     YoutubeSignatureCipher cipherKey = cipherCache.get(cipherScriptUrl);
 
     if (cipherKey == null) {
       synchronized (cipherLoadLock) {
-        log.debug("Parsing cipher and timestamp from player script {}.", cipherScriptUrl);
+        log.debug("Parsing player script {}", cipherScriptUrl);
 
         try (CloseableHttpResponse response = httpInterface.execute(new HttpGet(parseTokenScriptUrl(cipherScriptUrl)))) {
           validateResponseCode(cipherScriptUrl, response);
 
-          cipherKey = extractTokensAndTimestampFromScript(IOUtils.toString(response.getEntity().getContent(), StandardCharsets.UTF_8), cipherScriptUrl);
+          cipherKey = extractFromScript(IOUtils.toString(response.getEntity().getContent(), StandardCharsets.UTF_8), cipherScriptUrl);
           cipherCache.put(cipherScriptUrl, cipherKey);
         }
       }
@@ -183,9 +203,12 @@ public class YoutubeSignatureCipherManager implements YoutubeSignatureResolver {
     }
   }
 
-  private YoutubeSignatureCipher extractTokensAndTimestampFromScript(String script, String sourceUrl) {
+  private YoutubeSignatureCipher extractFromScript(String script, String sourceUrl) {
+
     Matcher actions = actionsPattern.matcher(script);
+    Matcher nFunction = nFunctionPattern.matcher(script);
     Matcher scriptTimestamp = timestampPattern.matcher(script);
+
     if (!actions.find()) {
       dumpProblematicScript(script, sourceUrl, "no actions match");
       throw new IllegalStateException("Must find action functions from script: " + sourceUrl);
@@ -200,8 +223,8 @@ public class YoutubeSignatureCipherManager implements YoutubeSignatureResolver {
 
     Pattern extractor = Pattern.compile(
         "(?:a=)?" + Pattern.quote(actions.group(1)) + BEFORE_ACCESS + "(" +
-        String.join("|", getQuotedFunctions(reverseKey, slicePart, splicePart, swapKey)) +
-        ")" + AFTER_ACCESS + "\\(a,(\\d+)\\)"
+            String.join("|", getQuotedFunctions(reverseKey, slicePart, splicePart, swapKey)) +
+            ")" + AFTER_ACCESS + "\\(a,(\\d+)\\)"
     );
 
     Matcher functions = functionPattern.matcher(script);
@@ -212,6 +235,11 @@ public class YoutubeSignatureCipherManager implements YoutubeSignatureResolver {
 
     Matcher matcher = extractor.matcher(functions.group(1));
 
+    if (!nFunction.find()) {
+      // Don't throw any exceptions here since if n function is not extracted audio still can be played
+      dumpProblematicScript(script, sourceUrl, "no n function match");
+    }
+
     if (!scriptTimestamp.find()) {
       dumpProblematicScript(script, sourceUrl, "no timestamp match");
       throw new IllegalStateException("Must find timestamp from script: " + sourceUrl);
@@ -219,7 +247,9 @@ public class YoutubeSignatureCipherManager implements YoutubeSignatureResolver {
 
     YoutubeSignatureCipher cipherKey = new YoutubeSignatureCipher();
 
+    cipherKey.setNFunction(nFunction.group(0));
     cipherKey.setTimestamp(scriptTimestamp.group(2));
+    cipherKey.setRawScript(script);
 
     while (matcher.find()) {
       String type = matcher.group(1);

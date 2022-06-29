@@ -9,6 +9,7 @@ allprojects {
   group = rootProject.group
 
   repositories {
+    maven(url = "https://jitpack.io")
     mavenLocal()
     mavenCentral()
     maven(url = "https://m2.dv8tion.net/releases")

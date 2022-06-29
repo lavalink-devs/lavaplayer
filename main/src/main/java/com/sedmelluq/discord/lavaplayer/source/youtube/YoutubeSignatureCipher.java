@@ -1,5 +1,8 @@
 package com.sedmelluq.discord.lavaplayer.source.youtube;
 
+import javax.script.Invocable;
+import javax.script.ScriptEngine;
+import javax.script.ScriptException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,7 +11,9 @@ import java.util.List;
  */
 public class YoutubeSignatureCipher {
   private final List<YoutubeCipherOperation> operations = new ArrayList<>();
+  String nFunction = "";
   String scriptTimestamp = "";
+  String rawScript = "";
 
   /**
    * @param text Text to apply the cipher on
@@ -41,6 +46,20 @@ public class YoutubeSignatureCipher {
   }
 
   /**
+   * @param text Text to transform
+   * @param scriptEngine JavaScript engine to execute function
+   * @return The result of the n parameter transformation
+   */
+  public String transform(String text, ScriptEngine scriptEngine) throws ScriptException, NoSuchMethodException {
+    String transformed;
+
+    scriptEngine.eval("n=" + nFunction);
+    transformed = (String) ((Invocable) scriptEngine).invokeFunction("n", text);
+
+    return transformed;
+  }
+
+  /**
    * @param operation The operation to add to this cipher
    */
   public void addOperation(YoutubeCipherOperation operation) {
@@ -55,6 +74,13 @@ public class YoutubeSignatureCipher {
   }
 
   /**
+   * @param nFunction Extracted "n" function
+   */
+  public void setNFunction(String nFunction) {
+    this.nFunction = nFunction;
+  }
+
+  /**
    * @param timestamp The timestamp in cipher
    */
   public void setTimestamp(String timestamp) {
@@ -62,9 +88,9 @@ public class YoutubeSignatureCipher {
   }
 
   /**
-   * @return The current script timestamp
+   * @param script Raw script
    */
-  public String getScriptTimestamp() {
-    return scriptTimestamp;
+  public void setRawScript(String script) {
+    rawScript = script;
   }
 }

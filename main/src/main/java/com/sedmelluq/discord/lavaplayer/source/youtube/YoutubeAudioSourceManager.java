@@ -2,6 +2,7 @@ package com.sedmelluq.discord.lavaplayer.source.youtube;
 
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManager;
+import com.sedmelluq.discord.lavaplayer.tools.DataFormatTools;
 import com.sedmelluq.discord.lavaplayer.tools.ExceptionTools;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.tools.http.ExtendedHttpConfigurable;
@@ -43,6 +44,7 @@ public class YoutubeAudioSourceManager implements AudioSourceManager, HttpConfig
   private final HttpInterfaceManager httpInterfaceManager;
   private final ExtendedHttpConfigurable combinedHttpConfiguration;
   private final YoutubeMixLoader mixLoader;
+  private final YoutubeAccessTokenTracker accessTokenTracker;
   private final boolean allowSearch;
   private final YoutubeTrackDetailsLoader trackDetailsLoader;
   private final YoutubeSearchResultLoader searchResultLoader;
@@ -55,16 +57,20 @@ public class YoutubeAudioSourceManager implements AudioSourceManager, HttpConfig
    * Create an instance with default settings.
    */
   public YoutubeAudioSourceManager() {
-    this(true);
+    this(true, null, null);
   }
 
   /**
    * Create an instance.
    * @param allowSearch Whether to allow search queries as identifiers
+   * @param email Email of Google account to auth in, required for playing age restricted tracks
+   * @param password Password of Google account to auth in, required for playing age restricted tracks
    */
-  public YoutubeAudioSourceManager(boolean allowSearch) {
+  public YoutubeAudioSourceManager(boolean allowSearch, String email, String password) {
     this(
         allowSearch,
+        email,
+        password,
         new DefaultYoutubeTrackDetailsLoader(),
         new YoutubeSearchProvider(),
         new YoutubeSearchMusicProvider(),
@@ -77,6 +83,8 @@ public class YoutubeAudioSourceManager implements AudioSourceManager, HttpConfig
 
   public YoutubeAudioSourceManager(
       boolean allowSearch,
+      String email,
+      String password,
       YoutubeTrackDetailsLoader trackDetailsLoader,
       YoutubeSearchResultLoader searchResultLoader,
       YoutubeSearchMusicResultLoader searchMusicResultLoader,
@@ -86,7 +94,15 @@ public class YoutubeAudioSourceManager implements AudioSourceManager, HttpConfig
       YoutubeMixLoader mixLoader
   ) {
     httpInterfaceManager = HttpClientTools.createDefaultThreadLocalManager();
-    httpInterfaceManager.setHttpContextFilter(new YoutubeHttpContextFilter());
+    accessTokenTracker = new YoutubeAccessTokenTracker(httpInterfaceManager, email, password);
+    YoutubeHttpContextFilter youtubeHttpContextFilter = new YoutubeHttpContextFilter();
+    youtubeHttpContextFilter.setTokenTracker(accessTokenTracker);
+    httpInterfaceManager.setHttpContextFilter(youtubeHttpContextFilter);
+
+    if (!DataFormatTools.isNullOrEmpty(email) && !DataFormatTools.isNullOrEmpty(password)) {
+      // Prepare master token on startup
+      accessTokenTracker.updateMasterToken();
+    }
 
     this.allowSearch = allowSearch;
     this.trackDetailsLoader = trackDetailsLoader;
@@ -157,6 +173,10 @@ public class YoutubeAudioSourceManager implements AudioSourceManager, HttpConfig
   @Override
   public void shutdown() {
     ExceptionTools.closeWithWarnings(httpInterfaceManager);
+  }
+
+  public YoutubeAccessTokenTracker getAccessTokenTracker() {
+    return accessTokenTracker;
   }
 
   /**
@@ -264,7 +284,6 @@ public class YoutubeAudioSourceManager implements AudioSourceManager, HttpConfig
             YoutubeAudioSourceManager.this::buildTrackFromInfo
         );
       }
-
       return null;
     }
 
@@ -276,7 +295,6 @@ public class YoutubeAudioSourceManager implements AudioSourceManager, HttpConfig
             YoutubeAudioSourceManager.this::buildTrackFromInfo
         );
       }
-
       return null;
     }
 
@@ -287,7 +305,7 @@ public class YoutubeAudioSourceManager implements AudioSourceManager, HttpConfig
           HttpClientTools.assertSuccessWithContent(response, "playlist response");
           HttpClientContext context = httpInterface.getContext();
           // youtube currently transforms watch_video links into a link with a video id and a list id.
-          // because thats what happens, we can simply re-process with the redirected link
+          // because that's what happens, we can simply re-process with the redirected link
           List<URI> redirects = context.getRedirectLocations();
           if (redirects != null && !redirects.isEmpty()) {
             return new AudioReference(redirects.get(0).toString(), null);

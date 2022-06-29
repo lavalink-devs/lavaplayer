@@ -6,21 +6,24 @@ import com.sedmelluq.discord.lavaplayer.container.mpeg.MpegTrackConsumer;
 import com.sedmelluq.discord.lavaplayer.container.mpeg.reader.MpegFileTrackProvider;
 import com.sedmelluq.discord.lavaplayer.tools.DataFormatTools;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
-import com.sedmelluq.discord.lavaplayer.tools.Units;
 import com.sedmelluq.discord.lavaplayer.tools.io.HttpInterface;
 import com.sedmelluq.discord.lavaplayer.tools.io.SeekableInputStream;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
 import com.sedmelluq.discord.lavaplayer.track.playback.AudioProcessingContext;
 import com.sedmelluq.discord.lavaplayer.track.playback.LocalAudioTrackExecutor;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.utils.URIBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.utils.URIBuilder;
 
 import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.SUSPICIOUS;
+import static com.sedmelluq.discord.lavaplayer.tools.Units.CONTENT_LENGTH_UNKNOWN;
 
 /**
  * YouTube segmented MPEG stream track. The base URL always gives the latest chunk. Every chunk contains the current
@@ -28,7 +31,8 @@ import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.
  * responds to a segment request with 204.
  */
 public class YoutubeMpegStreamAudioTrack extends MpegAudioTrack {
-  private static final RequestConfig streamingRequestConfig = RequestConfig.custom().setConnectTimeout(10000).build();
+  private static final Logger log = LoggerFactory.getLogger(YoutubeMpegStreamAudioTrack.class);
+  private static final RequestConfig streamingRequestConfig = RequestConfig.custom().setSocketTimeout(2000).setConnectionRequestTimeout(2000).setConnectTimeout(2000).build();
   private static final long EMPTY_RETRY_THRESHOLD_MS = 400;
   private static final long EMPTY_RETRY_INTERVAL_MS = 50;
 
@@ -59,6 +63,10 @@ public class YoutubeMpegStreamAudioTrack extends MpegAudioTrack {
 
   private void execute(LocalAudioTrackExecutor localExecutor) throws InterruptedException {
     TrackState state = new TrackState(signedUrl);
+
+    if (!trackInfo.isStream && state.absoluteSequence == null) {
+      state.absoluteSequence = 0L;
+    }
 
     try {
       while (!state.finished) {
@@ -104,7 +112,9 @@ public class YoutubeMpegStreamAudioTrack extends MpegAudioTrack {
   ) throws InterruptedException {
     URI segmentUrl = getNextSegmentUrl(state);
 
-    try (YoutubePersistentHttpStream stream = new YoutubePersistentHttpStream(httpInterface, segmentUrl, Units.CONTENT_LENGTH_UNKNOWN)) {
+    log.debug("Segment URL: {}", segmentUrl.toString());
+
+    try (YoutubePersistentHttpStream stream = new YoutubePersistentHttpStream(httpInterface, segmentUrl, CONTENT_LENGTH_UNKNOWN)) {
       if (stream.checkStatusCode() == HttpStatus.SC_NO_CONTENT || stream.getContentLength() == 0) {
         return false;
       }
@@ -118,17 +128,22 @@ public class YoutubeMpegStreamAudioTrack extends MpegAudioTrack {
 
       stream.releaseConnection();
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      // IOException here usually means that stream is about to end.
+      return false;
     }
 
     return true;
   }
 
-  private void processSegmentStream(SeekableInputStream stream, AudioProcessingContext context, TrackState state) throws InterruptedException {
+  private void processSegmentStream(SeekableInputStream stream, AudioProcessingContext context, TrackState state) throws InterruptedException, IOException {
     MpegFileLoader file = new MpegFileLoader(stream);
     file.parseHeaders();
 
-    state.absoluteSequence = extractAbsoluteSequenceFromEvent(file.getLastEventMessage());
+    if (!trackInfo.isStream) {
+      state.absoluteSequence++;
+    } else {
+      state.absoluteSequence = extractAbsoluteSequenceFromEvent(file.getLastEventMessage());
+    }
 
     if (state.trackConsumer == null) {
       state.trackConsumer = loadAudioTrack(file, context);
