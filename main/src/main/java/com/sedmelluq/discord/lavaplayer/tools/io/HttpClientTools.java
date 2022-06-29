@@ -154,7 +154,7 @@ public class HttpClientTools {
     int statusCode = response.getStatusLine().getStatusCode();
 
     if (!isSuccessWithContent(statusCode)) {
-      throw new IOException("Invalid status code for " + context +  ": " + statusCode);
+      throw new IOException("Invalid status code for " + context + ": " + statusCode);
     }
   }
 
