@@ -29,15 +29,34 @@ import java.util.regex.Pattern;
  * Audio source manager that implements finding Yandex Music tracks based on URL.
  */
 public class YandexMusicAudioSourceManager implements AudioSourceManager, HttpConfigurable {
-  private static final String TRACK_URL_REGEX = "^https?://music\\.yandex\\.[a-zA-Z]+/album/([0-9]+)/track/([0-9]+)(?:\\?.*|)$";
-  private static final String ALBUM_URL_REGEX = "^https?://music\\.yandex\\.[a-zA-Z]+/album/([0-9]+)(?:\\?.*|)$";
-  private static final String PLAYLIST_URL_REGEX = "^https?://music\\.yandex\\.[a-zA-Z]+/users/(.+)/playlists/([0-9]+)(?:\\?.*|)$";
-  private static final String ARTIST_URL_REGEX = "^https?://music\\.yandex\\.[a-zA-Z]+/artist/([0-9]+)(?:\\?.*|)$";
+  private static final String PROTOCOL_REGEX = "https?://";
+  private static final String DOMAIN_REGEX = "music\\.yandex\\.[a-zA-Z]+";
+  private static final String TRACK_ID_REGEX = "track/([0-9]+)(?:\\?.*|)";
+  private static final String ALBUM_ID_REGEX = "album/([0-9]+)(?:\\?.*|)";
+  private static final String ARTIST_ID_REGEX = "artist/([0-9]+)(?:\\?.*|)";
+  private static final String PLAYLIST_ID_REGEX = "playlists/([0-9]+)(?:\\?.*|)";
+  private static final String USER_REGEX = "users/(.+)";
 
-  private static final Pattern trackUrlPattern = Pattern.compile(TRACK_URL_REGEX);
-  private static final Pattern albumUrlPattern = Pattern.compile(ALBUM_URL_REGEX);
-  private static final Pattern playlistUrlPattern = Pattern.compile(PLAYLIST_URL_REGEX);
-  private static final Pattern artistUrlPattern = Pattern.compile(ARTIST_URL_REGEX);
+  private static final Pattern trackUrlPattern = Pattern.compile("^" +
+      PROTOCOL_REGEX + DOMAIN_REGEX + "/" +
+      ALBUM_ID_REGEX + "/" + TRACK_ID_REGEX + "$"
+  );
+  private static final Pattern shortTrackUrlPattern = Pattern.compile("^" +
+      PROTOCOL_REGEX + DOMAIN_REGEX + "/" +
+      TRACK_ID_REGEX + "$"
+  );
+  private static final Pattern albumUrlPattern = Pattern.compile("^" +
+      PROTOCOL_REGEX + DOMAIN_REGEX + "/" +
+      ALBUM_ID_REGEX + "$"
+  );
+  private static final Pattern artistUrlPattern = Pattern.compile("^" +
+      PROTOCOL_REGEX + DOMAIN_REGEX + "/" +
+      ARTIST_ID_REGEX + "$"
+  );
+  private static final Pattern playlistUrlPattern = Pattern.compile("^" +
+      PROTOCOL_REGEX + DOMAIN_REGEX + "/" +
+      USER_REGEX + "/" + PLAYLIST_ID_REGEX + "$"
+  );
 
   private final boolean allowSearch;
 
@@ -95,6 +114,9 @@ public class YandexMusicAudioSourceManager implements AudioSourceManager, HttpCo
     Matcher matcher;
     if ((matcher = trackUrlPattern.matcher(reference.identifier)).matches()) {
       return trackLoader.loadTrack(matcher.group(1), matcher.group(2), this::getTrack);
+    }
+    if ((matcher = shortTrackUrlPattern.matcher(reference.identifier)).matches()) {
+      return trackLoader.loadTrack("", matcher.group(1), this::getTrack);
     }
     if ((matcher = playlistUrlPattern.matcher(reference.identifier)).matches()) {
       return playlistLoader.loadPlaylist(matcher.group(1), matcher.group(2), "tracks", this::getTrack);

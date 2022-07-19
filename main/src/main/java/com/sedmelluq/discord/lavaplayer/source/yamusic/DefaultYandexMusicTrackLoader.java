@@ -14,7 +14,10 @@ public class DefaultYandexMusicTrackLoader extends AbstractYandexMusicApiLoader 
 
   @Override
   public AudioItem loadTrack(String albumId, String trackId, Function<AudioTrackInfo, AudioTrack> trackFactory) {
-    return extractFromApi(TRACKS_INFO_FORMAT + String.format("%s:%s", trackId, albumId), (httpClient, result) -> {
+    StringBuilder id = new StringBuilder(trackId);
+    if (!albumId.isEmpty()) id.append(":").append(albumId);
+
+    return extractFromApi(TRACKS_INFO_FORMAT + id, (httpClient, result) -> {
       JsonBrowser entry = result.index(0);
       if (DefaultYandexMusicPlaylistLoader.hasError(entry)) return AudioReference.NO_TRACK;
       return YandexMusicUtils.extractTrack(entry, trackFactory);
