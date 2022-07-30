@@ -35,7 +35,7 @@ public class PersistentHttpStream extends SeekableInputStream implements AutoClo
   protected final URI contentUrl;
   private int lastStatusCode;
   private CloseableHttpResponse currentResponse;
-  private InputStream currentContent;
+  protected InputStream currentContent;
   protected long position;
 
   /**
@@ -100,7 +100,7 @@ public class PersistentHttpStream extends SeekableInputStream implements AutoClo
     return request;
   }
 
-  private void connect(boolean skipStatusCheck) throws IOException {
+  protected void connect(boolean skipStatusCheck) throws IOException {
     if (currentResponse == null) {
       for (int i = 1; i >= 0; i--) {
         if (attemptConnect(skipStatusCheck, i > 0)) {
@@ -167,7 +167,7 @@ public class PersistentHttpStream extends SeekableInputStream implements AutoClo
     return internalRead(true);
   }
 
-  private int internalRead(byte[] b, int off, int len, boolean attemptReconnect) throws IOException {
+  protected int internalRead(byte[] b, int off, int len, boolean attemptReconnect) throws IOException {
     connect(false);
 
     try {
@@ -187,7 +187,7 @@ public class PersistentHttpStream extends SeekableInputStream implements AutoClo
     return internalRead(b, off, len, true);
   }
 
-  private long internalSkip(long n, boolean attemptReconnect) throws IOException {
+  protected long internalSkip(long n, boolean attemptReconnect) throws IOException {
     connect(false);
 
     try {
