@@ -18,7 +18,7 @@ import java.net.URISyntaxException;
 public class YoutubePersistentHttpStream extends PersistentHttpStream {
   private static final Logger log = LoggerFactory.getLogger(YoutubePersistentHttpStream.class);
 
-  private static final long BUFFER_SIZE = 100000;
+  private static final long BUFFER_SIZE = 500000;
 
   private long rangeEnd;
 
