@@ -8,9 +8,9 @@ public class YoutubeConstants {
     static final String BASE_URL = YOUTUBE_API_ORIGIN + "/youtubei/v1";
     static final String INNERTUBE_API_KEY = "AIzaSyA8eiZmM1FaDVjRy-df2KTyQ_vz_yYM39w";
     static final String CLIENT_ANDROID_NAME = "ANDROID";
-    static final String CLIENT_ANDROID_VERSION = "16.24";
+    static final String CLIENT_ANDROID_VERSION = "17.29.34";
     static final String CLIENT_WEB_NAME = "WEB";
-    static final String CLIENT_WEB_VERSION = "2.20211221.00.00";
+    static final String CLIENT_WEB_VERSION = "2.20220801.00.00";
     static final String CLIENT_TVHTML5_NAME = "TVHTML5_SIMPLY_EMBEDDED_PLAYER";
     static final String CLIENT_TVHTML5_VERSION = "2.0";
     static final String CLIENT_SCREEN_EMBED = "EMBED";
