@@ -30,4 +30,6 @@ public interface AudioTrackInfoProvider {
   String getUri();
 
   String getArtworkUrl();
+
+  String getISRC();
 }

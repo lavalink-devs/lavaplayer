@@ -70,4 +70,9 @@ public class AudioReference implements AudioItem, AudioTrackInfoProvider {
   public String getArtworkUrl() {
     return null;
   }
+
+  @Override
+  public String getISRC() {
+    return null;
+  }
 }

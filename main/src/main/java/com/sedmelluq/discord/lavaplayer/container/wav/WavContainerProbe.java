@@ -52,6 +52,7 @@ public class WavContainerProbe implements MediaContainerProbe {
         reference.identifier,
         false,
         reference.identifier,
+        null,
         null
     ));
   }

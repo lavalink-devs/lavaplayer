@@ -111,7 +111,9 @@ public class NicoAudioSourceManager implements AudioSourceManager, HttpConfigura
           videoId,
           false,
           getWatchUrl(videoId),
-          thumbnailUrl), this);
+          thumbnailUrl,
+          null
+      ), this);
     }
 
     return null;

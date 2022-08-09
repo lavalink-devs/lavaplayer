@@ -60,7 +60,7 @@ public class MatroskaContainerProbe implements MediaContainerProbe {
     }
 
     return supportedFormat(this, null, new AudioTrackInfo(UNKNOWN_TITLE, UNKNOWN_ARTIST,
-        (long) file.getDuration(), reference.identifier, false, reference.identifier, null));
+        (long) file.getDuration(), reference.identifier, false, reference.identifier, null, null));
   }
 
   private boolean hasSupportedAudioTrack(MatroskaStreamingFile file) {

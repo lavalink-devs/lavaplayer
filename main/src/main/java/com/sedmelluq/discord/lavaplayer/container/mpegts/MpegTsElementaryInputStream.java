@@ -86,6 +86,11 @@ public class MpegTsElementaryInputStream extends InputStream {
       public String getArtworkUrl() {
         return null;
       }
+
+      @Override
+      public String getISRC() {
+        return null;
+      }
     };
   }
 
