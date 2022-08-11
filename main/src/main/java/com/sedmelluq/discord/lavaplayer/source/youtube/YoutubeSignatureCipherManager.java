@@ -73,8 +73,8 @@ public class YoutubeSignatureCipherManager implements YoutubeSignatureResolver {
   private static final Pattern timestampPattern = Pattern.compile("(signatureTimestamp|sts)[\\:](\\d+)");
   private static final Pattern nFunctionPattern = Pattern.compile(
       "function\\(\\s*(\\w+)\\s*\\)\\s*\\{var" +
-          "\\s*(\\w+)=\\1\\.split\\(\"\"\\),\\s*(\\w+)=\\[.{0,2000}\\];\\s*\\3\\[\\d+\\].{0,1000}" +
-          "try\\{\\3.{0,1000}\\}catch\\(\\s*(\\w+)\\s*\\)\\s*\\" +
+          "\\s*(\\w+)=\\1\\.split\\(\"\"\\),\\s*(\\w+)=\\[.{0,5000}\\];\\s*\\3\\[\\d+\\].{0,5000}" +
+          "try\\{.{0,1000}\\}catch\\(\\s*(\\w+)\\s*\\)\\s*\\" +
           "{\\s*return\"enhanced_except_.{0,100}\"\\s*\\+\\s*\\1\\s*}\\s*return\\s*\\2\\.join\\(\"\"\\)\\};", Pattern.DOTALL
   );
 
@@ -120,7 +120,7 @@ public class YoutubeSignatureCipherManager implements YoutubeSignatureResolver {
       try {
         uri.setParameter("n", cipher.transform(nParameter, scriptEngine));
       } catch (ScriptException | NoSuchMethodException e) {
-        dumpProblematicScript(cipherCache.get(playerScript).rawScript, playerScript, String.format("Can't transform nParameter %s with %s script", nParameter, cipher.nFunction));
+        dumpProblematicScript(cipherCache.get(playerScript).rawScript, playerScript, String.format("Can't transform n parameter %s with %s n function", nParameter, cipher.nFunction));
       }
     }
 
@@ -196,7 +196,7 @@ public class YoutubeSignatureCipherManager implements YoutubeSignatureResolver {
       Path path = Files.createTempFile("lavaplayer-yt-player-script", ".js");
       Files.write(path, script.getBytes(StandardCharsets.UTF_8));
 
-      log.error("Problematic YouTube player script {} detected (issue detected with script: {}). Dumped to {}.",
+      log.error("Problematic YouTube player script {} detected (issue detected with script: {}). Dumped to {}",
           sourceUrl, issue, path.toAbsolutePath());
     } catch (Exception e) {
       log.error("Failed to dump problematic YouTube player script {} (issue detected with script: {})", sourceUrl, issue);
@@ -235,11 +235,6 @@ public class YoutubeSignatureCipherManager implements YoutubeSignatureResolver {
 
     Matcher matcher = extractor.matcher(functions.group(1));
 
-    if (!nFunction.find()) {
-      // Don't throw any exceptions here since if n function is not extracted audio still can be played
-      dumpProblematicScript(script, sourceUrl, "no n function match");
-    }
-
     if (!scriptTimestamp.find()) {
       dumpProblematicScript(script, sourceUrl, "no timestamp match");
       throw new IllegalStateException("Must find timestamp from script: " + sourceUrl);
@@ -247,7 +242,13 @@ public class YoutubeSignatureCipherManager implements YoutubeSignatureResolver {
 
     YoutubeSignatureCipher cipherKey = new YoutubeSignatureCipher();
 
-    cipherKey.setNFunction(nFunction.group(0));
+    if (nFunction.find()) {
+      cipherKey.setNFunction(nFunction.group(0));
+    } else {
+      // Don't throw any exceptions here since if n function is not extracted audio still can be played
+      dumpProblematicScript(script, sourceUrl, "no n function match");
+    }
+
     cipherKey.setTimestamp(scriptTimestamp.group(2));
     cipherKey.setRawScript(script);
 
