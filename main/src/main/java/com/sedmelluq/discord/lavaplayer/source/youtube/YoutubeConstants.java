@@ -9,13 +9,15 @@ public class YoutubeConstants {
     static final String INNERTUBE_API_KEY = "AIzaSyA8eiZmM1FaDVjRy-df2KTyQ_vz_yYM39w";
     static final String CLIENT_ANDROID_NAME = "ANDROID";
     static final String CLIENT_ANDROID_VERSION = "17.29.34";
+    static final String CLIENT_ANDROID_SDK_VERSION = "30";
     static final String CLIENT_WEB_NAME = "WEB";
     static final String CLIENT_WEB_VERSION = "2.20220801.00.00";
     static final String CLIENT_TVHTML5_NAME = "TVHTML5_SIMPLY_EMBEDDED_PLAYER";
     static final String CLIENT_TVHTML5_VERSION = "2.0";
     static final String CLIENT_SCREEN_EMBED = "EMBED";
     static final String BASE_PAYLOAD = "{\"context\":{\"client\":{\"clientName\":\"%s\",\"clientVersion\":\"%s\"";
-    static final String DEFAULT_BASE_PAYLOAD = String.format(BASE_PAYLOAD, CLIENT_ANDROID_NAME, CLIENT_ANDROID_VERSION);
+    static final String SDK_VERSION_PART_BASE_PAYLOAD = ",\"androidSdkVersion\":" + CLIENT_ANDROID_SDK_VERSION;
+    static final String DEFAULT_BASE_PAYLOAD = String.format(BASE_PAYLOAD, CLIENT_ANDROID_NAME, CLIENT_ANDROID_VERSION) + SDK_VERSION_PART_BASE_PAYLOAD;
     static final String SCREEN_PART_PAYLOAD = ",\"screenDensityFloat\":1,\"screenHeightPoints\":1080,\"screenPixelDensity\":1,\"screenWidthPoints\":1920";
     static final String EMBED_PART_PAYLOAD = ",\"clientScreen\":\"" + CLIENT_SCREEN_EMBED + "\"},\"thirdParty\":{\"embedUrl\":\"https://google.com\"";
     static final String CLOSE_BASE_PAYLOAD = "}},";
