@@ -73,9 +73,9 @@ public class YoutubeSignatureCipherManager implements YoutubeSignatureResolver {
   private static final Pattern timestampPattern = Pattern.compile("(signatureTimestamp|sts)[\\:](\\d+)");
   private static final Pattern nFunctionPattern = Pattern.compile(
       "function\\(\\s*(\\w+)\\s*\\)\\s*\\{var" +
-          "\\s*(\\w+)=\\1\\.split\\(\"\"\\),\\s*(\\w+)=\\[.{0,5000}\\];\\s*\\3\\[\\d+\\].{0,5000}" +
-          "try\\{.{0,1000}\\}catch\\(\\s*(\\w+)\\s*\\)\\s*\\" +
-          "{\\s*return\"enhanced_except_.{0,100}\"\\s*\\+\\s*\\1\\s*}\\s*return\\s*\\2\\.join\\(\"\"\\)\\};", Pattern.DOTALL
+          "\\s*(\\w+)=\\1\\.split\\(\"\"\\),\\s*(\\w+)=(\\[.*?\\]);\\s*\\3\\[\\d+\\]" +
+          "(.*?try)(\\{.*?\\})catch\\(\\s*(\\w+)\\s*\\)\\s*\\" +
+          "{\\s*return\"enhanced_except_([A-z0-9-]+)\"\\s*\\+\\s*\\1\\s*}\\s*return\\s*\\2\\.join\\(\"\"\\)\\};", Pattern.DOTALL
   );
 
   private static final Pattern signatureExtraction = Pattern.compile("/s/([^/]+)/");
