@@ -62,6 +62,11 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
         return null;
       }
 
+      if (!videoId.equals(initialData.playerResponse.get("videoDetails").get("videoId").text())) {
+        throw new FriendlyException("Video returned by YouTube isn't requested one", COMMON,
+            new IllegalStateException(initialData.playerResponse.format()));
+      }
+
       YoutubeTrackJsonData finalData = augmentWithPlayerScript(initialData, httpInterface, videoId, requireFormats);
       return new DefaultYoutubeTrackDetails(videoId, finalData);
     } catch (FriendlyException e) {
@@ -148,7 +153,7 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
 
       if (loginReason.contains("This video may be inappropriate for some users") && secondCheck) {
         throw new FriendlyException("This video requires age verification.", SUSPICIOUS,
-                new IllegalStateException("You did not set email and password in YoutubeAudioSourceManager."));
+            new IllegalStateException("You did not set email and password in YoutubeAudioSourceManager."));
       }
 
       return InfoStatus.REQUIRES_LOGIN;
