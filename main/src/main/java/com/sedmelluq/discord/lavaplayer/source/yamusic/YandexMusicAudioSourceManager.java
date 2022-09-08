@@ -33,7 +33,7 @@ public class YandexMusicAudioSourceManager implements AudioSourceManager, HttpCo
   private static final String DOMAIN_REGEX = "music\\.yandex\\.[a-zA-Z]+";
   private static final String TRACK_ID_REGEX = "track/([0-9]+)(?:\\?.*|)";
   private static final String ALBUM_ID_REGEX = "album/([0-9]+)(?:\\?.*|)";
-  private static final String ARTIST_ID_REGEX = "artist/([0-9]+)(?:\\?.*|)";
+  private static final String ARTIST_ID_REGEX = "artist/([0-9]+)(?:/tracks)?(?:\\?.*|)";
   private static final String PLAYLIST_ID_REGEX = "playlists/([0-9]+)(?:\\?.*|)";
   private static final String USER_REGEX = "users/(.+)";
 
