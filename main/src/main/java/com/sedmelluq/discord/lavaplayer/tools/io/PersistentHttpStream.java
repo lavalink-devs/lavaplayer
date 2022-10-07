@@ -109,6 +109,13 @@ public class PersistentHttpStream extends SeekableInputStream implements AutoClo
     }
   }
 
+  /**
+   * @return An InputStream implementation for the current http stream.
+   */
+  public InputStream createContentInputStream(HttpResponse response) throws IOException {
+    return new BufferedInputStream(response.getEntity().getContent());
+  }
+
   private boolean attemptConnect(boolean skipStatusCheck, boolean retryOnServerError) throws IOException {
     currentResponse = httpInterface.execute(getConnectRequest());
     lastStatusCode = currentResponse.getStatusLine().getStatusCode();
@@ -123,7 +130,7 @@ public class PersistentHttpStream extends SeekableInputStream implements AutoClo
       return true;
     }
 
-    currentContent = new BufferedInputStream(currentResponse.getEntity().getContent());
+    currentContent = createContentInputStream(currentResponse);
 
     if (contentLength == Units.CONTENT_LENGTH_UNKNOWN) {
       Header header = currentResponse.getFirstHeader("Content-Length");
