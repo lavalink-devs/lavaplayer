@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
-import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.NEXT_PAYLOAD;
 import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.NEXT_URL;
 import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.WATCH_URL_PREFIX;
 import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.SUSPICIOUS;
@@ -45,7 +44,11 @@ public class YoutubeMixProvider implements YoutubeMixLoader {
     List<AudioTrack> tracks = new ArrayList<>();
 
     HttpPost post = new HttpPost(NEXT_URL);
-    StringEntity payload = new StringEntity(String.format(NEXT_PAYLOAD, selectedVideoId, mixId), "UTF-8");
+    YoutubeClientConfig clientConfig = YoutubeClientConfig.ANDROID.copy()
+        .withRootField("videoId", selectedVideoId)
+        .withRootField("playlistId", mixId)
+        .setAttribute(httpInterface);
+    StringEntity payload = new StringEntity(clientConfig.toJsonString(), "UTF-8");
     post.setEntity(payload);
     try (CloseableHttpResponse response = httpInterface.execute(post)) {
       HttpClientTools.assertSuccessWithContent(response, "mix response");

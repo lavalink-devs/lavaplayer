@@ -22,6 +22,7 @@ dependencies {
 
   implementation("org.jsoup:jsoup:1.12.1")
   implementation("net.iharder:base64:2.3.9")
+  implementation("org.json:json:20220924")
 
   testImplementation("org.codehaus.groovy:groovy:2.5.5")
   testImplementation("org.spockframework:spock-core:1.2-groovy-2.5")

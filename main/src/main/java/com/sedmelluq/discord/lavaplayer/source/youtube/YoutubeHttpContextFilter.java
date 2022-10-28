@@ -13,6 +13,8 @@ import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.BasicCookieStore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -20,7 +22,9 @@ import java.net.URISyntaxException;
 import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.COMMON;
 
 public class YoutubeHttpContextFilter implements HttpContextFilter {
+  private static final Logger log = LoggerFactory.getLogger(YoutubeHttpContextFilter.class);
   private static final String ATTRIBUTE_RESET_RETRY = "isResetRetry";
+  public static final String ATTRIBUTE_USER_AGENT_SPECIFIED = "isUserAgentSpecified";
   private static final HttpContextRetryCounter retryCounter = new HttpContextRetryCounter("yt-token-retry");
 
   private YoutubeAccessTokenTracker tokenTracker;
@@ -56,8 +60,16 @@ public class YoutubeHttpContextFilter implements HttpContextFilter {
     retryCounter.handleUpdate(context, isRepetition);
 
     if (tokenTracker.isTokenFetchContext(context)) {
-      // Used for fetching access token, let's not recurse.
+      // Used for fetching access token or visitor id, let's not recurse.
       return;
+    }
+
+    String userAgent = context.getAttribute(ATTRIBUTE_USER_AGENT_SPECIFIED, String.class);
+    if (context.getAttribute(ATTRIBUTE_USER_AGENT_SPECIFIED) != null) {
+      String visitorId = tokenTracker.updateVisitorId();
+      request.setHeader("User-Agent", userAgent);
+      request.setHeader("X-Goog-Visitor-Id", visitorId);
+      context.removeAttribute(ATTRIBUTE_USER_AGENT_SPECIFIED);
     }
 
     String accessToken = tokenTracker.getAccessToken();
@@ -66,7 +78,7 @@ public class YoutubeHttpContextFilter implements HttpContextFilter {
     } else {
       try {
         URI uri = new URIBuilder(request.getURI())
-            .setParameter("key", YoutubeConstants.INNERTUBE_API_KEY)
+            .setParameter("key", YoutubeConstants.INNERTUBE_ANDROID_API_KEY)
             .build();
 
         if (request instanceof HttpRequestBase) {
