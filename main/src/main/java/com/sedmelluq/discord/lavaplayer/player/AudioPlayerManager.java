@@ -8,6 +8,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioReference;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.DecodedTrackHolder;
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -54,6 +55,11 @@ public interface AudioPlayerManager {
    * @return The source manager of the specified class, or null if not registered.
    */
   <T extends AudioSourceManager> T source(Class<T> klass);
+
+  /**
+   * @return A list of all registered audio source managers.
+   */
+  List<AudioSourceManager> getSourceManagers();
 
   /**
    * Schedules loading a track or playlist with the specified identifier.
