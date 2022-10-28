@@ -20,6 +20,7 @@ import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.
 
 public class YoutubeHttpContextFilter extends BaseYoutubeHttpContextFilter {
   private static final String ATTRIBUTE_RESET_RETRY = "isResetRetry";
+  public static final String ATTRIBUTE_USER_AGENT_SPECIFIED = "isUserAgentSpecified";
   private static final HttpContextRetryCounter retryCounter = new HttpContextRetryCounter("yt-token-retry");
 
   private YoutubeAccessTokenTracker tokenTracker;
@@ -55,8 +56,16 @@ public class YoutubeHttpContextFilter extends BaseYoutubeHttpContextFilter {
     retryCounter.handleUpdate(context, isRepetition);
 
     if (tokenTracker.isTokenFetchContext(context)) {
-      // Used for fetching access token, let's not recurse.
+      // Used for fetching access token or visitor id, let's not recurse.
       return;
+    }
+
+    String userAgent = context.getAttribute(ATTRIBUTE_USER_AGENT_SPECIFIED, String.class);
+    if (context.getAttribute(ATTRIBUTE_USER_AGENT_SPECIFIED) != null) {
+      String visitorId = tokenTracker.updateVisitorId();
+      request.setHeader("User-Agent", userAgent);
+      request.setHeader("X-Goog-Visitor-Id", visitorId);
+      context.removeAttribute(ATTRIBUTE_USER_AGENT_SPECIFIED);
     }
 
     String accessToken = tokenTracker.getAccessToken();
@@ -65,7 +74,7 @@ public class YoutubeHttpContextFilter extends BaseYoutubeHttpContextFilter {
     } else {
       try {
         URI uri = new URIBuilder(request.getURI())
-            .setParameter("key", YoutubeConstants.INNERTUBE_API_KEY)
+            .setParameter("key", YoutubeConstants.INNERTUBE_ANDROID_API_KEY)
             .build();
 
         if (request instanceof HttpRequestBase) {

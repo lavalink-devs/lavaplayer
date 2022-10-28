@@ -44,7 +44,11 @@ public class YoutubeMixProvider implements YoutubeMixLoader {
     List<AudioTrack> tracks = new ArrayList<>();
 
     HttpPost post = new HttpPost(NEXT_URL);
-    StringEntity payload = new StringEntity(String.format(NEXT_PAYLOAD, selectedVideoId, mixId), "UTF-8");
+    YoutubeClientConfig clientConfig = YoutubeClientConfig.ANDROID.copy()
+        .withRootField("videoId", selectedVideoId)
+        .withRootField("playlistId", mixId)
+        .setAttribute(httpInterface);
+    StringEntity payload = new StringEntity(clientConfig.toJsonString(), "UTF-8");
     post.setEntity(payload);
 
     try (CloseableHttpResponse response = httpInterface.execute(post)) {

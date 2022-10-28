@@ -43,6 +43,7 @@ import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.T
 import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.TV_AUTH_TOKEN_PAYLOAD;
 import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.TV_AUTH_TOKEN_REFRESH_PAYLOAD;
 import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.TV_AUTH_TOKEN_URL;
+import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.VISITOR_ID_URL;
 import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.YOUTUBE_ORIGIN;
 import static com.sedmelluq.discord.lavaplayer.tools.DataFormatTools.convertToMapLayout;
 import static com.sedmelluq.discord.lavaplayer.tools.ExceptionTools.throwWithDebugInfo;
@@ -60,6 +61,7 @@ public class YoutubeAccessTokenTracker {
   private static final String TOKEN_FETCH_CONTEXT_ATTRIBUTE = "yt-raw";
   private static final long MASTER_TOKEN_REFRESH_INTERVAL = TimeUnit.DAYS.toMillis(7);
   private static final long DEFAULT_ACCESS_TOKEN_REFRESH_INTERVAL = TimeUnit.HOURS.toMillis(1);
+  private static final long VISITOR_ID_REFRESH_INTERVAL = TimeUnit.MINUTES.toMillis(10);
 
   private final Object tokenLock = new Object();
   private final HttpInterfaceManager httpInterfaceManager;
@@ -67,8 +69,10 @@ public class YoutubeAccessTokenTracker {
   private final String password;
   private String masterToken;
   private String accessToken;
+  private String visitorId;
   private long lastMasterTokenUpdate;
   private long lastAccessTokenUpdate;
+  private long lastVisitorIdUpdate;
   private long accessTokenRefreshInterval = DEFAULT_ACCESS_TOKEN_REFRESH_INTERVAL;
   private boolean loggedAgeRestrictionsWarning = false;
   private boolean masterTokenFromTV = false;
@@ -155,6 +159,34 @@ public class YoutubeAccessTokenTracker {
     }
   }
 
+  /**
+   * Updates the visitor id if more than {@link #VISITOR_ID_REFRESH_INTERVAL} time has passed since last updated.
+   */
+  public String updateVisitorId() {
+    synchronized (tokenLock) {
+      long now = System.currentTimeMillis();
+      if (now - lastVisitorIdUpdate < VISITOR_ID_REFRESH_INTERVAL) {
+        log.debug("YouTube visitor id was recently updated, not updating again right away.");
+        return visitorId;
+      }
+
+      lastVisitorIdUpdate = now;
+      log.info("Updating YouTube visitor id (current is {}).", visitorId);
+
+      try {
+        visitorId = fetchVisitorId();
+        log.info("Updating YouTube visitor id succeeded, new one is {}, next update will be after {} seconds.",
+            visitorId,
+            TimeUnit.MILLISECONDS.toSeconds(VISITOR_ID_REFRESH_INTERVAL)
+        );
+      } catch (Exception e) {
+        log.error("YouTube visitor id update failed.", e);
+      }
+
+      return visitorId;
+    }
+  }
+
   public String getMasterToken() {
     synchronized (tokenLock) {
       if (masterToken == null) {
@@ -175,6 +207,16 @@ public class YoutubeAccessTokenTracker {
     }
   }
 
+  public String getVisitorId() {
+    synchronized (tokenLock) {
+      if (visitorId == null) {
+        updateVisitorId();
+      }
+
+      return visitorId;
+    }
+  }
+
   public boolean isTokenFetchContext(HttpClientContext context) {
     return context.getAttribute(TOKEN_FETCH_CONTEXT_ATTRIBUTE) == Boolean.TRUE;
   }
@@ -192,6 +234,26 @@ public class YoutubeAccessTokenTracker {
       httpInterface.getContext().setAttribute(TOKEN_FETCH_CONTEXT_ATTRIBUTE, true);
 
       return requestAccessToken(httpInterface);
+    }
+  }
+
+  private String fetchVisitorId() throws IOException {
+    try (HttpInterface httpInterface = httpInterfaceManager.getInterface()) {
+      httpInterface.getContext().setAttribute(TOKEN_FETCH_CONTEXT_ATTRIBUTE, true);
+
+      YoutubeClientConfig clientConfig = YoutubeClientConfig.ANDROID.copy().setAttribute(httpInterface);
+      HttpPost visitorIdPost = new HttpPost(VISITOR_ID_URL);
+      StringEntity visitorIdPayload = new StringEntity(clientConfig.toJsonString(), "UTF-8");
+      visitorIdPost.setEntity(visitorIdPayload);
+
+      try (CloseableHttpResponse response = httpInterface.execute(visitorIdPost)) {
+        HttpClientTools.assertSuccessWithContent(response, "youtube visitor id");
+
+        String responseText = EntityUtils.toString(response.getEntity());
+        JsonBrowser json = JsonBrowser.parse(responseText);
+
+        return json.get("responseContext").get("visitorData").text();
+      }
     }
   }
 

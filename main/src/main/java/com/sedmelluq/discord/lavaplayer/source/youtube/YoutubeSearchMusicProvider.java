@@ -20,8 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
-import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.MUSIC_SEARCH_PAYLOAD;
 import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.MUSIC_SEARCH_URL;
+import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.SEARCH_MUSIC_PARAMS;
 import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.WATCH_URL_PREFIX;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -47,12 +47,15 @@ public class YoutubeSearchMusicProvider implements YoutubeSearchMusicResultLoade
    */
   @Override
   public AudioItem loadSearchMusicResult(String query, Function<AudioTrackInfo, AudioTrack> trackFactory) {
-    String escapedQuery = query.replaceAll("\"|\\\\", "");
-    log.debug("Performing a search music with query {}", escapedQuery);
+    log.debug("Performing a search music with query {}", query);
 
     try (HttpInterface httpInterface = httpInterfaceManager.getInterface()) {
       HttpPost post = new HttpPost(MUSIC_SEARCH_URL);
-      StringEntity payload = new StringEntity(String.format(MUSIC_SEARCH_PAYLOAD, escapedQuery), "UTF-8");
+      YoutubeClientConfig clientConfig = YoutubeClientConfig.MUSIC.copy()
+          .withRootField("query", query)
+          .withRootField("params", SEARCH_MUSIC_PARAMS)
+          .setAttribute(httpInterface);
+      StringEntity payload = new StringEntity(clientConfig.toJsonString(), "UTF-8");
       post.setHeader("Referer", "music.youtube.com");
       post.setEntity(payload);
 

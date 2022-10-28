@@ -16,18 +16,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
-import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.BASE_PAYLOAD;
-import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.CLIENT_TVHTML5_NAME;
-import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.CLIENT_TVHTML5_VERSION;
-import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.CLIENT_WEB_NAME;
-import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.CLIENT_WEB_VERSION;
-import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.CLOSE_BASE_PAYLOAD;
-import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.CLOSE_PLAYER_PAYLOAD;
-import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.EMBED_PART_PAYLOAD;
-import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.PLAYER_EMBED_PAYLOAD;
-import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.PLAYER_PAYLOAD;
+import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.CLIENT_SCREEN_EMBED;
+import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.CLIENT_THIRD_PARTY_EMBED;
 import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.PLAYER_URL;
-import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.SCREEN_PART_PAYLOAD;
 import static com.sedmelluq.discord.lavaplayer.tools.ExceptionTools.throwWithDebugInfo;
 import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.COMMON;
 import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.SUSPICIOUS;
@@ -60,6 +51,11 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
 
       if (initialData == null) {
         return null;
+      }
+
+      if (!videoId.equals(initialData.playerResponse.get("videoDetails").get("videoId").text())) {
+        throw new FriendlyException("Video returned by YouTube isn't what was requested", COMMON,
+            new IllegalStateException(initialData.playerResponse.format()));
       }
 
       YoutubeTrackJsonData finalData = augmentWithPlayerScript(initialData, httpInterface, videoId, requireFormats);
@@ -209,31 +205,34 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
         cachedPlayerScript.playerScriptUrl
     );
     HttpPost post = new HttpPost(PLAYER_URL);
-    StringEntity payload;
+    YoutubeClientConfig clientConfig;
 
     if (infoStatus == InfoStatus.PREMIERE_TRAILER) {
       // Android client gives encoded Base64 response to trailer which is also protobuf so we can't decode it
-      payload = new StringEntity(String.format(
-          String.format(
-              BASE_PAYLOAD, CLIENT_WEB_NAME, CLIENT_WEB_VERSION
-          ) + SCREEN_PART_PAYLOAD + CLOSE_BASE_PAYLOAD + CLOSE_PLAYER_PAYLOAD, videoId, playerScriptTimestamp.scriptTimestamp
-      ), "UTF-8");
+      clientConfig = YoutubeClientConfig.WEB.copy().setAttribute(httpInterface);
     } else if (infoStatus == InfoStatus.NON_EMBEDDABLE) {
       // Used when age restriction bypass failed, if we have valid auth then most likely this request will be successful
-      payload = new StringEntity(String.format(PLAYER_PAYLOAD, videoId, playerScriptTimestamp.scriptTimestamp), "UTF-8");
+      clientConfig = YoutubeClientConfig.ANDROID.copy().setAttribute(httpInterface);
     } else if (infoStatus == InfoStatus.REQUIRES_LOGIN) {
       // Age restriction bypass
-      payload = new StringEntity(String.format(
-          String.format(
-              BASE_PAYLOAD, CLIENT_TVHTML5_NAME, CLIENT_TVHTML5_VERSION
-          ) + SCREEN_PART_PAYLOAD + EMBED_PART_PAYLOAD + CLOSE_BASE_PAYLOAD + CLOSE_PLAYER_PAYLOAD, videoId, playerScriptTimestamp.scriptTimestamp
-      ), "UTF-8");
+      clientConfig = YoutubeClientConfig.TV_EMBEDDED.copy().setAttribute(httpInterface);
     } else {
       // Default payload from what we start trying to get required data
-      payload = new StringEntity(String.format(PLAYER_EMBED_PAYLOAD, videoId, playerScriptTimestamp.scriptTimestamp), "UTF-8");
+      clientConfig = YoutubeClientConfig.ANDROID.copy()
+          .withClientField("clientScreen", CLIENT_SCREEN_EMBED)
+          .withThirdPartyEmbedUrl(CLIENT_THIRD_PARTY_EMBED)
+          .setAttribute(httpInterface);
     }
 
-    post.setEntity(payload);
+    clientConfig
+        .withRootField("racyCheckOk", true)
+        .withRootField("contentCheckOk", true)
+        .withRootField("videoId", videoId)
+        .withPlaybackSignatureTimestamp(playerScriptTimestamp.scriptTimestamp);
+
+    log.debug("Loading track info with payload: {}", clientConfig.toJsonString());
+
+    post.setEntity(new StringEntity(clientConfig.toJsonString(), "UTF-8"));
     try (CloseableHttpResponse response = httpInterface.execute(post)) {
       HttpClientTools.assertSuccessWithContent(response, "video page response");
 

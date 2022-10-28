@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
-import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.SEARCH_PAYLOAD;
+import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.SEARCH_PARAMS;
 import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.SEARCH_URL;
 import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.WATCH_URL_PREFIX;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -47,12 +47,15 @@ public class YoutubeSearchProvider implements YoutubeSearchResultLoader {
    */
   @Override
   public AudioItem loadSearchResult(String query, Function<AudioTrackInfo, AudioTrack> trackFactory) {
-    String escapedQuery = query.replaceAll("\"|\\\\", "");
-    log.debug("Performing a search with query {}", escapedQuery);
+    log.debug("Performing a search with query {}", query);
 
     try (HttpInterface httpInterface = httpInterfaceManager.getInterface()) {
       HttpPost post = new HttpPost(SEARCH_URL);
-      StringEntity payload = new StringEntity(String.format(SEARCH_PAYLOAD, escapedQuery), "UTF-8");
+      YoutubeClientConfig clientConfig = YoutubeClientConfig.ANDROID.copy()
+          .withRootField("query", query)
+          .withRootField("params", SEARCH_PARAMS)
+          .setAttribute(httpInterface);
+      StringEntity payload = new StringEntity(clientConfig.toJsonString(), "UTF-8");
       post.setEntity(payload);
 
       try (CloseableHttpResponse response = httpInterface.execute(post)) {

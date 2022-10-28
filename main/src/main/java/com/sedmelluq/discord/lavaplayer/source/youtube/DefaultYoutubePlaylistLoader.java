@@ -20,8 +20,6 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.BROWSE_CONTINUATION_PAYLOAD;
-import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.BROWSE_PLAYLIST_PAYLOAD;
 import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.BROWSE_URL;
 import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.WATCH_URL_PREFIX;
 import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.COMMON;
@@ -38,7 +36,10 @@ public class DefaultYoutubePlaylistLoader implements YoutubePlaylistLoader {
   public AudioPlaylist load(HttpInterface httpInterface, String playlistId, String selectedVideoId,
                             Function<AudioTrackInfo, AudioTrack> trackFactory) {
     HttpPost post = new HttpPost(BROWSE_URL);
-    StringEntity payload = new StringEntity(String.format(BROWSE_PLAYLIST_PAYLOAD, playlistId), "UTF-8");
+    YoutubeClientConfig clientConfig = YoutubeClientConfig.ANDROID.copy()
+        .withRootField("browseId", "VL" + playlistId)
+        .setAttribute(httpInterface);
+    StringEntity payload = new StringEntity(clientConfig.toJsonString(), "UTF-8");
     post.setEntity(payload);
     try (CloseableHttpResponse response = httpInterface.execute(post)) {
       HttpClientTools.assertSuccessWithContent(response, "playlist response");
@@ -61,25 +62,25 @@ public class DefaultYoutubePlaylistLoader implements YoutubePlaylistLoader {
     }
 
     String playlistName = json
-            .get("header")
-            .get("playlistHeaderRenderer")
-            .get("title")
-            .get("runs")
-            .index(0)
-            .get("text")
-            .text();
+        .get("header")
+        .get("playlistHeaderRenderer")
+        .get("title")
+        .get("runs")
+        .index(0)
+        .get("text")
+        .text();
 
     JsonBrowser playlistVideoList = json
-            .get("contents")
-            .get("singleColumnBrowseResultsRenderer")
-            .get("tabs")
-            .index(0)
-            .get("tabRenderer")
-            .get("content")
-            .get("sectionListRenderer")
-            .get("contents")
-            .index(0)
-            .get("playlistVideoListRenderer");
+        .get("contents")
+        .get("singleColumnBrowseResultsRenderer")
+        .get("tabs")
+        .index(0)
+        .get("tabRenderer")
+        .get("content")
+        .get("sectionListRenderer")
+        .get("contents")
+        .index(0)
+        .get("playlistVideoListRenderer");
 
     List<AudioTrack> tracks = new ArrayList<>();
     String continuationsToken = extractPlaylistTracks(playlistVideoList, tracks, trackFactory);
@@ -89,7 +90,10 @@ public class DefaultYoutubePlaylistLoader implements YoutubePlaylistLoader {
     // Also load the next pages, each result gives us a JSON with separate values for list html and next page loader html
     while (continuationsToken != null && ++loadCount < pageCount) {
       HttpPost post = new HttpPost(BROWSE_URL);
-      StringEntity payload = new StringEntity(String.format(BROWSE_CONTINUATION_PAYLOAD, continuationsToken), "UTF-8");
+      YoutubeClientConfig clientConfig = YoutubeClientConfig.ANDROID.copy()
+          .withRootField("continuation", continuationsToken)
+          .setAttribute(httpInterface);
+      StringEntity payload = new StringEntity(clientConfig.toJsonString(), "UTF-8");
       post.setEntity(payload);
       try (CloseableHttpResponse response = httpInterface.execute(post)) {
         HttpClientTools.assertSuccessWithContent(response, "playlist response");
@@ -97,7 +101,7 @@ public class DefaultYoutubePlaylistLoader implements YoutubePlaylistLoader {
         JsonBrowser continuationJson = JsonBrowser.parse(response.getEntity().getContent());
 
         JsonBrowser playlistVideoListPage = continuationJson.get("continuationContents")
-                .get("playlistVideoListContinuation");
+            .get("playlistVideoListContinuation");
 
         continuationsToken = extractPlaylistTracks(playlistVideoListPage, tracks, trackFactory);
       }
@@ -122,8 +126,8 @@ public class DefaultYoutubePlaylistLoader implements YoutubePlaylistLoader {
             text = textObject.get("simpleText").text();
           } else {
             text = textObject.get("runs").values().stream()
-                    .map(run -> run.get("text").text())
-                    .collect(Collectors.joining());
+                .map(run -> run.get("text").text())
+                .collect(Collectors.joining());
           }
 
           return text;
@@ -163,21 +167,21 @@ public class DefaultYoutubePlaylistLoader implements YoutubePlaylistLoader {
         String videoId = item.get("videoId").text();
         JsonBrowser titleField = item.get("title");
         String title = Optional.ofNullable(titleField.get("simpleText").text())
-                .orElse(titleField.get("runs").index(0).get("text").text());
+            .orElse(titleField.get("runs").index(0).get("text").text());
         String author = shortBylineText.get("runs").index(0).get("text").text();
         JsonBrowser lengthSeconds = item.get("lengthSeconds");
         long duration = Units.secondsToMillis(lengthSeconds.asLong(Units.DURATION_SEC_UNKNOWN));
 
         AudioTrackInfo info = new AudioTrackInfo(title, author, duration, videoId, false,
-                WATCH_URL_PREFIX + videoId);
+            WATCH_URL_PREFIX + videoId);
 
         tracks.add(trackFactory.apply(info));
       }
     }
 
     JsonBrowser continuations = playlistVideoList.get("continuations")
-            .index(0)
-            .get("nextContinuationData");
+        .index(0)
+        .get("nextContinuationData");
     String continuationsToken;
     if (!continuations.isNull()) {
       continuationsToken = continuations.get("continuation").text();
