@@ -276,7 +276,7 @@ public class DefaultAudioPlayerManager implements AudioPlayerManager {
         input.readUTF(),
         input.readBoolean(),
         version >= 2 ? DataFormatTools.readNullableText(input) : null,
-        version >= 2 ? DataFormatTools.readNullableText(input) : null,
+        version >= 3 ? DataFormatTools.readNullableText(input) : null,
         version >= 3 ? DataFormatTools.readNullableText(input) : null
     );
     AudioTrack track = decodeTrackDetails(trackInfo, input);
