@@ -1,6 +1,5 @@
 package com.sedmelluq.discord.lavaplayer.tools.io;
 
-import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,7 +31,7 @@ public class MessageInput {
    *         marker.
    * @throws IOException On IO error
    */
-  public DataInput nextMessage() throws IOException {
+  public DataInputStream nextMessage() throws IOException {
     int value = dataInputStream.readInt();
     messageFlags = (int) ((value & 0xC0000000L) >> 30L);
     messageSize = value & 0x3FFFFFFF;
@@ -64,5 +63,25 @@ public class MessageInput {
     }
 
     messageSize = 0;
+  }
+
+  public void skipRemainingVersionedFields(DataInputStream input) throws IOException {
+    CountingInputStream counter = new CountingInputStream(input);
+    DataInputStream in = new DataInputStream(counter);
+    in.mark(in.available());
+    int lastByte;
+    while ((lastByte = in.read()) != -1) {
+      if (lastByte > 1) {
+        in.reset();
+        in.skipBytes((int) (counter.getByteCount()) - 2);
+        break;
+      } else if (lastByte == 1) {
+        in.skipBytes(in.readUnsignedShort());
+      } else if (lastByte == 0) {
+        // Skip zero byte
+      } else {
+        break;
+      }
+    }
   }
 }

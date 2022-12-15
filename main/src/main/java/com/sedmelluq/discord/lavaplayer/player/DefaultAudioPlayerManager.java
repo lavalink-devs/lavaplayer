@@ -266,15 +266,22 @@ public class DefaultAudioPlayerManager implements AudioPlayerManager {
 
   @Override
   public DecodedTrackHolder decodeTrack(MessageInput stream) throws IOException {
-    DataInput input = stream.nextMessage();
+    DataInputStream input = stream.nextMessage();
     if (input == null) {
       return null;
     }
 
     int version = (stream.getMessageFlags() & TRACK_INFO_VERSIONED) != 0 ? (input.readByte() & 0xFF) : 1;
 
-    AudioTrackInfo trackInfo = new AudioTrackInfo(input.readUTF(), input.readUTF(), input.readLong(), input.readUTF(),
-        input.readBoolean(), version >= 2 ? DataFormatTools.readNullableText(input) : null);
+    AudioTrackInfo trackInfo = new AudioTrackInfo(
+        input.readUTF(),
+        input.readUTF(),
+        input.readLong(),
+        input.readUTF(),
+        input.readBoolean(),
+        version >= 2 ? DataFormatTools.readNullableText(input) : null
+    );
+    stream.skipRemainingVersionedFields(input);
     AudioTrack track = decodeTrackDetails(trackInfo, input);
     long position = input.readLong();
 
