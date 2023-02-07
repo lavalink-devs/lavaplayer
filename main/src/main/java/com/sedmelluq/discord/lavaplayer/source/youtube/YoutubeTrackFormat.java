@@ -18,6 +18,7 @@ public class YoutubeTrackFormat {
   private final String nParameter;
   private final String signature;
   private final String signatureKey;
+  private final boolean defaultAudioTrack;
 
   /**
    * @param type Mime type of the format
@@ -37,7 +38,8 @@ public class YoutubeTrackFormat {
       String url,
       String nParameter,
       String signature,
-      String signatureKey
+      String signatureKey,
+      boolean isDefaultAudioTrack
   ) {
     this.info = YoutubeFormatInfo.get(type);
     this.type = type;
@@ -48,6 +50,7 @@ public class YoutubeTrackFormat {
     this.nParameter = nParameter;
     this.signature = signature;
     this.signatureKey = signatureKey;
+    this.defaultAudioTrack = isDefaultAudioTrack;
   }
 
   /**
@@ -115,5 +118,12 @@ public class YoutubeTrackFormat {
    */
   public String getSignatureKey() {
     return signatureKey;
+  }
+
+  /**
+   * @return Whether this format contains an audio track that is used by default.
+   */
+  public boolean isDefaultAudioTrack() {
+    return defaultAudioTrack;
   }
 }

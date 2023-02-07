@@ -122,6 +122,10 @@ public class YoutubeAudioTrack extends DelegatedAudioTrack {
     YoutubeTrackFormat bestFormat = null;
 
     for (YoutubeTrackFormat format : formats) {
+      if (!format.isDefaultAudioTrack()) {
+        continue;
+      }
+
       if (isBetterFormat(format, bestFormat)) {
         bestFormat = format;
       }

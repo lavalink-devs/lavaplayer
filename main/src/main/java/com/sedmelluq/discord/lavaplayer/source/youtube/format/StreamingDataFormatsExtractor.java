@@ -77,7 +77,8 @@ public class StreamingDataFormatsExtractor implements OfflineYoutubeTrackFormatE
               cipherInfo.getOrDefault("url", url),
               urlMap.get("n"),
               cipherInfo.get("s"),
-              cipherInfo.getOrDefault("sp", DEFAULT_SIGNATURE_KEY)
+              cipherInfo.getOrDefault("sp", DEFAULT_SIGNATURE_KEY),
+              formatJson.get("audioTrack").get("audioIsDefault").asBoolean(true)
           ));
         } catch (RuntimeException e) {
           anyFailures = true;
