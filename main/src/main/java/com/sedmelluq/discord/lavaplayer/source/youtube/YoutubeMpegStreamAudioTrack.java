@@ -21,6 +21,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.SUSPICIOUS;
 import static com.sedmelluq.discord.lavaplayer.tools.Units.CONTENT_LENGTH_UNKNOWN;
@@ -32,12 +34,13 @@ import static com.sedmelluq.discord.lavaplayer.tools.Units.CONTENT_LENGTH_UNKNOW
  */
 public class YoutubeMpegStreamAudioTrack extends MpegAudioTrack {
   private static final Logger log = LoggerFactory.getLogger(YoutubeMpegStreamAudioTrack.class);
-  private static final RequestConfig streamingRequestConfig = RequestConfig.custom().setSocketTimeout(2000).setConnectionRequestTimeout(2000).setConnectTimeout(2000).build();
+  private static final RequestConfig streamingRequestConfig = RequestConfig.custom().setSocketTimeout(3000).setConnectionRequestTimeout(3000).setConnectTimeout(3000).build();
   private static final long EMPTY_RETRY_THRESHOLD_MS = 400;
   private static final long EMPTY_RETRY_INTERVAL_MS = 50;
+  private static final long MAX_REWIND_TIME = 43200; // Seconds
 
   private final HttpInterface httpInterface;
-  private final URI signedUrl;
+  private final TrackState state;
 
   /**
    * @param trackInfo Track info
@@ -48,43 +51,90 @@ public class YoutubeMpegStreamAudioTrack extends MpegAudioTrack {
     super(trackInfo, null);
 
     this.httpInterface = httpInterface;
-    this.signedUrl = signedUrl;
+    this.state = new TrackState(signedUrl);
 
     // YouTube does not return a segment until it is ready, this might trigger a connect timeout otherwise.
     httpInterface.getContext().setRequestConfig(streamingRequestConfig);
+    updateGlobalSequence().join();
   }
 
   @Override
   public void process(LocalAudioTrackExecutor localExecutor) {
-    localExecutor.executeProcessingLoop(() -> {
-      execute(localExecutor);
-    }, null);
+    localExecutor.executeProcessingLoop(() -> execute(localExecutor), this::seek);
+  }
+
+  @Override
+  public void setPosition(long position) {
+    state.seeking = true;
+    updateGlobalSequence().join();
+    getActiveExecutor().setPosition(position);
+  }
+
+  @Override
+  public long getDuration() {
+    return TimeUnit.SECONDS.toMillis(state.globalSequence * TimeUnit.MILLISECONDS.toSeconds(state.globalSequenceDuration));
+  }
+
+  @Override
+  public long getPosition() {
+    return TimeUnit.SECONDS.toMillis(state.absoluteSequence * TimeUnit.MILLISECONDS.toSeconds(state.globalSequenceDuration));
+  }
+
+  private CompletableFuture<Void> updateGlobalSequence() {
+    CompletableFuture<Void> updated = new CompletableFuture<>();
+
+    try (YoutubePersistentHttpStream stream = new YoutubePersistentHttpStream(httpInterface, state.initialUrl, CONTENT_LENGTH_UNKNOWN)) {
+      MpegFileLoader file = new MpegFileLoader(stream);
+      file.parseHeaders();
+
+      SequenceInfo sequenceInfo = extractAbsoluteSequenceFromEvent(file.getLastEventMessage());
+      state.globalSequence = sequenceInfo.sequence;
+      state.globalSequenceDuration = sequenceInfo.duration;
+
+      updated.complete(null);
+    } catch (IOException e) {
+      updated.complete(null);
+    }
+
+    return updated;
   }
 
   private void execute(LocalAudioTrackExecutor localExecutor) throws InterruptedException {
-    TrackState state = new TrackState(signedUrl);
-
     if (!trackInfo.isStream && state.absoluteSequence == null) {
       state.absoluteSequence = 0L;
     }
 
     try {
       while (!state.finished) {
-        processNextSegmentWithRetry(localExecutor, state);
+        processNextSegmentWithRetry(localExecutor);
         state.relativeSequence++;
+        state.globalSequence++;
       }
     } finally {
-      if (state.trackConsumer != null) {
+      if (state.trackConsumer != null && !state.seeking) {
         state.trackConsumer.close();
+      } else {
+        state.seeking = false;
       }
     }
   }
 
+  private void seek(long timecode) {
+    long seconds = TimeUnit.MILLISECONDS.toSeconds(timecode);
+
+    if (seconds > state.globalSequence) {
+      seconds = state.globalSequence;
+    } else if (state.globalSequence - seconds > MAX_REWIND_TIME) {
+      seconds = state.globalSequence - MAX_REWIND_TIME;
+    }
+
+    state.absoluteSequence = seconds - 1;
+  }
+
   private void processNextSegmentWithRetry(
-      LocalAudioTrackExecutor localExecutor,
-      TrackState state
+      LocalAudioTrackExecutor localExecutor
   ) throws InterruptedException {
-    if (processNextSegment(localExecutor, state)) {
+    if (processNextSegment(localExecutor)) {
       return;
     }
 
@@ -93,7 +143,7 @@ public class YoutubeMpegStreamAudioTrack extends MpegAudioTrack {
     long waitStart = System.currentTimeMillis();
     long iterationStart = waitStart;
 
-    while (!processNextSegment(localExecutor, state)) {
+    while (!processNextSegment(localExecutor)) {
       // EMPTY_RETRY_THRESHOLD_MS is the maximum time between the end of the first attempt and the beginning of the last
       // attempt, to avoid retry being skipped due to response coming slowly.
       if (iterationStart - waitStart >= EMPTY_RETRY_THRESHOLD_MS) {
@@ -107,8 +157,7 @@ public class YoutubeMpegStreamAudioTrack extends MpegAudioTrack {
   }
 
   private boolean processNextSegment(
-      LocalAudioTrackExecutor localExecutor,
-      TrackState state
+      LocalAudioTrackExecutor localExecutor
   ) throws InterruptedException {
     URI segmentUrl = getNextSegmentUrl(state);
 
@@ -122,7 +171,7 @@ public class YoutubeMpegStreamAudioTrack extends MpegAudioTrack {
       // If we were redirected, use that URL as a base for the next segment URL. Otherwise we will likely get redirected
       // again on every other request, which is inefficient (redirects across domains, the original URL is always
       // closing the connection, whereas the final URL is keep-alive).
-      state.baseUrl = httpInterface.getFinalLocation();
+      state.redirectUrl = httpInterface.getFinalLocation();
 
       processSegmentStream(stream, localExecutor.getProcessingContext(), state);
 
@@ -142,7 +191,7 @@ public class YoutubeMpegStreamAudioTrack extends MpegAudioTrack {
     if (!trackInfo.isStream) {
       state.absoluteSequence++;
     } else {
-      state.absoluteSequence = extractAbsoluteSequenceFromEvent(file.getLastEventMessage());
+      state.absoluteSequence = extractAbsoluteSequenceFromEvent(file.getLastEventMessage()).sequence;
     }
 
     if (state.trackConsumer == null) {
@@ -158,7 +207,7 @@ public class YoutubeMpegStreamAudioTrack extends MpegAudioTrack {
   }
 
   private URI getNextSegmentUrl(TrackState state) {
-    URIBuilder builder = new URIBuilder(state.baseUrl)
+    URIBuilder builder = new URIBuilder(state.redirectUrl == null ? state.initialUrl : state.redirectUrl)
         .setParameter("rn", String.valueOf(state.relativeSequence))
         .setParameter("rbuf", "0");
 
@@ -173,26 +222,45 @@ public class YoutubeMpegStreamAudioTrack extends MpegAudioTrack {
     }
   }
 
-  private Long extractAbsoluteSequenceFromEvent(byte[] data) {
+  private SequenceInfo extractAbsoluteSequenceFromEvent(byte[] data) {
     if (data == null) {
       return null;
     }
 
     String message = new String(data, StandardCharsets.UTF_8);
     String sequence = DataFormatTools.extractBetween(message, "Sequence-Number: ", "\r\n");
+    String duration = DataFormatTools.extractBetween(message, "Target-Duration-Us: ", "\r\n");
 
-    return sequence != null ? Long.valueOf(sequence) : null;
+    if (sequence != null && duration != null) {
+      return new SequenceInfo(Long.parseLong(sequence), TimeUnit.MICROSECONDS.toMillis(Long.parseLong(duration)));
+    }
+
+    return null;
   }
 
   private static class TrackState {
+    private long globalSequenceDuration;
+    private long globalSequence;
     private long relativeSequence;
     private Long absoluteSequence;
     private MpegTrackConsumer trackConsumer;
     private boolean finished;
-    private URI baseUrl;
+    private boolean seeking;
+    private URI redirectUrl;
+    private final URI initialUrl;
 
-    public TrackState(URI baseUrl) {
-      this.baseUrl = baseUrl;
+    public TrackState(URI initialUrl) {
+      this.initialUrl = initialUrl;
+    }
+  }
+
+  private static class SequenceInfo {
+    private final long sequence;
+    private final long duration;
+
+    public SequenceInfo(long sequence, long duration) {
+      this.sequence = sequence;
+      this.duration = duration;
     }
   }
 }

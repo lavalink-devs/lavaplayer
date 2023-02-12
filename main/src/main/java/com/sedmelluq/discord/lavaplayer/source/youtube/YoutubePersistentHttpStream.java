@@ -18,7 +18,8 @@ import java.net.URISyntaxException;
 public class YoutubePersistentHttpStream extends PersistentHttpStream {
   private static final Logger log = LoggerFactory.getLogger(YoutubePersistentHttpStream.class);
 
-  private static final long BUFFER_SIZE = 500000;
+  // Valid range for requesting without throttling is 0-11862014
+  private static final long BUFFER_SIZE = 11862014;
 
   private long rangeEnd;
 
@@ -33,7 +34,7 @@ public class YoutubePersistentHttpStream extends PersistentHttpStream {
 
   @Override
   protected URI getConnectUrl() {
-    if (position > 0 && !contentUrl.toString().contains("rn=")) {
+    if (!contentUrl.toString().contains("rn=")) {
       URI rangeUrl = getNextRangeUrl();
 
       log.debug("Range URL: {}", rangeUrl.toString());
@@ -46,13 +47,12 @@ public class YoutubePersistentHttpStream extends PersistentHttpStream {
 
   @Override
   protected int internalRead(byte[] b, int off, int len, boolean attemptReconnect) throws IOException {
-    long nextExpectedPosition = position + len;
+    connect(false);
+    long nextExpectedPosition = position + len + (len / 2);
 
     try {
-      connect(false);
-
       int result;
-      if (nextExpectedPosition + (BUFFER_SIZE / 2) >= rangeEnd && rangeEnd != 0) {
+      if (nextExpectedPosition >= rangeEnd && rangeEnd != 0) {
         if (rangeEnd == contentLength) {
           result = currentContent.read(b, off, len);
           position += result;
@@ -79,13 +79,12 @@ public class YoutubePersistentHttpStream extends PersistentHttpStream {
 
   @Override
   protected long internalSkip(long n, boolean attemptReconnect) throws IOException {
+    connect(false);
     long nextExpectedPosition = position + n;
 
     try {
-      connect(false);
-
       long result;
-      if (nextExpectedPosition + (BUFFER_SIZE / 2) >= rangeEnd && rangeEnd != 0) {
+      if (nextExpectedPosition >= rangeEnd && rangeEnd != 0) {
         if (rangeEnd == contentLength) {
           result = currentContent.skip(n);
           position += result;
@@ -96,11 +95,9 @@ public class YoutubePersistentHttpStream extends PersistentHttpStream {
         }
       } else {
         result = currentContent.skip(n);
-        if (result >= 0) {
-          position += result;
-          if (position >= rangeEnd && !contentUrl.toString().contains("rn=")) {
-            handleRangeEnd(null, attemptReconnect);
-          }
+        position += result;
+        if (position >= rangeEnd && !contentUrl.toString().contains("rn=")) {
+          handleRangeEnd(null, attemptReconnect);
         }
       }
 
@@ -125,7 +122,7 @@ public class YoutubePersistentHttpStream extends PersistentHttpStream {
     }
   }
 
-  protected void handleRangeEnd(IOException exception, boolean attemptReconnect) throws IOException {
+  private void handleRangeEnd(IOException exception, boolean attemptReconnect) throws IOException {
     if (!attemptReconnect || (!HttpClientTools.isRetriableNetworkException(exception) && exception != null)) {
       throw exception;
     }

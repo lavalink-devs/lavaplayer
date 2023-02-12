@@ -26,6 +26,21 @@ public abstract class DelegatedAudioTrack extends BaseAudioTrack {
   }
 
   @Override
+  public void setPosition(long position) {
+    if (delegate != null) {
+      delegate.setPosition(position);
+    } else {
+      synchronized (this) {
+        if (delegate != null) {
+          delegate.setPosition(position);
+        } else {
+          super.setPosition(position);
+        }
+      }
+    }
+  }
+
+  @Override
   public long getDuration() {
     if (delegate != null) {
       return delegate.getDuration();
@@ -35,6 +50,21 @@ public abstract class DelegatedAudioTrack extends BaseAudioTrack {
           return delegate.getDuration();
         } else {
           return super.getDuration();
+        }
+      }
+    }
+  }
+
+  @Override
+  public long getPosition() {
+    if (delegate != null) {
+      return delegate.getPosition();
+    } else {
+      synchronized (this) {
+        if (delegate != null) {
+          return delegate.getPosition();
+        } else {
+          return super.getPosition();
         }
       }
     }

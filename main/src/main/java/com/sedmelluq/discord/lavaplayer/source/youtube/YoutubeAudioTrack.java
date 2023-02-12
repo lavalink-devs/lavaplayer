@@ -52,6 +52,11 @@ public class YoutubeAudioTrack extends DelegatedAudioTrack {
     }
   }
 
+  @Override
+  public boolean isSeekable() {
+    return true;
+  }
+
   private void processStatic(LocalAudioTrackExecutor localExecutor, HttpInterface httpInterface, FormatWithUrl format) throws Exception {
     try (YoutubePersistentHttpStream stream = new YoutubePersistentHttpStream(httpInterface, format.signedUrl, format.details.getContentLength())) {
       if (format.details.getType().getMimeType().endsWith("/webm")) {
@@ -108,7 +113,7 @@ public class YoutubeAudioTrack extends DelegatedAudioTrack {
       return false;
     } else if (other == null) {
       return true;
-    } else if (info.mimeType.equals("audio/webm") && format.getAudioChannels() > 2) {
+    } else if (MIME_AUDIO_WEBM.equals(info.mimeType) && format.getAudioChannels() > 2) {
       // Opus with more than 2 audio channels is unsupported by LavaPlayer currently.
       return false;
     } else if (info.ordinal() != other.getInfo().ordinal()) {
