@@ -5,14 +5,16 @@ import com.sedmelluq.discord.lavaplayer.tools.ExceptionTools;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.tools.io.HttpClientTools;
 import com.sedmelluq.discord.lavaplayer.tools.io.HttpInterface;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpUriRequest;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpUriRequest;
 
 import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.SUSPICIOUS;
 import static com.sedmelluq.discord.lavaplayer.tools.io.HttpClientTools.fetchResponseLines;
@@ -25,6 +27,7 @@ import static com.sedmelluq.discord.lavaplayer.tools.io.HttpClientTools.fetchRes
  */
 public abstract class M3uStreamSegmentUrlProvider {
   private static final long SEGMENT_WAIT_STEP_MS = 200;
+  private static final RequestConfig streamingRequestConfig = RequestConfig.custom().setSocketTimeout(5000).setConnectionRequestTimeout(5000).setConnectTimeout(5000).build();
 
   protected SegmentInfo lastSegment;
 
@@ -89,6 +92,7 @@ public abstract class M3uStreamSegmentUrlProvider {
    * @return Input stream of the next segment.
    */
   public InputStream getNextSegmentStream(HttpInterface httpInterface) {
+    httpInterface.getContext().setRequestConfig(streamingRequestConfig);
     String url = getNextSegmentUrl(httpInterface);
     if (url == null) {
       return null;
