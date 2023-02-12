@@ -40,12 +40,12 @@ public class OggOpusCodecHandler implements OggCodecHandler {
   @Override
   public OggTrackBlueprint loadBlueprint(OggPacketInputStream stream, DirectBufferStreamBroker broker) throws IOException {
     ByteBuffer firstPacket = broker.getBuffer();
+    int sampleRate = getSampleRate(firstPacket);
     verifyFirstPacket(firstPacket);
-
     loadCommentsHeader(stream, broker, true);
-
+    stream.setSeekPoints(stream.createSeekTable(sampleRate));
     int channelCount = firstPacket.get(9) & 0xFF;
-    return new Blueprint(broker, channelCount, getSampleRate(firstPacket));
+    return new Blueprint(broker, channelCount, sampleRate);
   }
 
   @Override
@@ -116,6 +116,11 @@ public class OggOpusCodecHandler implements OggCodecHandler {
     public OggTrackHandler loadTrackHandler(OggPacketInputStream stream) {
       broker.clear();
       return new OggOpusTrackHandler(stream, broker, channelCount, sampleRate);
+    }
+
+    @Override
+    public int getSampleRate() {
+      return sampleRate;
     }
   }
 }

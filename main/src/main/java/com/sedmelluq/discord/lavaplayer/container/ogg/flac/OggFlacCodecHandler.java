@@ -39,7 +39,9 @@ public class OggFlacCodecHandler implements OggCodecHandler {
 
   @Override
   public OggTrackBlueprint loadBlueprint(OggPacketInputStream stream, DirectBufferStreamBroker broker) throws IOException {
-    return new Blueprint(load(stream, broker));
+    FlacTrackInfo info = load(stream, broker);
+    stream.setSeekPoints(stream.createSeekTable(info.stream.sampleRate));
+    return new Blueprint(info);
   }
 
   @Override
@@ -101,6 +103,11 @@ public class OggFlacCodecHandler implements OggCodecHandler {
     @Override
     public OggTrackHandler loadTrackHandler(OggPacketInputStream stream) {
       return new OggFlacTrackHandler(info, stream);
+    }
+
+    @Override
+    public int getSampleRate() {
+      return info.stream.sampleRate;
     }
   }
 }

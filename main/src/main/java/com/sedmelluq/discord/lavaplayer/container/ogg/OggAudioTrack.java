@@ -1,16 +1,13 @@
 package com.sedmelluq.discord.lavaplayer.container.ogg;
 
-import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.tools.io.SeekableInputStream;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
 import com.sedmelluq.discord.lavaplayer.track.BaseAudioTrack;
-import com.sedmelluq.discord.lavaplayer.track.playback.AudioProcessingContext;
 import com.sedmelluq.discord.lavaplayer.track.playback.LocalAudioTrackExecutor;
-import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.SUSPICIOUS;
+import java.io.IOException;
 
 /**
  * Audio track which handles an OGG stream.
@@ -31,34 +28,19 @@ public class OggAudioTrack extends BaseAudioTrack {
   }
 
   @Override
-  public void process(final LocalAudioTrackExecutor localExecutor) {
+  public void process(final LocalAudioTrackExecutor localExecutor) throws IOException {
     OggPacketInputStream packetInputStream = new OggPacketInputStream(inputStream, false);
-
-    log.debug("Starting to play an OGG stream track {}", getIdentifier());
-
-    localExecutor.executeProcessingLoop(() -> {
-      try {
-        processTrackLoop(packetInputStream, localExecutor.getProcessingContext());
-      } catch (IOException e) {
-        throw new FriendlyException("Stream broke when playing OGG track.", SUSPICIOUS, e);
-      }
-    }, null, true);
-  }
-
-  private void processTrackLoop(OggPacketInputStream packetInputStream, AudioProcessingContext context) throws IOException, InterruptedException {
     OggTrackBlueprint blueprint = OggTrackLoader.loadTrackBlueprint(packetInputStream);
 
     if (blueprint == null) {
       throw new IOException("Stream terminated before the first packet.");
     }
 
-    while (blueprint != null) {
-      try (OggTrackHandler handler = blueprint.loadTrackHandler(packetInputStream)) {
-        handler.initialise(context, 0, 0);
-        handler.provideFrames();
-      }
+    OggTrackHandler handler = blueprint.loadTrackHandler(packetInputStream);
 
-      blueprint = OggTrackLoader.loadTrackBlueprint(packetInputStream);
-    }
+    log.debug("Starting to play an OGG track {}", getIdentifier());
+
+    handler.initialise(localExecutor.getProcessingContext(), 0, 0);
+    localExecutor.executeProcessingLoop(handler::provideFrames, handler::seekToTimecode, true);
   }
 }
