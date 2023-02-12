@@ -83,7 +83,8 @@ public class LegacyDashMpdFormatsExtractor implements YoutubeTrackFormatExtracto
             url,
             "",
             null,
-            DEFAULT_SIGNATURE_KEY
+            DEFAULT_SIGNATURE_KEY,
+            true
         ));
       }
     }
