@@ -62,7 +62,7 @@ public final class Ipv4Block extends IpBlock<Inet4Address> {
     final int maskedRandom = random.nextInt() & randMask;
 
     final Inet4Address inetAddress = intToAddress(address + maskedRandom);
-    log.info(inetAddress.toString());
+    log.debug(inetAddress.toString());
     return inetAddress;
   }
 
