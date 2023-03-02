@@ -2,6 +2,7 @@ package com.sedmelluq.discord.lavaplayer.source.twitch;
 
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManager;
+import com.sedmelluq.discord.lavaplayer.tools.DataFormatTools;
 import com.sedmelluq.discord.lavaplayer.tools.ExceptionTools;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.tools.JsonBrowser;
@@ -14,12 +15,15 @@ import com.sedmelluq.discord.lavaplayer.track.AudioItem;
 import com.sedmelluq.discord.lavaplayer.track.AudioReference;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
+import org.apache.http.Header;
 import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.util.EntityUtils;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -31,7 +35,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.sedmelluq.discord.lavaplayer.source.twitch.TwitchConstants.ACCESS_TOKEN_PAYLOAD;
-import static com.sedmelluq.discord.lavaplayer.source.twitch.TwitchConstants.DEFAULT_CLIENT_ID;
 import static com.sedmelluq.discord.lavaplayer.source.twitch.TwitchConstants.METADATA_PAYLOAD;
 import static com.sedmelluq.discord.lavaplayer.source.twitch.TwitchConstants.TWITCH_GRAPHQL_BASE_URL;
 import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.SUSPICIOUS;
@@ -44,24 +47,23 @@ public class TwitchStreamAudioSourceManager implements AudioSourceManager, HttpC
   private static final Pattern streamNameRegex = Pattern.compile(STREAM_NAME_REGEX);
 
   private final HttpInterfaceManager httpInterfaceManager;
-  private final String twitchClientId;
+  private String twitchClientId;
+  private String twitchDeviceId;
 
   /**
    * Create an instance.
    */
-  public TwitchStreamAudioSourceManager() { this(DEFAULT_CLIENT_ID); }
-
-  /**
-   * Create an instance.
-   * @param clientId The Twitch client id for your application.
-   */
-  public TwitchStreamAudioSourceManager(String clientId) {
+  public TwitchStreamAudioSourceManager() {
     httpInterfaceManager = HttpClientTools.createDefaultThreadLocalManager();
-    twitchClientId = clientId;
+    initRequestHeaders();
   }
 
   public String getClientId() {
     return twitchClientId;
+  }
+
+  public String getDeviceId() {
+    return twitchDeviceId;
   }
 
   @Override
@@ -76,23 +78,16 @@ public class TwitchStreamAudioSourceManager implements AudioSourceManager, HttpC
       return null;
     }
 
-    JsonBrowser accessToken = fetchAccessToken(streamName);
-
-    if (accessToken == null || accessToken.get("data").get("streamPlaybackAccessToken").get("value").isNull()) {
-      return AudioReference.NO_TRACK;
-    }
-
     JsonBrowser channelInfo = fetchStreamChannelInfo(streamName).get("data").get("user");
 
     if (channelInfo == null || channelInfo.get("stream").get("type").isNull()) {
       return AudioReference.NO_TRACK;
     } else {
-      String displayName = streamName;
       String title = channelInfo.get("lastBroadcast").get("title").text();
 
       return new TwitchStreamAudioTrack(new AudioTrackInfo(
           title,
-          displayName,
+          streamName,
           Units.DURATION_MS_UNKNOWN,
           reference.identifier,
           true,
@@ -135,7 +130,7 @@ public class TwitchStreamAudioSourceManager implements AudioSourceManager, HttpC
    * @return Request with necessary headers attached.
    */
   public HttpUriRequest createGetRequest(String url) {
-    return addClientHeaders(new HttpGet(url), twitchClientId);
+    return addClientHeaders(new HttpGet(url), twitchClientId, twitchDeviceId);
   }
 
   /**
@@ -143,7 +138,7 @@ public class TwitchStreamAudioSourceManager implements AudioSourceManager, HttpC
    * @return Request with necessary headers attached.
    */
   public HttpUriRequest createGetRequest(URI url) {
-    return addClientHeaders(new HttpGet(url), twitchClientId);
+    return addClientHeaders(new HttpGet(url), twitchClientId, twitchDeviceId);
   }
 
   /**
@@ -163,15 +158,16 @@ public class TwitchStreamAudioSourceManager implements AudioSourceManager, HttpC
     httpInterfaceManager.configureBuilder(configurator);
   }
 
-  private static HttpUriRequest addClientHeaders(HttpUriRequest request, String clientId) {
+  private static HttpUriRequest addClientHeaders(HttpUriRequest request, String clientId, String deviceId) {
     request.setHeader("Client-ID", clientId);
+    request.setHeader("X-Device-ID", deviceId);
     return request;
   }
 
-  private JsonBrowser fetchAccessToken(String name) {
+  protected JsonBrowser fetchAccessToken(String name) {
     try (HttpInterface httpInterface = getHttpInterface()) {
       HttpPost post = new HttpPost(TWITCH_GRAPHQL_BASE_URL);
-      addClientHeaders(post, DEFAULT_CLIENT_ID);
+      addClientHeaders(post, twitchClientId, twitchDeviceId);
       post.setEntity(new StringEntity(String.format(ACCESS_TOKEN_PAYLOAD, name)));
       return HttpClientTools.fetchResponseAsJson(httpInterface, post);
     } catch (IOException e) {
@@ -182,11 +178,31 @@ public class TwitchStreamAudioSourceManager implements AudioSourceManager, HttpC
   private JsonBrowser fetchStreamChannelInfo(String channelId) {
     try (HttpInterface httpInterface = getHttpInterface()) {
       HttpPost post = new HttpPost(TWITCH_GRAPHQL_BASE_URL);
-      addClientHeaders(post, DEFAULT_CLIENT_ID);
+      addClientHeaders(post, twitchClientId, twitchDeviceId);
       post.setEntity(new StringEntity(String.format(METADATA_PAYLOAD, channelId)));
       return HttpClientTools.fetchResponseAsJson(httpInterface, post);
     } catch (IOException e) {
       throw new FriendlyException("Loading Twitch channel information failed.", SUSPICIOUS, e);
+    }
+  }
+
+  private void initRequestHeaders() {
+    try (HttpInterface httpInterface = getHttpInterface()) {
+      HttpGet get = new HttpGet("https://www.twitch.tv");
+      get.setHeader("Accept", "text/html");
+      CloseableHttpResponse response = httpInterface.execute(get);
+      HttpClientTools.assertSuccessWithContent(response, "twitch main page");
+
+      String responseText = EntityUtils.toString(response.getEntity());
+      twitchClientId = DataFormatTools.extractBetween(responseText, "clientId=\"", "\"");
+
+      for (Header header : response.getAllHeaders()) {
+        if (header.getName().contains("Set-Cookie") && header.getValue().contains("unique_id=")) {
+          twitchDeviceId = DataFormatTools.extractBetween(header.toString(), "unique_id=", ";");
+        }
+      }
+    } catch (IOException e) {
+      throw new FriendlyException("Loading Twitch main page failed.", SUSPICIOUS, e);
     }
   }
 

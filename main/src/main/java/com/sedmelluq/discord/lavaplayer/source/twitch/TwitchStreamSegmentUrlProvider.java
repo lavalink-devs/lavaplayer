@@ -5,16 +5,16 @@ import com.sedmelluq.discord.lavaplayer.source.stream.M3uStreamSegmentUrlProvide
 import com.sedmelluq.discord.lavaplayer.tools.JsonBrowser;
 import com.sedmelluq.discord.lavaplayer.tools.io.HttpClientTools;
 import com.sedmelluq.discord.lavaplayer.tools.io.HttpInterface;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.List;
-import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.List;
 
 /**
  * Provider for Twitch segment URLs from a channel.
@@ -51,20 +51,25 @@ public class TwitchStreamSegmentUrlProvider extends M3uStreamSegmentUrlProvider 
       return streamSegmentPlaylistUrl;
     }
 
-    JsonBrowser token = loadAccessToken(httpInterface);
-    HttpUriRequest request = new HttpGet(getChannelStreamsUrl(token).toString());
+    JsonBrowser tokenJson = manager.fetchAccessToken(channelName);
+    AccessToken token = new AccessToken(
+        JsonBrowser.parse(tokenJson.get("data").get("streamPlaybackAccessToken").get("value").text()),
+        tokenJson.get("data").get("streamPlaybackAccessToken").get("signature").text()
+    );
+    String url = getChannelStreamsUrl(token).toString();
+    HttpUriRequest request = new HttpGet(url);
     ChannelStreams streams = loadChannelStreamsInfo(HttpClientTools.fetchResponseLines(httpInterface, request, "channel streams list"));
 
     if (streams.entries.isEmpty()) {
       throw new IllegalStateException("No streams available on channel.");
     }
 
-    ChannelStreamInfo stream = streams.entries.get(0);
+    ChannelStreamInfo stream = streams.entries.get(streams.entries.size() - 1);
 
     log.debug("Chose stream with quality {} from url {}", stream.quality, stream.url);
     streamSegmentPlaylistUrl = stream.url;
 
-    long tokenServerExpirationTime = JsonBrowser.parse(token.get(TOKEN_PARAMETER).text()).get("expires").as(Long.class) * 1000L;
+    long tokenServerExpirationTime = token.value.get("expires").as(Long.class) * 1000L;
     tokenExpirationTime = System.currentTimeMillis() + (tokenServerExpirationTime - streams.serverTime) - 5000;
 
     return streamSegmentPlaylistUrl;
@@ -73,20 +78,6 @@ public class TwitchStreamSegmentUrlProvider extends M3uStreamSegmentUrlProvider 
   @Override
   protected HttpUriRequest createSegmentGetRequest(String url) {
     return manager.createGetRequest(url);
-  }
-
-  private JsonBrowser loadAccessToken(HttpInterface httpInterface) throws IOException {
-    HttpUriRequest request = createSegmentGetRequest("https://api.twitch.tv/api/channels/" + channelName +
-        "/access_token?oauth_token=undefined&need_https=true&player_type=site&player_backend=mediaplayer");
-
-    try (CloseableHttpResponse response = httpInterface.execute(request)) {
-      int statusCode = response.getStatusLine().getStatusCode();
-      if (!HttpClientTools.isSuccessWithContent(statusCode)) {
-        throw new IOException("Unexpected response code from access token request: " + statusCode);
-      }
-
-      return JsonBrowser.parse(response.getEntity().getContent());
-    }
   }
 
   private ChannelStreams loadChannelStreamsInfo(String[] lines) {
@@ -117,13 +108,14 @@ public class TwitchStreamSegmentUrlProvider extends M3uStreamSegmentUrlProvider 
     );
   }
 
-  private URI getChannelStreamsUrl(JsonBrowser token) {
+  private URI getChannelStreamsUrl(AccessToken token) {
     try {
       return new URIBuilder("https://usher.ttvnw.net/api/channel/hls/" + channelName + ".m3u8")
-          .addParameter(TOKEN_PARAMETER, token.get(TOKEN_PARAMETER).text())
-          .addParameter("sig", token.get("sig").text())
+          .addParameter(TOKEN_PARAMETER, token.value.format())
+          .addParameter("sig", token.signature)
           .addParameter("allow_source", "true")
           .addParameter("allow_spectre", "true")
+          .addParameter("allow_audio_only", "true")
           .addParameter("player_backend", "html5")
           .addParameter("expgroup", "regular")
           .build();
@@ -139,6 +131,16 @@ public class TwitchStreamSegmentUrlProvider extends M3uStreamSegmentUrlProvider 
     private ChannelStreams(long serverTime, List<ChannelStreamInfo> entries) {
       this.serverTime = serverTime;
       this.entries = entries;
+    }
+  }
+
+  private static class AccessToken {
+    private final JsonBrowser value;
+    private final String signature;
+
+    private AccessToken(JsonBrowser value, String signature) {
+      this.value = value;
+      this.signature = signature;
     }
   }
 }
