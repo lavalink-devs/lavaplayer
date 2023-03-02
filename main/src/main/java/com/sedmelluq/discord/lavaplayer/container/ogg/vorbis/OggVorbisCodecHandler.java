@@ -3,6 +3,7 @@ package com.sedmelluq.discord.lavaplayer.container.ogg.vorbis;
 import com.sedmelluq.discord.lavaplayer.container.ogg.OggCodecHandler;
 import com.sedmelluq.discord.lavaplayer.container.ogg.OggMetadata;
 import com.sedmelluq.discord.lavaplayer.container.ogg.OggPacketInputStream;
+import com.sedmelluq.discord.lavaplayer.container.ogg.OggStreamSizeInfo;
 import com.sedmelluq.discord.lavaplayer.container.ogg.OggTrackBlueprint;
 import com.sedmelluq.discord.lavaplayer.container.ogg.OggTrackHandler;
 import com.sedmelluq.discord.lavaplayer.tools.io.DirectBufferStreamBroker;
@@ -33,11 +34,15 @@ public class OggVorbisCodecHandler implements OggCodecHandler {
   public OggTrackBlueprint loadBlueprint(OggPacketInputStream stream, DirectBufferStreamBroker broker) throws IOException {
     byte[] infoPacket = broker.extractBytes();
     loadCommentsHeader(stream, broker, true);
-    return new Blueprint(infoPacket, broker);
+    ByteBuffer infoBuffer = ByteBuffer.wrap(infoPacket);
+    int sampleRate = Integer.reverseBytes(infoBuffer.getInt(12));
+    stream.setSeekPoints(stream.createSeekTable(sampleRate));
+    return new Blueprint(sampleRate, infoPacket, broker);
   }
 
   @Override
   public OggMetadata loadMetadata(OggPacketInputStream stream, DirectBufferStreamBroker broker) throws IOException {
+    byte[] infoPacket = broker.extractBytes();
     loadCommentsHeader(stream, broker, false);
 
     ByteBuffer commentsPacket = broker.getBuffer();
@@ -48,7 +53,14 @@ public class OggVorbisCodecHandler implements OggCodecHandler {
       return OggMetadata.EMPTY;
     }
 
-    return new OggMetadata(VorbisCommentParser.parse(commentsPacket, broker.isTruncated()), null);
+    ByteBuffer infoBuffer = ByteBuffer.wrap(infoPacket);
+    int sampleRate = Integer.reverseBytes(infoBuffer.getInt(12));
+    OggStreamSizeInfo sizeInfo = stream.seekForSizeInfo(sampleRate);
+
+    return new OggMetadata(
+        VorbisCommentParser.parse(commentsPacket, broker.isTruncated()),
+        sizeInfo.getDuration()
+    );
   }
 
   private void loadCommentsHeader(OggPacketInputStream stream, DirectBufferStreamBroker broker, boolean skip)
@@ -64,10 +76,12 @@ public class OggVorbisCodecHandler implements OggCodecHandler {
   }
 
   private static class Blueprint implements OggTrackBlueprint {
+    private final int sampleRate;
     private final byte[] infoPacket;
     private final DirectBufferStreamBroker broker;
 
-    private Blueprint(byte[] infoPacket, DirectBufferStreamBroker broker) {
+    private Blueprint(int sampleRate, byte[] infoPacket, DirectBufferStreamBroker broker) {
+      this.sampleRate = sampleRate;
       this.infoPacket = infoPacket;
       this.broker = broker;
     }
@@ -75,6 +89,11 @@ public class OggVorbisCodecHandler implements OggCodecHandler {
     @Override
     public OggTrackHandler loadTrackHandler(OggPacketInputStream stream) {
       return new OggVorbisTrackHandler(infoPacket, stream, broker);
+    }
+
+    @Override
+    public int getSampleRate() {
+      return sampleRate;
     }
   }
 }

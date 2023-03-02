@@ -15,12 +15,14 @@ public class OggMetadata implements AudioTrackInfoProvider {
   private static final String ARTIST_FIELD = "ARTIST";
 
   private final Map<String, String> tags;
+  private final long length;
 
   /**
    * @param tags Map of OGG metadata with OGG-specific keys.
    */
   public OggMetadata(Map<String, String> tags, Long length) {
     this.tags = tags;
+    this.length = length;
   }
 
   @Override
@@ -35,7 +37,7 @@ public class OggMetadata implements AudioTrackInfoProvider {
 
   @Override
   public Long getLength() {
-    return null;
+    return length;
   }
 
   @Override

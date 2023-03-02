@@ -1,6 +1,8 @@
 package com.sedmelluq.discord.lavaplayer.container.ogg;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Scanner for determining OGG stream information by seeking around in it.
@@ -16,6 +18,7 @@ public class OggPageScanner {
   private long reversedPosition;
   private int pageSize;
   private long byteStreamPosition;
+  private int pageSequence;
 
   /**
    * @param absoluteOffset Current position of the stream in bytes.
@@ -57,6 +60,38 @@ public class OggPageScanner {
     }
 
     return null;
+  }
+
+  /**
+   * Creates a seek table for the OGG stream.
+   *
+   * @param sampleRate Sample rate of the track in the stream.
+   * @return A list of OggSeekPoint objects representing the seek points in the stream.
+   */
+  public List<OggSeekPoint> createSeekTable(int sampleRate) {
+    List<OggSeekPoint> seekPoints = new ArrayList<>();
+
+    ByteBuffer buffer = ByteBuffer.wrap(data, 0, dataLength);
+    int head = buffer.getInt(0);
+
+    for (int i = 0; i < dataLength - 27; i++) {
+      if (head == OGG_PAGE_HEADER_INT) {
+        buffer.position(i);
+
+        if (attemptReadHeader(buffer)) {
+          long position = byteStreamPosition;
+          long granulePosition = Long.reverseBytes(reversedPosition);
+          long timecode = granulePosition / (sampleRate / 1000);
+          pageSequence++;
+          seekPoints.add(new OggSeekPoint(position, granulePosition, timecode, pageSequence));
+        }
+      }
+
+      head <<= 8;
+      head |= data[i + 4] & 0xFF;
+    }
+
+    return seekPoints;
   }
 
   private boolean attemptReadHeader(ByteBuffer buffer) {
