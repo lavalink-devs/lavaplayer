@@ -109,7 +109,7 @@ public class WavFileLoader {
         throw new IllegalStateException("Invalid channel count: " + channelCount);
       } else if (sampleRate < 100 || sampleRate > 384000) {
         throw new IllegalStateException("Invalid sample rate: " + sampleRate);
-      } else if (bitsPerSample != 16) {
+      } else if (bitsPerSample != 16 && bitsPerSample != 24) {
         throw new IllegalStateException("Unsupported bits per sample: " + bitsPerSample);
       }
     }
