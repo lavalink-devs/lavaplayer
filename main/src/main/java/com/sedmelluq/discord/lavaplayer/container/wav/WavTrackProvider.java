@@ -27,6 +27,7 @@ public class WavTrackProvider {
   private final short[] buffer;
   private final byte[] rawBuffer;
   private final ByteBuffer byteBuffer;
+  private final ShortBuffer nioBuffer;
 
   /**
    * @param context Configuration and output information for processing
@@ -42,6 +43,7 @@ public class WavTrackProvider {
 
     this.byteBuffer = ByteBuffer.allocate(info.blockAlign * BLOCKS_IN_BUFFER).order(LITTLE_ENDIAN);
     this.rawBuffer = byteBuffer.array();
+    this.nioBuffer = byteBuffer.asShortBuffer();
   }
 
   /**
@@ -90,10 +92,7 @@ public class WavTrackProvider {
       throw new IllegalStateException("Cannot process " + info.bitsPerSample + "-bit PCM with padding!");
     }
 
-    int bytesRead = readChunkToBuffer(blockCount);
-    ShortBuffer nioBuffer = byteBuffer.asShortBuffer();
-    nioBuffer.position(0);
-    nioBuffer.limit(bytesRead);
+    readChunkToBuffer(blockCount);
 
     int padding = info.getPadding() / 2;
     int sampleCount = blockCount * info.channelCount;
@@ -115,7 +114,7 @@ public class WavTrackProvider {
     int sampleCount = readChunkToBuffer(blockCount);
 
     if (info.bitsPerSample == 16) {
-      downstream.process(byteBuffer.asShortBuffer());
+      downstream.process(nioBuffer);
     } else if (info.bitsPerSample == 24) {
       short[] samples = new short[sampleCount];
 
@@ -131,7 +130,10 @@ public class WavTrackProvider {
     int bytesPerSample = info.bitsPerSample >> 3;
     int bytesToRead = blockCount * info.blockAlign;
     dataInput.readFully(rawBuffer, 0, bytesToRead);
+
     byteBuffer.position(0);
+    nioBuffer.position(0);
+    nioBuffer.limit(bytesToRead / bytesPerSample);
 
     return bytesToRead / bytesPerSample;
   }
