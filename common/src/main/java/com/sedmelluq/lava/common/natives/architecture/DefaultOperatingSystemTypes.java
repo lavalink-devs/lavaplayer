@@ -4,8 +4,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 public enum DefaultOperatingSystemTypes implements OperatingSystemType {
   LINUX("linux", "lib", ".so"),
@@ -62,19 +65,16 @@ public enum DefaultOperatingSystemTypes implements OperatingSystemType {
     Boolean b = cachedMusl;
     if(b == null) {
       synchronized(DefaultOperatingSystemTypes.class) {
-        boolean check;
-        try {
-          Process p = new ProcessBuilder("ldd", "--version")
-                  .start();
-          log.debug("Exit code: {}", p.waitFor());
-          String line = new BufferedReader(new InputStreamReader(p.getInputStream())).readLine();
-          log.debug("First line of stdout: {}", line);
-          if(line == null) {
-            line = new BufferedReader(new InputStreamReader(p.getErrorStream())).readLine();
-            log.debug("First line of stderr: {}", line);
+        boolean check = false;
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(Files.newInputStream(Paths.get("/proc/self/maps"))))) {
+          String line;
+          while ((line = reader.readLine()) != null) {
+            if (line.contains("-musl-")) {
+              check = true;
+              break;
+            }
           }
-          check = line != null && line.toLowerCase().startsWith("musl");
-        } catch(IOException | InterruptedException fail) {
+        } catch(IOException fail) {
           log.error("Failed to detect libc type, assuming glibc", fail);
           check = false;
         }
