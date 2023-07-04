@@ -21,7 +21,7 @@ public class StandardAudioDataFormats {
    */
   public static final AudioDataFormat COMMON_PCM_S16_BE = new Pcm16AudioDataFormat(2, 44100, 960, true);
   /**
-   * Signed 16-bit big-endian PCM format matching with the most common sample rate.
+   * Signed 16-bit little-endian PCM format matching with the most common sample rate.
    */
   public static final AudioDataFormat COMMON_PCM_S16_LE = new Pcm16AudioDataFormat(2, 44100, 960, false);
 }

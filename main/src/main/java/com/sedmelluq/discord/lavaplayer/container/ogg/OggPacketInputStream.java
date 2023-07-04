@@ -308,9 +308,7 @@ public class OggPacketInputStream extends InputStream {
       }
     }
 
-    if (mid > 0) {
-      mid--;
-    } else {
+    if (mid == 0) {
       mid++;
     }
 

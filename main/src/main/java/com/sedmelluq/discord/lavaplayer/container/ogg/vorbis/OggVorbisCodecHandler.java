@@ -3,14 +3,17 @@ package com.sedmelluq.discord.lavaplayer.container.ogg.vorbis;
 import com.sedmelluq.discord.lavaplayer.container.ogg.OggCodecHandler;
 import com.sedmelluq.discord.lavaplayer.container.ogg.OggMetadata;
 import com.sedmelluq.discord.lavaplayer.container.ogg.OggPacketInputStream;
+import com.sedmelluq.discord.lavaplayer.container.ogg.OggSeekPoint;
 import com.sedmelluq.discord.lavaplayer.container.ogg.OggStreamSizeInfo;
 import com.sedmelluq.discord.lavaplayer.container.ogg.OggTrackBlueprint;
 import com.sedmelluq.discord.lavaplayer.container.ogg.OggTrackHandler;
+import com.sedmelluq.discord.lavaplayer.tools.Units;
 import com.sedmelluq.discord.lavaplayer.tools.io.DirectBufferStreamBroker;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.List;
 
 public class OggVorbisCodecHandler implements OggCodecHandler {
   private static final int VORBIS_IDENTIFIER = ByteBuffer.wrap(new byte[] { 0x01, 'v', 'o', 'r' }).getInt();
@@ -37,7 +40,8 @@ public class OggVorbisCodecHandler implements OggCodecHandler {
     loadCommentsHeader(stream, broker, true);
     ByteBuffer infoBuffer = ByteBuffer.wrap(infoPacket);
     int sampleRate = Integer.reverseBytes(infoBuffer.getInt(12));
-    stream.setSeekPoints(stream.createSeekTable(sampleRate));
+    List<OggSeekPoint> seekPointList = stream.createSeekTable(sampleRate);
+    if (seekPointList != null) stream.setSeekPoints(seekPointList);
     return new Blueprint(sampleRate, infoPacket, broker);
   }
 
@@ -60,7 +64,7 @@ public class OggVorbisCodecHandler implements OggCodecHandler {
 
     return new OggMetadata(
         VorbisCommentParser.parse(commentsPacket, broker.isTruncated()),
-        sizeInfo.getDuration()
+        sizeInfo != null ? sizeInfo.getDuration() : Units.DURATION_MS_UNKNOWN
     );
   }
 
