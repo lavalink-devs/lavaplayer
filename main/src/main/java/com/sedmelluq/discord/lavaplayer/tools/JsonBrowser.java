@@ -84,6 +84,63 @@ public class JsonBrowser {
   }
 
   /**
+   * Remove a value from the map if this instance contains a map.
+   * @param key The map entry key
+   */
+  public void remove(String key) {
+    if (node instanceof ObjectNode) {
+      ((ObjectNode) node).remove(key);
+    } else {
+      throw new IllegalStateException("Remove only works on a map");
+    }
+  }
+
+  /**
+   * Add a value to the list if this instance contains a list.
+   * @param item The list entry value
+   */
+  public void add(Object item) {
+    if (node instanceof ArrayNode) {
+      if (item instanceof JsonBrowser) {
+        ((ArrayNode) node).add(((JsonBrowser) item).node);
+      } else {
+        ((ArrayNode) node).add(mapper.valueToTree(item));
+      }
+    } else {
+      throw new IllegalStateException("Add only works on a list");
+    }
+  }
+
+  /**
+   * Set a value in the list if this instance contains a list.
+   * @param index The list index
+   * @param item The list entry value
+   */
+  public void set(int index, Object item) {
+      if (node instanceof ArrayNode) {
+      if (item instanceof JsonBrowser) {
+          ((ArrayNode) node).insert(index, ((JsonBrowser) item).node);
+      } else {
+          ((ArrayNode) node).insert(index, mapper.valueToTree(item));
+      }
+      } else {
+      throw new IllegalStateException("Add only works on a list");
+      }
+  }
+
+  /**
+   * Remove a value from the list if this instance contains a list.
+   * @param index The list index
+   */
+  public void remove(int index) {
+    if (node instanceof ArrayNode) {
+      ((ArrayNode) node).remove(index);
+    } else {
+      throw new IllegalStateException("Remove only works on a list");
+    }
+  }
+
+  /**
    * Returns a list of all the values in this element
    * @return The list of values as JsonBrowser elements
    */
