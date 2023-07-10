@@ -218,6 +218,10 @@ public class JsonBrowser {
     return create(mapper.createObjectNode());
   }
 
+  public static JsonBrowser newList() throws IOException {
+      return create(mapper.createArrayNode());
+  }
+
   private static ObjectMapper setupMapper() {
     JsonFactory jsonFactory = new JsonFactory();
     jsonFactory.enable(JsonParser.Feature.ALLOW_COMMENTS);
