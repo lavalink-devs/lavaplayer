@@ -3,7 +3,6 @@ plugins {
   `maven-publish`
 }
 val moduleName = "lavaplayer-ext-format-xm"
-version = "0.1.0"
 
 dependencies {
   compileOnly(project(":main"))

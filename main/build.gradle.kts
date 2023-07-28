@@ -5,10 +5,9 @@ plugins {
 }
 
 val moduleName = "lavaplayer"
-version = "1.4.2"
 
 dependencies {
-  api("com.sedmelluq:lava-common:1.1.2")
+  api(project(":common"))
   implementation("com.github.walkyst:lavaplayer-natives-fork:1.0.2")
   implementation("com.github.walkyst.JAADec-fork:jaadec-ext-aac:0.1.3")
   implementation("org.mozilla:rhino-engine:1.7.14")
