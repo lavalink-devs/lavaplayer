@@ -14,6 +14,7 @@ val versionDetails: Closure<VersionDetails> by extra
 val details = versionDetails()
 version = gitVersion()
 println("Version: $version")
+println("Details: $details")
 
 allprojects {
   group = rootProject.group
