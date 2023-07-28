@@ -7,8 +7,11 @@ import com.sedmelluq.discord.lavaplayer.tools.io.HttpClientTools;
 import com.sedmelluq.discord.lavaplayer.tools.io.HttpInterface;
 import com.sedmelluq.discord.lavaplayer.tools.io.PersistentHttpStream;
 import com.sedmelluq.discord.lavaplayer.track.AudioReference;
+import org.apache.http.Header;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpHead;
 import org.apache.http.client.protocol.HttpClientContext;
 
 import java.io.IOException;
@@ -48,6 +51,21 @@ public class SoundCloudHelper {
         throw new FriendlyException("Unable to process soundcloud mobile link", SUSPICIOUS,
             new IllegalStateException("Expected soundcloud to redirect soundcloud.app.goo.gl link to a valid track/playlist link, but it did not redirect at all"));
       }
+    } catch (Exception e) {
+      throw ExceptionTools.wrapUnfriendlyExceptions(e);
+    }
+  }
+
+  public static AudioReference resolveShortTrackUrl(HttpInterface httpInterface, AudioReference reference) {
+    HttpHead request = new HttpHead(reference.identifier);
+    request.setConfig(RequestConfig.custom().setRedirectsEnabled(false).build());
+    try (CloseableHttpResponse response = httpInterface.execute(request)) {
+      Header header = response.getLastHeader("Location");
+      if (header == null) {
+        throw new FriendlyException("Unable to resolve Soundcloud short URL", SUSPICIOUS,
+            new IllegalStateException("Unable to locate canonical URL"));
+      }
+      return new AudioReference(header.getValue(), null);
     } catch (Exception e) {
       throw ExceptionTools.wrapUnfriendlyExceptions(e);
     }
