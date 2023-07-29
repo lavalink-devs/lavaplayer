@@ -1,13 +1,17 @@
+import com.vanniktech.maven.publish.JavaLibrary
+import com.vanniktech.maven.publish.JavadocJar
+
 plugins {
   `java-library`
-  groovy
-  `maven-publish`
+  alias(libs.plugins.maven.publish.base)
 }
 
-val moduleName = "lavaplayer"
+base {
+  archivesName = "lavaplayer"
+}
 
 dependencies {
-  api(project(":common"))
+  api(projects.common)
   implementation("com.github.walkyst:lavaplayer-natives-fork:1.0.2")
   implementation("com.github.walkyst.JAADec-fork:jaadec-ext-aac:0.1.3")
   implementation("org.mozilla:rhino-engine:1.7.14")
@@ -44,17 +48,6 @@ tasks.classes.configure {
   finalizedBy(updateVersion)
 }
 
-val sourcesJar by tasks.registering(Jar::class) {
-  archiveClassifier.set("sources")
-  from(sourceSets["main"].allSource)
-}
-
-publishing {
-  publications {
-    create<MavenPublication>("mavenJava") {
-      from(components["java"])
-      artifactId = moduleName
-      artifact(sourcesJar)
-    }
-  }
+mavenPublishing {
+  configure(JavaLibrary(JavadocJar.Javadoc()))
 }
