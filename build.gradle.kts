@@ -1,10 +1,13 @@
+@file:Suppress("UnstableApiUsage")
+
+import com.vanniktech.maven.publish.MavenPublishBaseExtension
+import com.vanniktech.maven.publish.SonatypeHost
 import org.ajoberstar.grgit.Grgit
 
 plugins {
-  java
-  `maven-publish`
   id("org.ajoberstar.grgit") version "5.2.0"
   id("de.undercouch.download") version "5.4.0"
+  alias(libs.plugins.maven.publish.base) apply false
 }
 
 val (gitVersion, release) = versionFromGit()
@@ -23,15 +26,14 @@ allprojects {
 }
 
 subprojects {
-  apply(plugin = "java")
-  apply(plugin = "maven-publish")
+  apply<JavaPlugin>()
+  apply<MavenPublishPlugin>()
 
-  java {
+  configure<JavaPluginExtension> {
     sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
   }
 
-  publishing {
+  configure<PublishingExtension> {
     repositories {
       val snapshots = "https://maven.arbjerg.dev/snapshots"
       val releases = "https://maven.arbjerg.dev/releases"
@@ -43,6 +45,44 @@ subprojects {
         }
       }
     }
+  }
+
+  afterEvaluate {
+    plugins.withId(libs.plugins.maven.publish.base.get().pluginId) {
+        configure<MavenPublishBaseExtension> {
+          coordinates(group.toString(), project.the<BasePluginExtension>().archivesName.get(), version.toString())
+
+          publishToMavenCentral(SonatypeHost.S01, true)
+          //signAllPublications()
+
+          pom {
+            name = "lavaplayer"
+            description = "A Lavaplayer fork maintained by Lavalink"
+            url = "https://github.com/lavalink-devs/lavaplayer"
+
+            licenses {
+              license {
+                name = "The Apache License, Version 2.0"
+                url = "https://github.com/lavalink-devs/lavaplayer/blob/main/LICENSE"
+              }
+            }
+
+            developers {
+              developer {
+                id = "freyacodes"
+                name = "Freya Arbjerg"
+                url = "https://www.arbjerg.dev"
+              }
+            }
+
+            scm {
+              url = "https://github.com/lavalink-devs/lavaplayer/"
+              connection = "scm:git:git://github.com/lavalink-devs/lavaplayer.git"
+              developerConnection = "scm:git:ssh://git@github.com/lavalink-devs/lavaplayer.git"
+            }
+          }
+        }
+      }
   }
 }
 

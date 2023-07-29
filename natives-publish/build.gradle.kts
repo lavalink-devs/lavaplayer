@@ -1,19 +1,11 @@
+import com.vanniktech.maven.publish.JavaLibrary
+import com.vanniktech.maven.publish.JavadocJar
+
 plugins {
     java
-    `maven-publish`
+    alias(libs.plugins.maven.publish.base)
 }
 
-java {
-    withSourcesJar()
-    withJavadocJar()
-}
-
-publishing {
-    publications {
-        create<MavenPublication>("mavenJava") {
-            groupId = rootProject.group.toString()
-            artifactId = "lavaplayer-natives"
-            from(components["java"])
-        }
-    }
+mavenPublishing {
+    configure(JavaLibrary(JavadocJar.Javadoc()))
 }

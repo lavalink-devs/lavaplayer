@@ -148,7 +148,7 @@ public class HttpClientTools {
   /**
    * @param response The response.
    * @param context Additional string to include in exception message.
-   * @return True if this status code indicates a success with a response body
+   * @throws IOException if this status code indicates an error with a response body
    */
   public static void assertSuccessWithContent(HttpResponse response, String context) throws IOException {
     int statusCode = response.getStatusLine().getStatusCode();
@@ -160,8 +160,8 @@ public class HttpClientTools {
 
   /**
    * @param response The response.
-   * @param context  Additional string to include in exception message.
-   * @return True if this status code indicates a redirect with a response body
+   * @param context Additional string to include in exception message.
+   * @throws IOException if this status code indicates an error with a response body
    */
   public static void assertSuccessWithRedirectContent(HttpResponse response, String context) throws IOException {
     int statusCode = response.getStatusLine().getStatusCode();
