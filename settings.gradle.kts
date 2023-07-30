@@ -4,7 +4,6 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 include(
         "common",
         "main",
-        "testbot",
         "test-samples",
         ":extensions",
         ":extensions:youtube-rotator",
