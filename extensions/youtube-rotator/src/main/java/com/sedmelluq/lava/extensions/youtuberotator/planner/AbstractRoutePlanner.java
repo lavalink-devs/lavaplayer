@@ -152,7 +152,7 @@ public abstract class AbstractRoutePlanner implements HttpRoutePlanner {
    * Determines the local and remote address pair to use
    *
    * @param remoteAddresses The remote address pair containing IPv4 and IPv6 addresses - which can be null
-   * @return a {@link Tuple} which contains l = localAddress & r = remoteAddress
+   * @return a {@link Tuple} which contains l = localAddress &amp; r = remoteAddress
    * @throws HttpException when no route can be determined
    */
   protected abstract Tuple<InetAddress, InetAddress> determineAddressPair(final Tuple<Inet4Address, Inet6Address> remoteAddresses) throws HttpException;

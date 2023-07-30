@@ -1,14 +1,18 @@
+import com.vanniktech.maven.publish.JavaLibrary
+import com.vanniktech.maven.publish.JavadocJar
+
 plugins {
   `java-library`
-  groovy
-  `maven-publish`
+  alias(libs.plugins.maven.publish.base)
 }
 
-val moduleName = "lavaplayer"
+base {
+  archivesName = "lavaplayer"
+}
 
 dependencies {
-  api(project(":common"))
-  implementation("com.github.walkyst:lavaplayer-natives-fork:1.0.2")
+  api(projects.common)
+  implementation(projects.nativesPublish)
   implementation("com.github.walkyst.JAADec-fork:jaadec-ext-aac:0.1.3")
   implementation("org.mozilla:rhino-engine:1.7.14")
   implementation("org.slf4j:slf4j-api:1.7.25")
@@ -29,32 +33,25 @@ dependencies {
   testImplementation("com.sedmelluq:lavaplayer-test-samples:1.3.11")
 }
 
-tasks.jar {
-  exclude("natives")
-}
-
-val updateVersion by tasks.registering {
-  File("$projectDir/src/main/resources/com/sedmelluq/discord/lavaplayer/tools/version.txt").let {
-    it.parentFile.mkdirs()
-    it.writeText(version.toString())
+tasks {
+  jar {
+    exclude("natives")
   }
-}
 
-tasks.classes.configure {
-  finalizedBy(updateVersion)
-}
-
-val sourcesJar by tasks.registering(Jar::class) {
-  archiveClassifier.set("sources")
-  from(sourceSets["main"].allSource)
-}
-
-publishing {
-  publications {
-    create<MavenPublication>("mavenJava") {
-      from(components["java"])
-      artifactId = moduleName
-      artifact(sourcesJar)
+  val updateVersion by registering {
+    doFirst {
+      File("$projectDir/src/main/resources/com/sedmelluq/discord/lavaplayer/tools/version.txt").let {
+        it.parentFile.mkdirs()
+        it.writeText(version.toString())
+      }
     }
   }
+
+  classes {
+    finalizedBy(updateVersion)
+  }
+}
+
+mavenPublishing {
+  configure(JavaLibrary(JavadocJar.Javadoc()))
 }
