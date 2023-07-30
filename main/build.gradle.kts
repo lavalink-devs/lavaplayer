@@ -12,7 +12,7 @@ base {
 
 dependencies {
   api(projects.common)
-  implementation("com.github.walkyst:lavaplayer-natives-fork:1.0.2")
+  implementation(projects.nativesPublish)
   implementation("com.github.walkyst.JAADec-fork:jaadec-ext-aac:0.1.3")
   implementation("org.mozilla:rhino-engine:1.7.14")
   api("org.slf4j:slf4j-api:1.7.25")
@@ -33,19 +33,23 @@ dependencies {
   testImplementation("com.sedmelluq:lavaplayer-test-samples:1.3.11")
 }
 
-tasks.jar {
-  exclude("natives")
-}
-
-val updateVersion by tasks.registering {
-  File("$projectDir/src/main/resources/com/sedmelluq/discord/lavaplayer/tools/version.txt").let {
-    it.parentFile.mkdirs()
-    it.writeText(version.toString())
+tasks {
+  jar {
+    exclude("natives")
   }
-}
 
-tasks.classes.configure {
-  finalizedBy(updateVersion)
+  val updateVersion by registering {
+    doFirst {
+      File("$projectDir/src/main/resources/com/sedmelluq/discord/lavaplayer/tools/version.txt").let {
+        it.parentFile.mkdirs()
+        it.writeText(version.toString())
+      }
+    }
+  }
+
+  classes {
+    finalizedBy(updateVersion)
+  }
 }
 
 mavenPublishing {
