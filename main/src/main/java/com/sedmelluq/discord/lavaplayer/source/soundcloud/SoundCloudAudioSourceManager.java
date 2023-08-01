@@ -47,6 +47,7 @@ public class SoundCloudAudioSourceManager implements AudioSourceManager, HttpCon
 
   private static final String MOBILE_URL_REGEX = "^(?:http://|https://|)soundcloud\\.app\\.goo\\.gl/([a-zA-Z0-9-_]+)/?(?:\\?.*|)$";
   private static final String TRACK_URL_REGEX = "^(?:http://|https://|)(?:www\\.|)(?:m\\.|)soundcloud\\.com/([a-zA-Z0-9-_]+)/([a-zA-Z0-9-_]+)/?(?:\\?.*|)$";
+  private static final String SHORT_TRACK_URL_REGEX = "^https://on.soundcloud\\.com/[a-zA-Z0-9-_]+/?(?:\\?.*|)$";
   private static final String UNLISTED_URL_REGEX = "^(?:http://|https://|)(?:www\\.|)(?:m\\.|)soundcloud\\.com/([a-zA-Z0-9-_]+)/([a-zA-Z0-9-_]+)/s-([a-zA-Z0-9-_]+)(?:\\?.*|)$";
   private static final String LIKED_URL_REGEX = "^(?:http://|https://|)(?:www\\.|)(?:m\\.|)soundcloud\\.com/([a-zA-Z0-9-_]+)/likes/?(?:\\?.*|)$";
   private static final String LIKED_USER_URN_REGEX = "\"urn\":\"soundcloud:users:([0-9]+)\",\"username\":\"([^\"]+)\"";
@@ -56,6 +57,7 @@ public class SoundCloudAudioSourceManager implements AudioSourceManager, HttpCon
 
   private static final Pattern mobileUrlPattern = Pattern.compile(MOBILE_URL_REGEX);
   private static final Pattern trackUrlPattern = Pattern.compile(TRACK_URL_REGEX);
+  private static final Pattern shortTrackUrlPattern = Pattern.compile(SHORT_TRACK_URL_REGEX);
   private static final Pattern unlistedUrlPattern = Pattern.compile(UNLISTED_URL_REGEX);
   private static final Pattern likedUrlPattern = Pattern.compile(LIKED_URL_REGEX);
   private static final Pattern likedUserUrnPattern = Pattern.compile(LIKED_USER_URN_REGEX);
@@ -118,6 +120,11 @@ public class SoundCloudAudioSourceManager implements AudioSourceManager, HttpCon
     Matcher mobileUrlMatcher = mobileUrlPattern.matcher(reference.identifier);
     if (mobileUrlMatcher.matches()) {
       reference = SoundCloudHelper.redirectMobileLink(httpInterfaceManager.getInterface(), reference);
+    }
+
+    Matcher shortTrackMatcher = shortTrackUrlPattern.matcher(reference.identifier);
+    if (shortTrackMatcher.matches()) {
+      reference = SoundCloudHelper.resolveShortTrackUrl(httpInterfaceManager.getInterface(), reference);
     }
 
     AudioItem track = processAsSingleTrack(reference);
