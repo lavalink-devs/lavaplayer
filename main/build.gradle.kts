@@ -1,5 +1,8 @@
 import com.vanniktech.maven.publish.JavaLibrary
 import com.vanniktech.maven.publish.JavadocJar
+import kotlin.io.path.Path
+import kotlin.io.path.createDirectories
+import kotlin.io.path.writeText
 
 plugins {
   `java-library`
@@ -34,14 +37,18 @@ dependencies {
 
 tasks {
   val updateVersion by registering {
-    File("$projectDir/src/main/resources/com/sedmelluq/discord/lavaplayer/tools/version.txt").let {
-      it.parentFile.mkdirs()
+    val output = "$buildDir/resources/main/com/sedmelluq/discord/lavaplayer/tools/version.txt"
+    inputs.property("version", version)
+    outputs.file(output)
+
+    Path(output).let {
+      it.parent.createDirectories()
       it.writeText(version.toString())
     }
   }
 
   classes {
-    finalizedBy(updateVersion)
+    dependsOn(updateVersion)
   }
 }
 
