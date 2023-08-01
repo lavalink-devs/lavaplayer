@@ -35,10 +35,11 @@ jobs:
         with:
           name: Lavaplayer.zip
           path: |
-            main/build/libs/main-*.jar
-            common/build/libs/common-*.jar
-            extensions/format-xm/build/libs/format-xm-*.jar
-            extensions/youtube-rotator/build/libs/youtube-rotator-*.jar
+            main/build/libs/lavaplayer-*.jar
+            common/build/libs/lava-common-*.jar
+            extensions/format-xm/build/libs/lavaplayer-ext-format-xm-*.jar
+            extensions/youtube-rotator/build/libs/lavaplayer-ext-youtube-rotator-*.jar
+            natives-publish/build/libs/lavaplayer-natives-*.jar
 
   release:
     needs: build

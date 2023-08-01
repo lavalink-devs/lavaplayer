@@ -2,14 +2,13 @@ rootProject.name = "lavaplayer"
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 include(
-        "common",
-        "main",
-        "test-samples",
+        ":common",
+        ":main",
         ":extensions",
         ":extensions:youtube-rotator",
         ":extensions:format-xm",
-        "natives",
-        "natives-publish"
+        ":natives",
+        ":natives-publish"
 )
 
 // https://github.com/gradle/gradle/issues/19254
