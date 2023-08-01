@@ -8,7 +8,7 @@ LavaPlayer is an audio player library written in Java which can load audio track
 
 #### Maven package
 
-Replace `x.y.z` with the latest version number: [![Bintray](https://api.bintray.com/packages/sedmelluq/com.sedmelluq/lavaplayer/images/download.svg)](https://bintray.com/sedmelluq/com.sedmelluq/lavaplayer)
+Replace `x.y.z` with the latest version number: [![Maven Central](https://img.shields.io/maven-central/v/dev.arbjerg/lavaplayer?versionPrefix=2)](https://central.sonatype.com/artifact/dev.arbjerg/lavaplayer)
 
 * Repository: mavenCentral
 * Artifact: **dev.arbjerg:lavaplayer:x.y.z**
@@ -80,16 +80,6 @@ Due to media containers supporting seeking at different resolutions, the positio
 When creating an instance of an `AudioPlayerManager`, sources where the tracks should be loaded from with it must be manually registered. When loading tracks, you pass the manager an identifier and a handler which will get asynchronously called when the result has arrived. The handler has separate methods for receiving resolved tracks, resolved playlists, exceptions or being notified when nothing was found for the specified identifier.
 
 Since the tracks hold only minimal meta-information (title, author, duration and identifier), loading playlists does not usually require the library to check the page of each individual track for sources such as YouTube or SoundCloud. This makes loading playlists pretty fast.
-
-#### Load balancing
-
-LavaPlayer includes the support for delegating the decoding/encoding/resampling operations to separate nodes running the lavaplayer-node Spring Boot application. These can be easily enabled by calling:
-
-```java
-manager.useRemoteNodes("somehost:8080", "otherhost:8080")
-```
-
-The library will automatically assign the processing of new tracks to them by selecting a node based on the number of tracks they are currently processing and the CPU usage of the machine they are running on.
 
 #### Extensibility
 
