@@ -1,4 +1,4 @@
-rootProject.name = "lavaplayer-root"
+rootProject.name = "lavaplayer"
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 include(
