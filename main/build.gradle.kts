@@ -34,11 +34,9 @@ dependencies {
 
 tasks {
   val updateVersion by registering {
-    doFirst {
-      File("$projectDir/src/main/resources/com/sedmelluq/discord/lavaplayer/tools/version.txt").let {
-        it.parentFile.mkdirs()
-        it.writeText(version.toString())
-      }
+    File("$projectDir/src/main/resources/com/sedmelluq/discord/lavaplayer/tools/version.txt").let {
+      it.parentFile.mkdirs()
+      it.writeText(version.toString())
     }
   }
 
