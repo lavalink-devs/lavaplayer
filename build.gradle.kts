@@ -25,6 +25,10 @@ allprojects {
 }
 
 subprojects {
+  if (project.name == "natives" || project.name == "extensions-project") {
+    return@subprojects
+  }
+
   apply<JavaPlugin>()
   apply<MavenPublishPlugin>()
 
