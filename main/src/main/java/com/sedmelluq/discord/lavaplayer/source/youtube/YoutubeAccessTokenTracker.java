@@ -53,7 +53,7 @@ public class YoutubeAccessTokenTracker {
   private static final Logger log = LoggerFactory.getLogger(YoutubeAccessTokenTracker.class);
 
   private static final String AUTH_SCRIPT_REGEX = "<script id=\"base-js\" src=\"(.*?)\" nonce=\".*?\"></script>";
-  private static final String IDENTITY_REGEX = "\\{clientId:\"(.+?)\",.+?:\"(.+?)\"}";
+  private static final String IDENTITY_REGEX = "\\{clientId:\"(.+?)\",.+?:\"(.+?)\"";
 
   private static final Pattern authScriptPattern = Pattern.compile(AUTH_SCRIPT_REGEX);
   private static final Pattern identityPattern = Pattern.compile(IDENTITY_REGEX);
