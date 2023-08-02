@@ -174,6 +174,15 @@ public class DefaultAudioPlayerManager implements AudioPlayerManager {
   }
 
   @Override
+  public void loadItemSync(final AudioReference reference, final AudioLoadResultHandler resultHandler) {
+    try {
+      createItemLoader(reference, resultHandler).call();
+    } catch (Exception e) {
+      resultHandler.loadFailed(new FriendlyException("Failed to load item.", SUSPICIOUS, e));
+    }
+  }
+
+  @Override
   public Future<Void> loadItem(final AudioReference reference, final AudioLoadResultHandler resultHandler) {
     try {
       return trackInfoExecutorService.submit(createItemLoader(reference, resultHandler));
