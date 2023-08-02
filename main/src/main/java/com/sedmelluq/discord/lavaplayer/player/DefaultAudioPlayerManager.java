@@ -209,7 +209,7 @@ public class DefaultAudioPlayerManager implements AudioPlayerManager {
     return ExecutorTools.COMPLETED_VOID;
   }
 
-  protected Callable<Void> createItemLoader(final AudioReference reference, final AudioLoadResultHandler resultHandler) {
+  private Callable<Void> createItemLoader(final AudioReference reference, final AudioLoadResultHandler resultHandler) {
     return () -> {
       boolean[] reported = new boolean[1];
 
