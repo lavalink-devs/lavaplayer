@@ -76,6 +76,27 @@ public interface AudioPlayerManager {
   Future<Void> loadItem(final AudioReference reference, final AudioLoadResultHandler resultHandler);
 
   /**
+   * Loads a track or playlist with the specified identifier.
+   * @param identifier    The identifier that a specific source manager should be able to find the track with.
+   * @param resultHandler A handler to process the result of this operation. It can either end by finding a track,
+   *                      finding a playlist, finding nothing or terminating with an exception.
+   * @see #loadItemSync(AudioReference, AudioLoadResultHandler)
+   */
+  default void loadItemSync(final String identifier, final AudioLoadResultHandler resultHandler) {
+    loadItemSync(new AudioReference(identifier, null), resultHandler);
+  }
+
+  /**
+   * Loads a track or playlist with the specified identifier.
+   * @param reference     The audio reference that holds the identifier that a specific source manager
+   *                      should be able to find the track with.
+   * @param resultHandler A handler to process the result of this operation. It can either end by finding a track,
+   *                      finding a playlist, finding nothing or terminating with an exception.
+   * @see #loadItemSync(String, AudioLoadResultHandler)
+   */
+  void loadItemSync(final AudioReference reference, final AudioLoadResultHandler resultHandler);
+
+  /**
    * Schedules loading a track or playlist with the specified identifier with an ordering key so that items with the
    * same ordering key are handled sequentially in the order of calls to this method.
    *
