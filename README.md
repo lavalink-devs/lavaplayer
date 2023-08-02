@@ -13,6 +13,8 @@ Replace `x.y.z` with the latest version number: [![Maven Central](https://img.sh
 * Repository: mavenCentral
 * Artifact: **dev.arbjerg:lavaplayer:x.y.z**
 
+Snapshots are published to https://maven.arbjerg.dev/snapshots & https://s01.oss.sonatype.org/content/repositories/snapshots
+
 Using in Gradle:
 ```gradle
 repositories {
