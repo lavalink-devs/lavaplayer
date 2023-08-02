@@ -1,47 +1,37 @@
 # LavaPlayer - Audio player library for Discord
 
-### **This is forked version of LavaPlayer, original repo here https://github.com/sedmelluq/lavaplayer**
-Currently LavaPlayer repo is not actively maintained so decided create this fork, if main repo will be maintained again this fork will follow up and include all updates from it
-
-Custom branch used for my own updates and usage, it include playback and searching on Yandex Music, provide thumbnails from all available audio sources in `AudioTrackInfo` exclude http one (this is mainly breaking change, because it affect how all tracks decoded/encoded)
-
 LavaPlayer is an audio player library written in Java which can load audio tracks from various sources and convert them into a stream of Opus frames. It is designed for use with Discord bots, but it can be used anywhere where Opus format output is required.
+
+**Note:** This is a fork of the original [Lavaplayer](https://github.com/sedmelluq/lavaplayer) with some additional fixes from [Walkyst's fork](https://github.com/Walkyst/lavaplayer-fork).
 
 **Please read the [FAQ](FAQ.md) in case of issues.**
 
 #### Maven package
 
-Replace `x.y.z` with the latest version number: [![](https://jitpack.io/v/walkyst/lavaplayer-fork.svg)](https://jitpack.io/#walkyst/lavaplayer-fork)
+Replace `x.y.z` with the latest version number: [![Maven Central](https://img.shields.io/maven-central/v/dev.arbjerg/lavaplayer?versionPrefix=1)](https://central.sonatype.com/artifact/dev.arbjerg/lavaplayer)
 
-* Repository: https://jitpack.io
-* Artifact: **com.github.walkyst:lavaplayer-fork:x.y.z**
+* Repository: mavenCentral
+* Artifact: **dev.arbjerg:lavaplayer:x.y.z**
+
+Snapshots are published to https://maven.arbjerg.dev/snapshots & https://s01.oss.sonatype.org/content/repositories/snapshots
 
 Using in Gradle:
 ```gradle
 repositories {
-  maven {
-    url 'https://jitpack.io'
-  }
+  mavenCentral()
 }
 
 dependencies {
-  implementation 'com.github.walkyst:lavaplayer-fork:x.y.z'
+  implementation 'dev.arbjerg:lavaplayer:x.y.z'
 }
 ```
 
 Using in Maven:
 ```xml
-<repositories>
-  <repository>
-    <id>jitpack</id>
-    <url>https://jitpack.io</url>
-  </repository>
-</repositories>
-
 <dependencies>
   <dependency>
-    <groupId>com.github.walkyst</groupId>
-    <artifactId>lavaplayer-fork</artifactId>
+    <groupId>dev.arbjerg</groupId>
+    <artifactId>lavaplayer</artifactId>
     <version>x.y.z</version>
   </dependency>
 </dependencies>
@@ -92,16 +82,6 @@ Due to media containers supporting seeking at different resolutions, the positio
 When creating an instance of an `AudioPlayerManager`, sources where the tracks should be loaded from with it must be manually registered. When loading tracks, you pass the manager an identifier and a handler which will get asynchronously called when the result has arrived. The handler has separate methods for receiving resolved tracks, resolved playlists, exceptions or being notified when nothing was found for the specified identifier.
 
 Since the tracks hold only minimal meta-information (title, author, duration and identifier), loading playlists does not usually require the library to check the page of each individual track for sources such as YouTube or SoundCloud. This makes loading playlists pretty fast.
-
-#### Load balancing
-
-LavaPlayer includes the support for delegating the decoding/encoding/resampling operations to separate nodes running the lavaplayer-node Spring Boot application. These can be easily enabled by calling:
-
-```java
-manager.useRemoteNodes("somehost:8080", "otherhost:8080")
-```
-
-The library will automatically assign the processing of new tracks to them by selecting a node based on the number of tracks they are currently processing and the CPU usage of the machine they are running on.
 
 #### Extensibility
 
