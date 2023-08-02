@@ -2,57 +2,26 @@ package com.sedmelluq.discord.lavaplayer.player;
 
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManager;
 import com.sedmelluq.discord.lavaplayer.source.ProbingAudioSourceManager;
-import com.sedmelluq.discord.lavaplayer.tools.DataFormatTools;
-import com.sedmelluq.discord.lavaplayer.tools.ExceptionTools;
-import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
-import com.sedmelluq.discord.lavaplayer.tools.GarbageCollectionMonitor;
-import com.sedmelluq.discord.lavaplayer.tools.OrderedExecutor;
-import com.sedmelluq.discord.lavaplayer.tools.io.HttpConfigurable;
-import com.sedmelluq.discord.lavaplayer.tools.io.MessageInput;
-import com.sedmelluq.discord.lavaplayer.tools.io.MessageOutput;
-import com.sedmelluq.discord.lavaplayer.track.AudioItem;
-import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
-import com.sedmelluq.discord.lavaplayer.track.AudioReference;
-import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
-import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
-import com.sedmelluq.discord.lavaplayer.track.DecodedTrackHolder;
-import com.sedmelluq.discord.lavaplayer.track.InternalAudioTrack;
-import com.sedmelluq.discord.lavaplayer.track.TrackStateListener;
+import com.sedmelluq.discord.lavaplayer.tools.*;
+import com.sedmelluq.discord.lavaplayer.tools.io.*;
+import com.sedmelluq.discord.lavaplayer.track.*;
 import com.sedmelluq.discord.lavaplayer.track.playback.AudioTrackExecutor;
 import com.sedmelluq.discord.lavaplayer.track.playback.LocalAudioTrackExecutor;
 import com.sedmelluq.lava.common.tools.DaemonThreadFactory;
 import com.sedmelluq.lava.common.tools.ExecutorTools;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInput;
-import java.io.DataInputStream;
-import java.io.DataOutput;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Consumer;
-import java.util.function.Function;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.FAULT;
-import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.SUSPICIOUS;
+import java.io.*;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
+import java.util.function.Function;
+
+import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.*;
 
 /**
  * The default implementation of audio player manager.
@@ -175,17 +144,31 @@ public class DefaultAudioPlayerManager implements AudioPlayerManager {
 
   @Override
   public void loadItemSync(final AudioReference reference, final AudioLoadResultHandler resultHandler) {
+    boolean[] reported = new boolean[1];
+
     try {
-      createItemLoader(reference, resultHandler).call();
-    } catch (Exception e) {
-      resultHandler.loadFailed(new FriendlyException("Failed to load item.", SUSPICIOUS, e));
+      if (!checkSourcesForItem(reference, resultHandler, reported)) {
+        log.debug("No matches for track with identifier {}.", reference.identifier);
+        resultHandler.noMatches();
+      }
+    } catch (Throwable throwable) {
+      if (reported[0]) {
+        log.warn("Load result handler for {} threw an exception", reference.identifier, throwable);
+      } else {
+        dispatchItemLoadFailure(reference.identifier, resultHandler, throwable);
+      }
+
+      ExceptionTools.rethrowErrors(throwable);
     }
   }
 
   @Override
   public Future<Void> loadItem(final AudioReference reference, final AudioLoadResultHandler resultHandler) {
     try {
-      return trackInfoExecutorService.submit(createItemLoader(reference, resultHandler));
+      return trackInfoExecutorService.submit(() -> {
+        loadItemSync(reference, resultHandler);
+        return null;
+      });
     } catch (RejectedExecutionException e) {
       return handleLoadRejected(reference.identifier, resultHandler, e);
     }
@@ -194,7 +177,10 @@ public class DefaultAudioPlayerManager implements AudioPlayerManager {
   @Override
   public Future<Void> loadItemOrdered(Object orderingKey, final AudioReference reference, final AudioLoadResultHandler resultHandler) {
     try {
-      return orderedInfoExecutor.submit(orderingKey, createItemLoader(reference, resultHandler));
+      return orderedInfoExecutor.submit(orderingKey, () -> {
+        loadItemSync(reference, resultHandler);
+        return null;
+      });
     } catch (RejectedExecutionException e) {
       return handleLoadRejected(reference.identifier, resultHandler, e);
     }
@@ -207,29 +193,6 @@ public class DefaultAudioPlayerManager implements AudioPlayerManager {
     resultHandler.loadFailed(exception);
 
     return ExecutorTools.COMPLETED_VOID;
-  }
-
-  private Callable<Void> createItemLoader(final AudioReference reference, final AudioLoadResultHandler resultHandler) {
-    return () -> {
-      boolean[] reported = new boolean[1];
-
-      try {
-        if (!checkSourcesForItem(reference, resultHandler, reported)) {
-          log.debug("No matches for track with identifier {}.", reference.identifier);
-          resultHandler.noMatches();
-        }
-      } catch (Throwable throwable) {
-        if (reported[0]) {
-          log.warn("Load result handler for {} threw an exception", reference.identifier, throwable);
-        } else {
-          dispatchItemLoadFailure(reference.identifier, resultHandler, throwable);
-        }
-
-        ExceptionTools.rethrowErrors(throwable);
-      }
-
-      return null;
-    };
   }
 
   private void dispatchItemLoadFailure(String identifier, AudioLoadResultHandler resultHandler, Throwable throwable) {
