@@ -1,5 +1,31 @@
 # Change Log
 
+## [2.0.0] -- 2023-03-08
+### Fixed
+- Fixed YouTube 403 errors in https://github.com/lavalink-devs/lavaplayer/pull/16
+- Fixed YouTube access token issue in https://github.com/lavalink-devs/lavaplayer/pull/15
+
+### Removed
+- Removed `stream-merger` module
+- Removed `node` module & classes in `main` module
+- Removed `test-samples` module
+
+### Updated
+- Updated `commons-io:commons-io` to `2.13.0`
+- Updated `org.apache.httpcomponents:httpclient` to `4.5.14`
+- Updated `com.fasterxml.jackson.core:jackson-core` to `2.15.2`
+- Updated `com.fasterxml.jackson.core:jackson-databind` to `2.15.2`
+- Updated `org.slf4j:slf4j-api` to `2.0.7`
+- Updated `ch.qos.logback:logback-classice` to `1.4.8`
+- Updated `org.codehaus.groovy:groovy` to `4.0.13`
+- Updated `org.spockframework:spock-core` to `2.4-M1-groovy-4.0`
+- Updated `org.json` to `20230618`
+- Updated `org.jsoup:jsoup` to `1.16.1`
+
+## Added
+- Added `AudioPlayerManager#loadItemSync` to allow loading tracks synchronously
+- Added `natives` & `natives-publish` modules for lavaplayer native libraries
+
 ## [1.3.50] -- 2020-06-17
 ### Fixed
 - Fixed YT search sometimes not finding anything because of YT providing different format (PR 492 by Frederikam).
