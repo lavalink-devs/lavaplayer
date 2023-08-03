@@ -1,5 +1,22 @@
 name: Publish
-on: [ push ]
+on:
+  push:
+    branches: [ '**' ]
+    paths-ignore: [ '**.md' ]
+  workflow_call:
+    secrets:
+      MAVEN_USERNAME:
+        required: false
+      MAVEN_PASSWORD:
+        required: false
+      ORG_GRADLE_PROJECT_mavenCentralPassword:
+        required: false
+      ORG_GRADLE_PROJECT_mavenCentralUsername:
+        required: false
+      ORG_GRADLE_PROJECT_signingInMemoryKey:
+        required: false
+      ORG_GRADLE_PROJECT_signingInMemoryKeyPassword:
+        required: false
 
 jobs:
   build:
