@@ -57,31 +57,3 @@ jobs:
             extensions/format-xm/build/libs/lavaplayer-ext-format-xm-*.jar
             extensions/youtube-rotator/build/libs/lavaplayer-ext-youtube-rotator-*.jar
             natives-publish/build/libs/lavaplayer-natives-*.jar
-
-  release:
-    needs: build
-    runs-on: ubuntu-latest
-    if: github.event_name == 'release'
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Download main Artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: Lavaplayer.zip
-
-      - name: Upload Artifacts to GitHub Release
-        uses: ncipollo/release-action@v1
-        with:
-          artifacts: |
-            main/build/libs/lavaplayer-*.jar
-            common/build/libs/lava-common-*.jar
-            extensions/format-xm/build/libs/lavaplayer-ext-format-xm-*.jar
-            extensions/youtube-rotator/build/libs/lavaplayer-ext-youtube-rotator-*.jar
-            natives-publish/build/libs/lavaplayer-natives-*.jar
-          allowUpdates: true
-          omitBodyDuringUpdate: true
-          omitDraftDuringUpdate: true
-          omitNameDuringUpdate: true
-          omitPrereleaseDuringUpdate: true
