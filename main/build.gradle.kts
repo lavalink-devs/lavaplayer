@@ -41,9 +41,11 @@ tasks {
     inputs.property("version", version)
     outputs.file(output)
 
-    Path(output).let {
-      it.parent.createDirectories()
-      it.writeText(version.toString())
+    doLast {
+      Path(output).let {
+        it.parent.createDirectories()
+        it.writeText(version.toString())
+      }
     }
   }
 
