@@ -1,5 +1,18 @@
 # Change Log
 
+## [1.5.0] -- 2023-03-08
+### Fixed
+- Fixed YouTube 403 errors in https://github.com/lavalink-devs/lavaplayer/pull/16
+- Fixed YouTube access token issue in https://github.com/lavalink-devs/lavaplayer/pull/15
+
+### Removed
+- Removed `stream-merger` module
+- Removed `node` module & classes in `main` module
+- Removed `test-samples` module
+
+## Added
+- Added `natives` & `natives-publish` modules for lavaplayer native libraries
+
 ## [1.3.78] -- 2021-06-28
 ### Fixed
 - Fixed loading YouTube tracks with age verification.
