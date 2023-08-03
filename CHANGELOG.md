@@ -25,6 +25,7 @@
 ## Added
 - Added `AudioPlayerManager#loadItemSync` to allow loading tracks synchronously
 - Added `natives` & `natives-publish` modules for lavaplayer native libraries
+- Added support soundcloud short urls for in https://github.com/lavalink-devs/lavaplayer/pull/4
 
 ## [1.3.50] -- 2020-06-17
 ### Fixed
