@@ -30,7 +30,12 @@ jobs:
       - name: Upload Artifacts to GitHub Release
         uses: ncipollo/release-action@v1
         with:
-          artifacts: Lavaplayer.zip
+          artifacts: |
+            main/build/libs/lavaplayer-*.jar
+            common/build/libs/lava-common-*.jar
+            extensions/format-xm/build/libs/lavaplayer-ext-format-xm-*.jar
+            extensions/youtube-rotator/build/libs/lavaplayer-ext-youtube-rotator-*.jar
+            natives-publish/build/libs/lavaplayer-natives-*.jar
           allowUpdates: true
           omitBodyDuringUpdate: true
           omitDraftDuringUpdate: true
