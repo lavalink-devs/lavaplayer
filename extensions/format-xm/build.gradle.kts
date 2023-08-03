@@ -11,8 +11,8 @@ base {
 
 dependencies {
   compileOnly(projects.main)
-  implementation("com.github.walkyst:ibxm-fork:a75")
-  implementation("org.slf4j:slf4j-api:1.7.25")
+  implementation(libs.ibxm.fork)
+  implementation(libs.slf4j)
 }
 
 mavenPublishing {

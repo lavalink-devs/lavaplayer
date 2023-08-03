@@ -16,23 +16,23 @@ base {
 dependencies {
   api(projects.common)
   implementation(projects.nativesPublish)
-  implementation("com.github.walkyst.JAADec-fork:jaadec-ext-aac:0.1.3")
-  implementation("org.mozilla:rhino-engine:1.7.14")
-  implementation("org.slf4j:slf4j-api:1.7.25")
+  implementation(libs.jaadec.fork)
+  implementation(libs.rhino.engine)
+  implementation(libs.slf4j)
 
-  api("org.apache.httpcomponents:httpclient:4.5.10")
-  implementation("commons-io:commons-io:2.6")
+  api(libs.httpclient)
+  implementation(libs.commons.io)
 
-  api("com.fasterxml.jackson.core:jackson-core:2.10.0")
-  api("com.fasterxml.jackson.core:jackson-databind:2.10.0")
+  api(libs.jackson.core)
+  api(libs.jackson.databind)
 
-  implementation("org.jsoup:jsoup:1.12.1")
-  implementation("net.iharder:base64:2.3.9")
-  implementation("org.json:json:20220924")
+  implementation(libs.jsoup)
+  implementation(libs.base64)
+  implementation(libs.json)
 
-  testImplementation("org.codehaus.groovy:groovy:2.5.5")
-  testImplementation("org.spockframework:spock-core:1.2-groovy-2.5")
-  testImplementation("ch.qos.logback:logback-classic:1.2.3")
+  testImplementation(libs.groovy)
+  testImplementation(libs.spock.core)
+  testImplementation(libs.logback.classic)
 }
 
 tasks {

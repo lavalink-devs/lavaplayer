@@ -11,8 +11,8 @@ base {
 }
 
 dependencies {
-  implementation("org.slf4j:slf4j-api:1.7.25")
-  implementation("commons-io:commons-io:2.6")
+  implementation(libs.slf4j)
+  implementation(libs.commons.io)
 }
 
 mavenPublishing {
