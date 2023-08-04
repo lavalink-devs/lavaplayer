@@ -2,54 +2,29 @@ package com.sedmelluq.discord.lavaplayer.player;
 
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManager;
 import com.sedmelluq.discord.lavaplayer.source.ProbingAudioSourceManager;
-import com.sedmelluq.discord.lavaplayer.tools.DataFormatTools;
-import com.sedmelluq.discord.lavaplayer.tools.ExceptionTools;
-import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
-import com.sedmelluq.discord.lavaplayer.tools.GarbageCollectionMonitor;
-import com.sedmelluq.discord.lavaplayer.tools.OrderedExecutor;
+import com.sedmelluq.discord.lavaplayer.tools.*;
 import com.sedmelluq.discord.lavaplayer.tools.io.HttpConfigurable;
 import com.sedmelluq.discord.lavaplayer.tools.io.MessageInput;
 import com.sedmelluq.discord.lavaplayer.tools.io.MessageOutput;
-import com.sedmelluq.discord.lavaplayer.track.AudioItem;
-import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
-import com.sedmelluq.discord.lavaplayer.track.AudioReference;
-import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
-import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
-import com.sedmelluq.discord.lavaplayer.track.DecodedTrackHolder;
-import com.sedmelluq.discord.lavaplayer.track.InternalAudioTrack;
-import com.sedmelluq.discord.lavaplayer.track.TrackStateListener;
+import com.sedmelluq.discord.lavaplayer.track.*;
 import com.sedmelluq.discord.lavaplayer.track.playback.AudioTrackExecutor;
 import com.sedmelluq.discord.lavaplayer.track.playback.LocalAudioTrackExecutor;
 import com.sedmelluq.lava.common.tools.DaemonThreadFactory;
 import com.sedmelluq.lava.common.tools.ExecutorTools;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInput;
-import java.io.DataInputStream;
-import java.io.DataOutput;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Consumer;
-import java.util.function.Function;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.FAULT;
 import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.SUSPICIOUS;
@@ -100,9 +75,9 @@ public class DefaultAudioPlayerManager implements AudioPlayerManager {
 
     // Executors
     trackPlaybackExecutorService = new ThreadPoolExecutor(1, Integer.MAX_VALUE, 10, TimeUnit.SECONDS,
-            new SynchronousQueue<>(), new DaemonThreadFactory("playback"));
+      new SynchronousQueue<>(), new DaemonThreadFactory("playback"));
     trackInfoExecutorService = ExecutorTools.createEagerlyScalingExecutor(1, DEFAULT_LOADER_POOL_SIZE,
-            TimeUnit.SECONDS.toMillis(30), LOADER_QUEUE_CAPACITY, new DaemonThreadFactory("info-loader"));
+      TimeUnit.SECONDS.toMillis(30), LOADER_QUEUE_CAPACITY, new DaemonThreadFactory("info-loader"));
     scheduledExecutorService = Executors.newScheduledThreadPool(1, new DaemonThreadFactory("manager"));
     orderedInfoExecutor = new OrderedExecutor(trackInfoExecutorService);
 
@@ -261,14 +236,14 @@ public class DefaultAudioPlayerManager implements AudioPlayerManager {
     int version = (stream.getMessageFlags() & TRACK_INFO_VERSIONED) != 0 ? (input.readByte() & 0xFF) : 1;
 
     AudioTrackInfo trackInfo = new AudioTrackInfo(
-        input.readUTF(),
-        input.readUTF(),
-        input.readLong(),
-        input.readUTF(),
-        input.readBoolean(),
-        version >= 2 ? DataFormatTools.readNullableText(input) : null,
-        version >= 3 ? DataFormatTools.readNullableText(input) : null,
-        version >= 3 ? DataFormatTools.readNullableText(input) : null
+      input.readUTF(),
+      input.readUTF(),
+      input.readLong(),
+      input.readUTF(),
+      input.readBoolean(),
+      version >= 2 ? DataFormatTools.readNullableText(input) : null,
+      version >= 3 ? DataFormatTools.readNullableText(input) : null,
+      version >= 3 ? DataFormatTools.readNullableText(input) : null
     );
     AudioTrack track = decodeTrackDetails(trackInfo, input);
     long position = input.readLong();
@@ -284,6 +259,7 @@ public class DefaultAudioPlayerManager implements AudioPlayerManager {
 
   /**
    * Encodes an audio track to a byte array. Does not include AudioTrackInfo in the buffer.
+   *
    * @param track The track to encode
    * @return The bytes of the encoded data
    */
@@ -308,8 +284,9 @@ public class DefaultAudioPlayerManager implements AudioPlayerManager {
 
   /**
    * Decodes an audio track from a byte array.
+   *
    * @param trackInfo Track info for the track to decode
-   * @param buffer Byte array containing the encoded track
+   * @param buffer    Byte array containing the encoded track
    * @return Decoded audio track
    */
   public AudioTrack decodeTrackDetails(AudioTrackInfo trackInfo, byte[] buffer) {
@@ -335,8 +312,9 @@ public class DefaultAudioPlayerManager implements AudioPlayerManager {
 
   /**
    * Executes an audio track with the given player and volume.
-   * @param listener A listener for track state events
-   * @param track The audio track to execute
+   *
+   * @param listener      A listener for track state events
+   * @param track         The audio track to execute
    * @param configuration The audio configuration to use for executing
    * @param playerOptions Options of the audio player
    */

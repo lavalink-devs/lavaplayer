@@ -10,13 +10,13 @@ import java.util.function.Function;
  * Represents a class where HTTP request configuration can be changed.
  */
 public interface HttpConfigurable {
-  /**
-   * @param configurator Function to reconfigure request config.
-   */
-  void configureRequests(Function<RequestConfig, RequestConfig> configurator);
+    /**
+     * @param configurator Function to reconfigure request config.
+     */
+    void configureRequests(Function<RequestConfig, RequestConfig> configurator);
 
-  /**
-   * @param configurator Function to reconfigure HTTP builder.
-   */
-  void configureBuilder(Consumer<HttpClientBuilder> configurator);
+    /**
+     * @param configurator Function to reconfigure HTTP builder.
+     */
+    void configureBuilder(Consumer<HttpClientBuilder> configurator);
 }

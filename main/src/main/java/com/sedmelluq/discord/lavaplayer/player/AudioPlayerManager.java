@@ -6,13 +6,14 @@ import com.sedmelluq.discord.lavaplayer.tools.io.MessageOutput;
 import com.sedmelluq.discord.lavaplayer.track.AudioReference;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.DecodedTrackHolder;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.impl.client.HttpClientBuilder;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.impl.client.HttpClientBuilder;
 
 /**
  * Audio player manager which is used for creating audio players and loading tracks and playlists.
@@ -22,7 +23,7 @@ public interface AudioPlayerManager {
   /**
    * Shut down the manager. All threads will be stopped, the manager cannot be used any further. All players created
    * with this manager will stop and all source managers registered to this manager will also be shut down.
-   *
+   * <p>
    * Every thread created by the audio manager is a daemon thread, so calling this is not required for an application
    * to be able to gracefully shut down, however it should be called if the application continues without requiring this
    * manager any longer.
@@ -41,8 +42,9 @@ public interface AudioPlayerManager {
 
   /**
    * Shortcut for accessing a source manager of a certain class.
+   *
    * @param klass The class of the source manager to return.
-   * @param <T> The class of the source manager.
+   * @param <T>   The class of the source manager.
    * @return The source manager of the specified class, or null if not registered.
    */
   <T extends AudioSourceManager> T source(Class<T> klass);
@@ -54,6 +56,7 @@ public interface AudioPlayerManager {
 
   /**
    * Schedules loading a track or playlist with the specified identifier.
+   *
    * @param identifier    The identifier that a specific source manager should be able to find the track with.
    * @param resultHandler A handler to process the result of this operation. It can either end by finding a track,
    *                      finding a playlist, finding nothing or terminating with an exception.
@@ -66,6 +69,7 @@ public interface AudioPlayerManager {
 
   /**
    * Schedules loading a track or playlist with the specified identifier.
+   *
    * @param reference     The audio reference that holds the identifier that a specific source manager
    *                      should be able to find the track with.
    * @param resultHandler A handler to process the result of this operation. It can either end by finding a track,
@@ -110,7 +114,7 @@ public interface AudioPlayerManager {
    * make decodeTrack() return null at that position
    *
    * @param stream The message stream to write it to.
-   * @param track The track to encode.
+   * @param track  The track to encode.
    * @throws IOException On IO error.
    */
   void encodeTrack(MessageOutput stream, AudioTrack track) throws IOException;

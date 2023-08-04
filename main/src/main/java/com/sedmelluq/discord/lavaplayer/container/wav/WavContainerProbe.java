@@ -23,42 +23,42 @@ import static com.sedmelluq.discord.lavaplayer.tools.DataFormatTools.defaultOnNu
  * Container detection probe for WAV format.
  */
 public class WavContainerProbe implements MediaContainerProbe {
-  private static final Logger log = LoggerFactory.getLogger(WavContainerProbe.class);
+    private static final Logger log = LoggerFactory.getLogger(WavContainerProbe.class);
 
-  @Override
-  public String getName() {
-    return "wav";
-  }
-
-  @Override
-  public boolean matchesHints(MediaContainerHints hints) {
-    return false;
-  }
-
-  @Override
-  public MediaContainerDetectionResult probe(AudioReference reference, SeekableInputStream inputStream) throws IOException {
-    if (!checkNextBytes(inputStream, WAV_RIFF_HEADER)) {
-      return null;
+    @Override
+    public String getName() {
+        return "wav";
     }
 
-    log.debug("Track {} is a WAV file.", reference.identifier);
+    @Override
+    public boolean matchesHints(MediaContainerHints hints) {
+        return false;
+    }
 
-    WavFileInfo fileInfo = new WavFileLoader(inputStream).parseHeaders();
+    @Override
+    public MediaContainerDetectionResult probe(AudioReference reference, SeekableInputStream inputStream) throws IOException {
+        if (!checkNextBytes(inputStream, WAV_RIFF_HEADER)) {
+            return null;
+        }
 
-    return supportedFormat(this, null, new AudioTrackInfo(
-        defaultOnNull(reference.title, UNKNOWN_TITLE),
-        UNKNOWN_ARTIST,
-        fileInfo.getDuration(),
-        reference.identifier,
-        false,
-        reference.identifier,
-        null,
-        null
-    ));
-  }
+        log.debug("Track {} is a WAV file.", reference.identifier);
 
-  @Override
-  public AudioTrack createTrack(String parameters, AudioTrackInfo trackInfo, SeekableInputStream inputStream) {
-    return new WavAudioTrack(trackInfo, inputStream);
-  }
+        WavFileInfo fileInfo = new WavFileLoader(inputStream).parseHeaders();
+
+        return supportedFormat(this, null, new AudioTrackInfo(
+            defaultOnNull(reference.title, UNKNOWN_TITLE),
+            UNKNOWN_ARTIST,
+            fileInfo.getDuration(),
+            reference.identifier,
+            false,
+            reference.identifier,
+            null,
+            null
+        ));
+    }
+
+    @Override
+    public AudioTrack createTrack(String parameters, AudioTrackInfo trackInfo, SeekableInputStream inputStream) {
+        return new WavAudioTrack(trackInfo, inputStream);
+    }
 }
