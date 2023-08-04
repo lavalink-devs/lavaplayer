@@ -11,31 +11,31 @@ package com.sedmelluq.discord.lavaplayer.container.flac;
  * of the table.
  */
 public class FlacSeekPoint {
-  public static final int LENGTH = 18;
+    public static final int LENGTH = 18;
 
-  /**
-   * Sample number of first sample in the target frame, or 0xFFFFFFFFFFFFFFFF for a placeholder point.
-   */
-  public final long sampleIndex;
+    /**
+     * Sample number of first sample in the target frame, or 0xFFFFFFFFFFFFFFFF for a placeholder point.
+     */
+    public final long sampleIndex;
 
-  /**
-   * Offset (in bytes) from the first byte of the first frame header to the first byte of the target frame's header.
-   */
-  public final long byteOffset;
+    /**
+     * Offset (in bytes) from the first byte of the first frame header to the first byte of the target frame's header.
+     */
+    public final long byteOffset;
 
-  /**
-   * Number of samples in the target frame.
-   */
-  public final int sampleCount;
+    /**
+     * Number of samples in the target frame.
+     */
+    public final int sampleCount;
 
-  /**
-   * @param sampleIndex Index of the first sample in the frame
-   * @param byteOffset  Offset in bytes from first frame start to target frame start
-   * @param sampleCount Number of samples in the frame
-   */
-  public FlacSeekPoint(long sampleIndex, long byteOffset, int sampleCount) {
-    this.sampleIndex = sampleIndex;
-    this.byteOffset = byteOffset;
-    this.sampleCount = sampleCount;
-  }
+    /**
+     * @param sampleIndex Index of the first sample in the frame
+     * @param byteOffset  Offset in bytes from first frame start to target frame start
+     * @param sampleCount Number of samples in the frame
+     */
+    public FlacSeekPoint(long sampleIndex, long byteOffset, int sampleCount) {
+        this.sampleIndex = sampleIndex;
+        this.byteOffset = byteOffset;
+        this.sampleCount = sampleCount;
+    }
 }
