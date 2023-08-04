@@ -7,7 +7,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
 import java.util.function.Function;
 
 public interface YandexMusicSearchResultLoader extends YandexMusicApiLoader {
-  AudioItem loadSearchResult(String query,
-                             YandexMusicPlaylistLoader playlistLoader,
-                             Function<AudioTrackInfo, AudioTrack> trackFactory);
+    AudioItem loadSearchResult(String query,
+                               YandexMusicPlaylistLoader playlistLoader,
+                               Function<AudioTrackInfo, AudioTrack> trackFactory);
 }

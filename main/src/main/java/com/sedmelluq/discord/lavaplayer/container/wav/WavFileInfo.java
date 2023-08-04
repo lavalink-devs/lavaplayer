@@ -30,12 +30,12 @@ public class WavFileInfo {
   public final long startOffset;
 
   /**
-   * @param channelCount Number of channels.
-   * @param sampleRate Sample rate.
+   * @param channelCount  Number of channels.
+   * @param sampleRate    Sample rate.
    * @param bitsPerSample Bits per sample (currently only 16 supported).
-   * @param blockAlign Size of a block (one sample for each channel + padding).
-   * @param blockCount Number of blocks in the file.
-   * @param startOffset Starting position of the raw PCM samples in the file.
+   * @param blockAlign    Size of a block (one sample for each channel + padding).
+   * @param blockCount    Number of blocks in the file.
+   * @param startOffset   Starting position of the raw PCM samples in the file.
    */
   public WavFileInfo(int channelCount, int sampleRate, int bitsPerSample, int blockAlign, long blockCount, long startOffset) {
     this.channelCount = channelCount;

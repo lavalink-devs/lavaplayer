@@ -18,95 +18,95 @@ import java.util.List;
  * Seekable input stream implementation for local files.
  */
 public class LocalSeekableInputStream extends SeekableInputStream {
-  private static final Logger log = LoggerFactory.getLogger(LocalSeekableInputStream.class);
+    private static final Logger log = LoggerFactory.getLogger(LocalSeekableInputStream.class);
 
-  private final FileInputStream inputStream;
-  private final FileChannel channel;
-  private final ExtendedBufferedInputStream bufferedStream;
-  private long position;
+    private final FileInputStream inputStream;
+    private final FileChannel channel;
+    private final ExtendedBufferedInputStream bufferedStream;
+    private long position;
 
-  /**
-   * @param file File to create a stream for.
-   */
-  public LocalSeekableInputStream(File file) {
-    super(file.length(), 0);
+    /**
+     * @param file File to create a stream for.
+     */
+    public LocalSeekableInputStream(File file) {
+        super(file.length(), 0);
 
-    try {
-      inputStream = new FileInputStream(file);
-      bufferedStream = new ExtendedBufferedInputStream(inputStream);
-      channel = inputStream.getChannel();
-    } catch (FileNotFoundException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  @Override
-  public int read() throws IOException {
-    int result = bufferedStream.read();
-    if (result >= 0) {
-      position++;
+        try {
+            inputStream = new FileInputStream(file);
+            bufferedStream = new ExtendedBufferedInputStream(inputStream);
+            channel = inputStream.getChannel();
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    return result;
-  }
+    @Override
+    public int read() throws IOException {
+        int result = bufferedStream.read();
+        if (result >= 0) {
+            position++;
+        }
 
-  @Override
-  public int read(byte[] b, int off, int len) throws IOException {
-    int read = bufferedStream.read(b, off, len);
-    position += read;
-    return read;
-  }
-
-  @Override
-  public long skip(long n) throws IOException {
-    long skipped = bufferedStream.skip(n);
-    position += skipped;
-    return skipped;
-  }
-
-  @Override
-  public int available() throws IOException {
-    return bufferedStream.available();
-  }
-
-  @Override
-  public synchronized void reset() throws IOException {
-    throw new IOException("mark/reset not supported");
-  }
-
-  @Override
-  public boolean markSupported() {
-    return false;
-  }
-
-  @Override
-  public void close() throws IOException {
-    try {
-      channel.close();
-    } catch (IOException e) {
-      log.debug("Failed to close channel", e);
+        return result;
     }
-  }
 
-  @Override
-  public long getPosition() {
-    return position;
-  }
+    @Override
+    public int read(byte[] b, int off, int len) throws IOException {
+        int read = bufferedStream.read(b, off, len);
+        position += read;
+        return read;
+    }
 
-  @Override
-  public boolean canSeekHard() {
-    return true;
-  }
+    @Override
+    public long skip(long n) throws IOException {
+        long skipped = bufferedStream.skip(n);
+        position += skipped;
+        return skipped;
+    }
 
-  @Override
-  public List<AudioTrackInfoProvider> getTrackInfoProviders() {
-    return Collections.emptyList();
-  }
+    @Override
+    public int available() throws IOException {
+        return bufferedStream.available();
+    }
 
-  @Override
-  protected void seekHard(long position) throws IOException {
-    channel.position(position);
-    this.position = position;
-    bufferedStream.discardBuffer();
-  }
+    @Override
+    public synchronized void reset() throws IOException {
+        throw new IOException("mark/reset not supported");
+    }
+
+    @Override
+    public boolean markSupported() {
+        return false;
+    }
+
+    @Override
+    public void close() throws IOException {
+        try {
+            channel.close();
+        } catch (IOException e) {
+            log.debug("Failed to close channel", e);
+        }
+    }
+
+    @Override
+    public long getPosition() {
+        return position;
+    }
+
+    @Override
+    public boolean canSeekHard() {
+        return true;
+    }
+
+    @Override
+    public List<AudioTrackInfoProvider> getTrackInfoProviders() {
+        return Collections.emptyList();
+    }
+
+    @Override
+    protected void seekHard(long position) throws IOException {
+        channel.position(position);
+        this.position = position;
+        bufferedStream.discardBuffer();
+    }
 }

@@ -17,7 +17,7 @@ public class FlacFrameInfo {
   public final ChannelDelta channelDelta;
 
   /**
-   * @param sampleCount Number of samples in each subframe of this frame
+   * @param sampleCount  Number of samples in each subframe of this frame
    * @param channelDelta Channel data delta setting
    */
   public FlacFrameInfo(int sampleCount, ChannelDelta channelDelta) {

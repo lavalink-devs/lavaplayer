@@ -25,56 +25,56 @@ import static com.sedmelluq.discord.lavaplayer.container.MediaContainerDetection
  * Container detection probe for matroska format.
  */
 public class MatroskaContainerProbe implements MediaContainerProbe {
-  private static final Logger log = LoggerFactory.getLogger(MatroskaContainerProbe.class);
+    private static final Logger log = LoggerFactory.getLogger(MatroskaContainerProbe.class);
 
-  public static final String OPUS_CODEC = "A_OPUS";
-  public static final String VORBIS_CODEC = "A_VORBIS";
-  public static final String AAC_CODEC = "A_AAC";
+    public static final String OPUS_CODEC = "A_OPUS";
+    public static final String VORBIS_CODEC = "A_VORBIS";
+    public static final String AAC_CODEC = "A_AAC";
 
-  private static final int[] EBML_TAG = new int[] { 0x1A, 0x45, 0xDF, 0xA3 };
-  private static final List<String> supportedCodecs = Arrays.asList(OPUS_CODEC, VORBIS_CODEC, AAC_CODEC);
+    private static final int[] EBML_TAG = new int[]{0x1A, 0x45, 0xDF, 0xA3};
+    private static final List<String> supportedCodecs = Arrays.asList(OPUS_CODEC, VORBIS_CODEC, AAC_CODEC);
 
-  @Override
-  public String getName() {
-    return "matroska/webm";
-  }
-
-  @Override
-  public boolean matchesHints(MediaContainerHints hints) {
-    return false;
-  }
-
-  @Override
-  public MediaContainerDetectionResult probe(AudioReference reference, SeekableInputStream inputStream) throws IOException {
-    if (!checkNextBytes(inputStream, EBML_TAG)) {
-      return null;
+    @Override
+    public String getName() {
+        return "matroska/webm";
     }
 
-    log.debug("Track {} is a matroska file.", reference.identifier);
-
-    MatroskaStreamingFile file = new MatroskaStreamingFile(inputStream);
-    file.readFile();
-
-    if (!hasSupportedAudioTrack(file)) {
-      return unsupportedFormat(this, "No supported audio tracks present in the file.");
+    @Override
+    public boolean matchesHints(MediaContainerHints hints) {
+        return false;
     }
 
-    return supportedFormat(this, null, new AudioTrackInfo(UNKNOWN_TITLE, UNKNOWN_ARTIST,
-        (long) file.getDuration(), reference.identifier, false, reference.identifier, null, null));
-  }
+    @Override
+    public MediaContainerDetectionResult probe(AudioReference reference, SeekableInputStream inputStream) throws IOException {
+        if (!checkNextBytes(inputStream, EBML_TAG)) {
+            return null;
+        }
 
-  private boolean hasSupportedAudioTrack(MatroskaStreamingFile file) {
-    for (MatroskaFileTrack track : file.getTrackList()) {
-      if (track.type == MatroskaFileTrack.Type.AUDIO && supportedCodecs.contains(track.codecId)) {
-        return true;
-      }
+        log.debug("Track {} is a matroska file.", reference.identifier);
+
+        MatroskaStreamingFile file = new MatroskaStreamingFile(inputStream);
+        file.readFile();
+
+        if (!hasSupportedAudioTrack(file)) {
+            return unsupportedFormat(this, "No supported audio tracks present in the file.");
+        }
+
+        return supportedFormat(this, null, new AudioTrackInfo(UNKNOWN_TITLE, UNKNOWN_ARTIST,
+            (long) file.getDuration(), reference.identifier, false, reference.identifier, null, null));
     }
 
-    return false;
-  }
+    private boolean hasSupportedAudioTrack(MatroskaStreamingFile file) {
+        for (MatroskaFileTrack track : file.getTrackList()) {
+            if (track.type == MatroskaFileTrack.Type.AUDIO && supportedCodecs.contains(track.codecId)) {
+                return true;
+            }
+        }
 
-  @Override
-  public AudioTrack createTrack(String parameters, AudioTrackInfo trackInfo, SeekableInputStream inputStream) {
-    return new MatroskaAudioTrack(trackInfo, inputStream);
-  }
+        return false;
+    }
+
+    @Override
+    public AudioTrack createTrack(String parameters, AudioTrackInfo trackInfo, SeekableInputStream inputStream) {
+        return new MatroskaAudioTrack(trackInfo, inputStream);
+    }
 }

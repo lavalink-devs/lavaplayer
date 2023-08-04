@@ -15,9 +15,9 @@ public class DecodedException extends Exception {
   public final String originalMessage;
 
   /**
-   * @param className Original exception class name
+   * @param className       Original exception class name
    * @param originalMessage Original exception message
-   * @param cause Cause of this exception
+   * @param cause           Cause of this exception
    */
   public DecodedException(String className, String originalMessage, DecodedException cause) {
     super(className + ": " + originalMessage, cause, true, true);

@@ -26,11 +26,11 @@ public class OggStreamSizeInfo {
   public final int sampleRate;
 
   /**
-   * @param totalBytes See {@link #totalBytes}.
-   * @param totalSamples See {@link #totalSamples}.
+   * @param totalBytes      See {@link #totalBytes}.
+   * @param totalSamples    See {@link #totalSamples}.
    * @param firstPageOffset See {@link #firstPageOffset}.
-   * @param lastPageOffset See {@link #lastPageOffset}.
-   * @param sampleRate See {@link #sampleRate}.
+   * @param lastPageOffset  See {@link #lastPageOffset}.
+   * @param sampleRate      See {@link #sampleRate}.
    */
   public OggStreamSizeInfo(long totalBytes, long totalSamples, long firstPageOffset, long lastPageOffset,
                            int sampleRate) {
