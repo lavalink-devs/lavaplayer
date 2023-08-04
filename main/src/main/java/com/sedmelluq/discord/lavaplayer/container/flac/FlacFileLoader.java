@@ -2,6 +2,7 @@ package com.sedmelluq.discord.lavaplayer.container.flac;
 
 import com.sedmelluq.discord.lavaplayer.tools.io.SeekableInputStream;
 import com.sedmelluq.discord.lavaplayer.track.playback.AudioProcessingContext;
+
 import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -12,7 +13,7 @@ import static com.sedmelluq.discord.lavaplayer.container.MediaContainerDetection
  * Loads either FLAC header information or a FLAC track object from a stream.
  */
 public class FlacFileLoader {
-  static final int[] FLAC_CC = new int[] { 0x66, 0x4C, 0x61, 0x43 };
+  static final int[] FLAC_CC = new int[]{0x66, 0x4C, 0x61, 0x43};
 
   private final SeekableInputStream inputStream;
   private final DataInput dataInput;
@@ -27,6 +28,7 @@ public class FlacFileLoader {
 
   /**
    * Read all metadata from a FLAC file. Stream position is at the beginning of the first frame after this call.
+   *
    * @return FLAC track information
    * @throws IOException On IO Error
    */
@@ -43,6 +45,7 @@ public class FlacFileLoader {
 
   /**
    * Initialise a FLAC track stream.
+   *
    * @param context Configuration and output information for processing
    * @return The FLAC track stream which can produce frames.
    * @throws IOException On IO error

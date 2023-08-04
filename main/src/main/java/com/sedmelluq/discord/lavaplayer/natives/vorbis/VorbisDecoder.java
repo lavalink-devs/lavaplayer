@@ -1,6 +1,7 @@
 package com.sedmelluq.discord.lavaplayer.natives.vorbis;
 
 import com.sedmelluq.lava.common.natives.NativeResourceHolder;
+
 import java.nio.ByteBuffer;
 
 /**
@@ -24,7 +25,7 @@ public class VorbisDecoder extends NativeResourceHolder {
    * https://xiph.org/vorbis/doc/Vorbis_I_spec.html#x1-170001.2.6 for definitions. The comment header is not required as
    * it is not actually used for decoding setup.
    *
-   * @param infoBuffer Identification header, including the 'vorbis' string.
+   * @param infoBuffer  Identification header, including the 'vorbis' string.
    * @param setupBuffer Setup header (also known as codebook header), including the 'vorbis' string.
    */
   public void initialise(ByteBuffer infoBuffer, ByteBuffer setupBuffer) {
@@ -35,7 +36,7 @@ public class VorbisDecoder extends NativeResourceHolder {
     }
 
     if (!library.initialise(instance, infoBuffer, infoBuffer.position(), infoBuffer.remaining(), setupBuffer,
-        setupBuffer.position(), setupBuffer.remaining())) {
+      setupBuffer.position(), setupBuffer.remaining())) {
 
       throw new IllegalStateException("Could not initialise library.");
     }
@@ -45,6 +46,7 @@ public class VorbisDecoder extends NativeResourceHolder {
 
   /**
    * Get the number of channels, valid only after initialisation.
+   *
    * @return Number of channels
    */
   public int getChannelCount() {
@@ -53,6 +55,7 @@ public class VorbisDecoder extends NativeResourceHolder {
 
   /**
    * Provide input for the decoder
+   *
    * @param buffer Buffer with the input
    */
   public void input(ByteBuffer buffer) {
@@ -72,6 +75,7 @@ public class VorbisDecoder extends NativeResourceHolder {
 
   /**
    * Fetch output from the decoder
+   *
    * @param channels Channel buffers to fetch the output to
    * @return The number of samples fetched for each channel
    */

@@ -3,10 +3,11 @@ package com.sedmelluq.discord.lavaplayer.tools.http;
 import com.sedmelluq.discord.lavaplayer.tools.ExceptionTools;
 import com.sedmelluq.discord.lavaplayer.tools.io.HttpClientTools;
 import com.sedmelluq.discord.lavaplayer.tools.io.HttpInterface;
-import java.io.IOException;
-import java.io.InputStream;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 public class HttpStreamTools {
   public static InputStream streamContent(HttpInterface httpInterface, HttpUriRequest request) {

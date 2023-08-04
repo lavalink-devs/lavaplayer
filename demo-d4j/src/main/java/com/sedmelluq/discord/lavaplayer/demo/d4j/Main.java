@@ -16,8 +16,10 @@ import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.MessageChannel;
 import discord4j.core.object.entity.TextChannel;
 import discord4j.core.object.entity.VoiceChannel;
+
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -135,8 +137,8 @@ public class Main {
   private static void attachToFirstVoiceChannel(Guild guild, D4jAudioProvider provider) {
     VoiceChannel voiceChannel = guild.getChannels().ofType(VoiceChannel.class).blockFirst();
     boolean inVoiceChannel = guild.getVoiceStates() // Check if any VoiceState for this guild relates to bot
-        .any(voiceState -> guild.getClient().getSelfId().map(voiceState.getUserId()::equals).orElse(false))
-        .block();
+      .any(voiceState -> guild.getClient().getSelfId().map(voiceState.getUserId()::equals).orElse(false))
+      .block();
 
     if (!inVoiceChannel) {
       voiceChannel.join(spec -> spec.setProvider(provider)).block();

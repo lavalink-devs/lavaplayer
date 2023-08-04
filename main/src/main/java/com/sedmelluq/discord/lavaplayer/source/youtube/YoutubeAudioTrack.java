@@ -9,11 +9,12 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
 import com.sedmelluq.discord.lavaplayer.track.DelegatedAudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.playback.LocalAudioTrackExecutor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.net.URI;
 import java.util.List;
 import java.util.StringJoiner;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static com.sedmelluq.discord.lavaplayer.container.Formats.MIME_AUDIO_WEBM;
 import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.COMMON;
@@ -28,7 +29,7 @@ public class YoutubeAudioTrack extends DelegatedAudioTrack {
   private final YoutubeAudioSourceManager sourceManager;
 
   /**
-   * @param trackInfo Track info
+   * @param trackInfo     Track info
    * @param sourceManager Source manager which was used to find this track
    */
   public YoutubeAudioTrack(AudioTrackInfo trackInfo, YoutubeAudioSourceManager sourceManager) {
@@ -74,7 +75,7 @@ public class YoutubeAudioTrack extends DelegatedAudioTrack {
 
   private FormatWithUrl loadBestFormatWithUrl(HttpInterface httpInterface) throws Exception {
     YoutubeTrackDetails details = sourceManager.getTrackDetailsLoader()
-        .loadDetails(httpInterface, getIdentifier(), true, sourceManager);
+      .loadDetails(httpInterface, getIdentifier(), true, sourceManager);
 
     // If the error reason is "Video unavailable" details will return null
     if (details == null) {
@@ -86,7 +87,7 @@ public class YoutubeAudioTrack extends DelegatedAudioTrack {
     YoutubeTrackFormat format = findBestSupportedFormat(formats);
 
     URI signedUrl = sourceManager.getSignatureResolver()
-        .resolveFormatUrl(httpInterface, details.getPlayerScript(), format);
+      .resolveFormatUrl(httpInterface, details.getPlayerScript(), format);
 
     return new FormatWithUrl(format, signedUrl);
   }

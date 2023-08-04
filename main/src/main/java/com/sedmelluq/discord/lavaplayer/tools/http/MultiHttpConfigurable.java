@@ -1,10 +1,11 @@
 package com.sedmelluq.discord.lavaplayer.tools.http;
 
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.impl.client.HttpClientBuilder;
+
 import java.util.Collection;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.impl.client.HttpClientBuilder;
 
 public class MultiHttpConfigurable implements ExtendedHttpConfigurable {
   private final Collection<ExtendedHttpConfigurable> configurables;

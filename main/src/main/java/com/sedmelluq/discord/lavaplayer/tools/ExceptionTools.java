@@ -1,14 +1,15 @@
 package com.sedmelluq.discord.lavaplayer.tools;
 
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Contains common helper methods for dealing with exceptions.
@@ -32,8 +33,8 @@ public class ExceptionTools {
   /**
    * If the exception is not a FriendlyException, wrap with a FriendlyException with the given message
    *
-   * @param message Message of the new FriendlyException if needed
-   * @param severity Severity of the new FriendlyException
+   * @param message   Message of the new FriendlyException if needed
+   * @param severity  Severity of the new FriendlyException
    * @param throwable The exception to potentially wrap
    * @return Original or wrapped exception
    */
@@ -71,8 +72,8 @@ public class ExceptionTools {
    * Finds the first exception which is an instance of the specified class from the throwable cause chain.
    *
    * @param throwable Throwable to scan.
-   * @param klass The throwable class to scan for.
-   * @param <T> The throwable class to scan for.
+   * @param klass     The throwable class to scan for.
+   * @param <T>       The throwable class to scan for.
    * @return The first exception in the cause chain (including itself) which is an instance of the specified class.
    */
   public static <T extends Throwable> T findDeepException(Throwable throwable, Class<T> klass) {
@@ -89,6 +90,7 @@ public class ExceptionTools {
 
   /**
    * Makes sure thread is set to interrupted state when the throwable is an InterruptedException
+   *
    * @param throwable Throwable to check
    */
   public static void keepInterrupted(Throwable throwable) {
@@ -99,9 +101,10 @@ public class ExceptionTools {
 
   /**
    * Log a FriendlyException appropriately according to its severity.
-   * @param log Logger instance to log it to
+   *
+   * @param log       Logger instance to log it to
    * @param exception The exception itself
-   * @param context An object that is included in the log
+   * @param context   An object that is included in the log
    */
   public static void log(Logger log, FriendlyException exception, Object context) {
     switch (exception.severity) {
@@ -123,11 +126,11 @@ public class ExceptionTools {
   }
 
   public static RuntimeException throwWithDebugInfo(
-      Logger log,
-      Throwable cause,
-      String message,
-      String name,
-      String value
+    Logger log,
+    Throwable cause,
+    String message,
+    String name,
+    String value
   ) {
     ErrorDebugInfo debugInfo = new ErrorDebugInfo(log, UUID.randomUUID().toString(), cause, message, name, value);
     debugInfoHandler.handle(debugInfo);
@@ -136,7 +139,8 @@ public class ExceptionTools {
 
   /**
    * Encode an exception to an output stream
-   * @param output Data output
+   *
+   * @param output    Data output
    * @param exception Exception to encode
    * @throws IOException On IO error
    */
@@ -211,6 +215,7 @@ public class ExceptionTools {
 
   /**
    * Decode an exception from an input stream
+   *
    * @param input Data input
    * @return Decoded exception
    * @throws IOException On IO error
@@ -247,12 +252,12 @@ public class ExceptionTools {
     public final String value;
 
     public ErrorDebugInfo(
-        Logger log,
-        String errorId,
-        Throwable cause,
-        String message,
-        String name,
-        String value
+      Logger log,
+      String errorId,
+      Throwable cause,
+      String message,
+      String name,
+      String value
     ) {
       this.log = log;
       this.errorId = errorId;

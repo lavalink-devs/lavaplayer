@@ -27,10 +27,10 @@ public class AdtsPacketHeader {
 
   /**
    * @param isProtectionAbsent If this is false, then the packet header is followed by a 2-byte CRC.
-   * @param profile Decoder profile (2 is AAC-LC).
-   * @param sampleRate Sample rate.
-   * @param channels Number of channels.
-   * @param payloadLength Packet payload length, excluding the CRC after this header.
+   * @param profile            Decoder profile (2 is AAC-LC).
+   * @param sampleRate         Sample rate.
+   * @param channels           Number of channels.
+   * @param payloadLength      Packet payload length, excluding the CRC after this header.
    */
   public AdtsPacketHeader(boolean isProtectionAbsent, int profile, int sampleRate, int channels, int payloadLength) {
     this.isProtectionAbsent = isProtectionAbsent;
@@ -46,8 +46,8 @@ public class AdtsPacketHeader {
    */
   public boolean canUseSameDecoder(AdtsPacketHeader packetHeader) {
     return packetHeader != null &&
-        profile == packetHeader.profile &&
-        sampleRate == packetHeader.sampleRate &&
-        channels == packetHeader.channels;
+      profile == packetHeader.profile &&
+      sampleRate == packetHeader.sampleRate &&
+      channels == packetHeader.channels;
   }
 }

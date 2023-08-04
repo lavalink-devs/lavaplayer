@@ -7,7 +7,7 @@ public class MutableMatroskaElement extends MatroskaElement {
   protected MutableMatroskaElement(int level) {
     super(level);
   }
-  
+
   public void setId(long id) {
     this.id = id;
   }

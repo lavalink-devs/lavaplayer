@@ -29,7 +29,7 @@ public class FlacTrackInfoBuilder {
   }
 
   /**
-   * @param seekPoints Seek point array.
+   * @param seekPoints     Seek point array.
    * @param seekPointCount The number of seek points which are not placeholders.
    */
   public void setSeekPoints(FlacSeekPoint[] seekPoints, int seekPointCount) {
@@ -38,7 +38,7 @@ public class FlacTrackInfoBuilder {
   }
 
   /**
-   * @param key Name of the tag
+   * @param key   Name of the tag
    * @param value Value of the tag
    */
   public void addTag(String key, String value) {

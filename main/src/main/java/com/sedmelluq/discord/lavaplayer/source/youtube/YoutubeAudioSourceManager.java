@@ -15,13 +15,6 @@ import com.sedmelluq.discord.lavaplayer.track.AudioItem;
 import com.sedmelluq.discord.lavaplayer.track.AudioReference;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.net.URI;
-import java.util.Arrays;
-import java.util.List;
-import java.util.function.Consumer;
-import java.util.function.Function;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -29,6 +22,14 @@ import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.net.URI;
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.COMMON;
 import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.FAULT;
@@ -62,36 +63,37 @@ public class YoutubeAudioSourceManager implements AudioSourceManager, HttpConfig
 
   /**
    * Create an instance.
+   *
    * @param allowSearch Whether to allow search queries as identifiers
-   * @param email Email of Google account to auth in, required for playing age restricted tracks
-   * @param password Password of Google account to auth in, required for playing age restricted tracks
+   * @param email       Email of Google account to auth in, required for playing age restricted tracks
+   * @param password    Password of Google account to auth in, required for playing age restricted tracks
    */
   public YoutubeAudioSourceManager(boolean allowSearch, String email, String password) {
     this(
-        allowSearch,
-        email,
-        password,
-        new DefaultYoutubeTrackDetailsLoader(),
-        new YoutubeSearchProvider(),
-        new YoutubeSearchMusicProvider(),
-        new YoutubeSignatureCipherManager(),
-        new DefaultYoutubePlaylistLoader(),
-        new DefaultYoutubeLinkRouter(),
-        new YoutubeMixProvider()
+      allowSearch,
+      email,
+      password,
+      new DefaultYoutubeTrackDetailsLoader(),
+      new YoutubeSearchProvider(),
+      new YoutubeSearchMusicProvider(),
+      new YoutubeSignatureCipherManager(),
+      new DefaultYoutubePlaylistLoader(),
+      new DefaultYoutubeLinkRouter(),
+      new YoutubeMixProvider()
     );
   }
 
   public YoutubeAudioSourceManager(
-      boolean allowSearch,
-      String email,
-      String password,
-      YoutubeTrackDetailsLoader trackDetailsLoader,
-      YoutubeSearchResultLoader searchResultLoader,
-      YoutubeSearchMusicResultLoader searchMusicResultLoader,
-      YoutubeSignatureResolver signatureResolver,
-      YoutubePlaylistLoader playlistLoader,
-      YoutubeLinkRouter linkRouter,
-      YoutubeMixLoader mixLoader
+    boolean allowSearch,
+    String email,
+    String password,
+    YoutubeTrackDetailsLoader trackDetailsLoader,
+    YoutubeSearchResultLoader searchResultLoader,
+    YoutubeSearchMusicResultLoader searchMusicResultLoader,
+    YoutubeSignatureResolver signatureResolver,
+    YoutubePlaylistLoader playlistLoader,
+    YoutubeLinkRouter linkRouter,
+    YoutubeMixLoader mixLoader
   ) {
     httpInterfaceManager = HttpClientTools.createDefaultThreadLocalManager();
     accessTokenTracker = new YoutubeAccessTokenTracker(httpInterfaceManager, email, password);
@@ -115,9 +117,9 @@ public class YoutubeAudioSourceManager implements AudioSourceManager, HttpConfig
     this.loadingRoutes = new LoadingRoutes();
 
     combinedHttpConfiguration = new MultiHttpConfigurable(Arrays.asList(
-        httpInterfaceManager,
-        searchResultLoader.getHttpConfiguration(),
-        searchMusicResultLoader.getHttpConfiguration()
+      httpInterfaceManager,
+      searchResultLoader.getHttpConfiguration(),
+      searchMusicResultLoader.getHttpConfiguration()
     ));
   }
 
@@ -219,7 +221,7 @@ public class YoutubeAudioSourceManager implements AudioSourceManager, HttpConfig
   /**
    * Loads a single track from video ID.
    *
-   * @param videoId ID of the YouTube video.
+   * @param videoId   ID of the YouTube video.
    * @param mustExist True if it should throw an exception on missing track, otherwise returns AudioReference.NO_TRACK.
    * @return Loaded YouTube track.
    */
@@ -258,7 +260,7 @@ public class YoutubeAudioSourceManager implements AudioSourceManager, HttpConfig
 
       try (HttpInterface httpInterface = getHttpInterface()) {
         return playlistLoader.load(httpInterface, playlistId, selectedVideoId,
-            YoutubeAudioSourceManager.this::buildTrackFromInfo);
+          YoutubeAudioSourceManager.this::buildTrackFromInfo);
       } catch (Exception e) {
         throw ExceptionTools.wrapUnfriendlyExceptions(e);
       }
@@ -270,7 +272,7 @@ public class YoutubeAudioSourceManager implements AudioSourceManager, HttpConfig
 
       try (HttpInterface httpInterface = getHttpInterface()) {
         return mixLoader.load(httpInterface, mixId, selectedVideoId,
-            YoutubeAudioSourceManager.this::buildTrackFromInfo);
+          YoutubeAudioSourceManager.this::buildTrackFromInfo);
       } catch (Exception e) {
         throw ExceptionTools.wrapUnfriendlyExceptions(e);
       }
@@ -280,8 +282,8 @@ public class YoutubeAudioSourceManager implements AudioSourceManager, HttpConfig
     public AudioItem search(String query) {
       if (allowSearch) {
         return searchResultLoader.loadSearchResult(
-            query,
-            YoutubeAudioSourceManager.this::buildTrackFromInfo
+          query,
+          YoutubeAudioSourceManager.this::buildTrackFromInfo
         );
       }
       return null;
@@ -291,8 +293,8 @@ public class YoutubeAudioSourceManager implements AudioSourceManager, HttpConfig
     public AudioItem searchMusic(String query) {
       if (allowSearch) {
         return searchMusicResultLoader.loadSearchMusicResult(
-            query,
-            YoutubeAudioSourceManager.this::buildTrackFromInfo
+          query,
+          YoutubeAudioSourceManager.this::buildTrackFromInfo
         );
       }
       return null;
@@ -311,7 +313,7 @@ public class YoutubeAudioSourceManager implements AudioSourceManager, HttpConfig
             return new AudioReference(redirects.get(0).toString(), null);
           } else {
             throw new FriendlyException("Unable to process youtube watch_videos link", SUSPICIOUS,
-                new IllegalStateException("Expected youtube to redirect watch_videos link to a watch?v={id}&list={list_id} link, but it did not redirect at all"));
+              new IllegalStateException("Expected youtube to redirect watch_videos link to a watch?v={id}&list={list_id} link, but it did not redirect at all"));
           }
         }
       } catch (Exception e) {

@@ -1,43 +1,43 @@
 name: Release
 
 on:
-  release:
-    types: [published]
+    release:
+        types: [ published ]
 
 jobs:
-  build:
-    uses: ./.github/workflows/build.yml
-    secrets:
-      MAVEN_USERNAME: ${{ vars.MAVEN_USERNAME }}
-      MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
-      ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.ORG_GRADLE_PROJECT_MAVENCENTRALPASSWORD }}
-      ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.ORG_GRADLE_PROJECT_MAVENCENTRALUSERNAME }}
-      ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.ORG_GRADLE_PROJECT_SIGNINGINMEMORYKEY }}
-      ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.ORG_GRADLE_PROJECT_SIGNINGINMEMORYKEYPASSWORD }}
+    build:
+        uses: ./.github/workflows/build.yml
+        secrets:
+            MAVEN_USERNAME: ${{ vars.MAVEN_USERNAME }}
+            MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
+            ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.ORG_GRADLE_PROJECT_MAVENCENTRALPASSWORD }}
+            ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.ORG_GRADLE_PROJECT_MAVENCENTRALUSERNAME }}
+            ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.ORG_GRADLE_PROJECT_SIGNINGINMEMORYKEY }}
+            ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.ORG_GRADLE_PROJECT_SIGNINGINMEMORYKEYPASSWORD }}
 
-  release:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+    release:
+        needs: build
+        runs-on: ubuntu-latest
+        steps:
+            -   name: Checkout
+                uses: actions/checkout@v3
 
-      - name: Download Artifacts
-        uses: actions/download-artifact@v3
-        with:
-          name: Lavaplayer.zip
+            -   name: Download Artifacts
+                uses: actions/download-artifact@v3
+                with:
+                    name: Lavaplayer.zip
 
-      - name: Upload Artifacts to GitHub Release
-        uses: ncipollo/release-action@v1
-        with:
-          artifacts: |
-            main/build/libs/lavaplayer-*.jar
-            common/build/libs/lava-common-*.jar
-            extensions/format-xm/build/libs/lavaplayer-ext-format-xm-*.jar
-            extensions/youtube-rotator/build/libs/lavaplayer-ext-youtube-rotator-*.jar
-            natives-publish/build/libs/lavaplayer-natives-*.jar
-          allowUpdates: true
-          omitBodyDuringUpdate: true
-          omitDraftDuringUpdate: true
-          omitNameDuringUpdate: true
-          omitPrereleaseDuringUpdate: true
+            -   name: Upload Artifacts to GitHub Release
+                uses: ncipollo/release-action@v1
+                with:
+                    artifacts: |
+                        main/build/libs/lavaplayer-*.jar
+                        common/build/libs/lava-common-*.jar
+                        extensions/format-xm/build/libs/lavaplayer-ext-format-xm-*.jar
+                        extensions/youtube-rotator/build/libs/lavaplayer-ext-youtube-rotator-*.jar
+                        natives-publish/build/libs/lavaplayer-natives-*.jar
+                    allowUpdates: true
+                    omitBodyDuringUpdate: true
+                    omitDraftDuringUpdate: true
+                    omitNameDuringUpdate: true
+                    omitPrereleaseDuringUpdate: true

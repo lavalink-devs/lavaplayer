@@ -1,6 +1,7 @@
 package com.sedmelluq.discord.lavaplayer.format.transcoder;
 
 import com.sedmelluq.discord.lavaplayer.format.AudioDataFormat;
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.ShortBuffer;
@@ -13,7 +14,7 @@ public class PcmChunkDecoder implements AudioChunkDecoder {
   private final ShortBuffer encodedAsShort;
 
   /**
-   * @param format Source audio format.
+   * @param format    Source audio format.
    * @param bigEndian Whether the samples are in big-endian format (as opposed to little-endian).
    */
   public PcmChunkDecoder(AudioDataFormat format, boolean bigEndian) {

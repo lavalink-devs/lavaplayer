@@ -1,14 +1,7 @@
 package com.sedmelluq.discord.lavaplayer.player;
 
 import com.sedmelluq.discord.lavaplayer.filter.PcmFilterFactory;
-import com.sedmelluq.discord.lavaplayer.player.event.AudioEvent;
-import com.sedmelluq.discord.lavaplayer.player.event.AudioEventListener;
-import com.sedmelluq.discord.lavaplayer.player.event.PlayerPauseEvent;
-import com.sedmelluq.discord.lavaplayer.player.event.PlayerResumeEvent;
-import com.sedmelluq.discord.lavaplayer.player.event.TrackEndEvent;
-import com.sedmelluq.discord.lavaplayer.player.event.TrackExceptionEvent;
-import com.sedmelluq.discord.lavaplayer.player.event.TrackStartEvent;
-import com.sedmelluq.discord.lavaplayer.player.event.TrackStuckEvent;
+import com.sedmelluq.discord.lavaplayer.player.event.*;
 import com.sedmelluq.discord.lavaplayer.tools.CopyOnUpdateIdentityList;
 import com.sedmelluq.discord.lavaplayer.tools.ExceptionTools;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
@@ -16,22 +9,15 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
 import com.sedmelluq.discord.lavaplayer.track.InternalAudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.TrackStateListener;
-import com.sedmelluq.discord.lavaplayer.track.playback.AudioFrame;
-import com.sedmelluq.discord.lavaplayer.track.playback.AudioFrameProviderTools;
-import com.sedmelluq.discord.lavaplayer.track.playback.AudioTrackExecutor;
-import com.sedmelluq.discord.lavaplayer.track.playback.LocalAudioTrackExecutor;
-import com.sedmelluq.discord.lavaplayer.track.playback.MutableAudioFrame;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicBoolean;
+import com.sedmelluq.discord.lavaplayer.track.playback.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason.CLEANUP;
-import static com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason.FINISHED;
-import static com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason.LOAD_FAILED;
-import static com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason.REPLACED;
-import static com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason.STOPPED;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import static com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason.*;
 
 /**
  * An audio player that is capable of playing audio tracks and provides audio frames from the currently playing track.
@@ -77,7 +63,7 @@ public class DefaultAudioPlayer implements AudioPlayer, TrackStateListener {
   }
 
   /**
-   * @param track The track to start playing, passing null will stop the current track and return false
+   * @param track       The track to start playing, passing null will stop the current track and return false
    * @param noInterrupt Whether to only start if nothing else is playing
    * @return True if the track was started
    */
@@ -218,7 +204,7 @@ public class DefaultAudioPlayer implements AudioPlayer, TrackStateListener {
 
   @Override
   public boolean provide(MutableAudioFrame targetFrame, long timeout, TimeUnit unit)
-      throws TimeoutException, InterruptedException {
+    throws TimeoutException, InterruptedException {
 
     InternalAudioTrack track;
 
@@ -333,6 +319,7 @@ public class DefaultAudioPlayer implements AudioPlayer, TrackStateListener {
 
   /**
    * Add a listener to events from this player.
+   *
    * @param listener New listener
    */
   public void addListener(AudioEventListener listener) {
@@ -343,6 +330,7 @@ public class DefaultAudioPlayer implements AudioPlayer, TrackStateListener {
 
   /**
    * Remove an attached listener using identity comparison.
+   *
    * @param listener The listener to remove
    */
   public void removeListener(AudioEventListener listener) {
@@ -377,6 +365,7 @@ public class DefaultAudioPlayer implements AudioPlayer, TrackStateListener {
 
   /**
    * Check if the player should be "cleaned up" - stopped due to nothing using it, with the given threshold.
+   *
    * @param threshold Threshold in milliseconds to use
    */
   public void checkCleanup(long threshold) {

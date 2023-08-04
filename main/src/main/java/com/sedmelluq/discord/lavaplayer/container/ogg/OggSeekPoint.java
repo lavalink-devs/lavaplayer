@@ -7,10 +7,10 @@ public class OggSeekPoint {
   private final long pageSequence;
 
   /**
-   * @param position The position of the seek point in the stream, in bytes.
+   * @param position        The position of the seek point in the stream, in bytes.
    * @param granulePosition The granule position of the seek point in the stream.
-   * @param timecode The time of the seek point in the stream, in milliseconds.
-   * @param pageSequence The page to what this seek point belong.
+   * @param timecode        The time of the seek point in the stream, in milliseconds.
+   * @param pageSequence    The page to what this seek point belong.
    */
   public OggSeekPoint(long position, long granulePosition, long timecode, long pageSequence) {
     this.position = position;

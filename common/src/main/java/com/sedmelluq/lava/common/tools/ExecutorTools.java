@@ -3,16 +3,7 @@ package com.sedmelluq.lava.common.tools;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.RejectedExecutionHandler;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 
 /**
  * Utility methods for working with executors.
@@ -32,7 +23,7 @@ public class ExecutorTools {
    * does not manage to do it in that time, then this method just returns.
    *
    * @param executorService Executor service to shut down
-   * @param description Description of the service to use for logging
+   * @param description     Description of the service to use for logging
    */
   public static void shutdownExecutor(ExecutorService executorService, String description) {
     if (executorService == null) {
@@ -61,9 +52,9 @@ public class ExecutorTools {
    * thread should start or not. The maximum size is otherwise pointless unless you have a bounded queue, which in turn
    * would cause tasks to be rejected if it is too small.
    *
-   * @param coreSize Number of threads that are always alive
-   * @param maximumSize The maximum number of threads in the pool
-   * @param timeout Non-core thread timeout in milliseconds
+   * @param coreSize      Number of threads that are always alive
+   * @param maximumSize   The maximum number of threads in the pool
+   * @param timeout       Non-core thread timeout in milliseconds
    * @param threadFactory Thread factory to create pool threads with
    * @return An eagerly scaling thread pool executor
    */
@@ -71,7 +62,7 @@ public class ExecutorTools {
                                                                 int queueCapacity, ThreadFactory threadFactory) {
 
     ThreadPoolExecutor executor = new ThreadPoolExecutor(coreSize, maximumSize, timeout, TimeUnit.MILLISECONDS,
-        new EagerlyScalingTaskQueue(queueCapacity), threadFactory);
+      new EagerlyScalingTaskQueue(queueCapacity), threadFactory);
 
     executor.setRejectedExecutionHandler(new EagerlyScalingRejectionHandler());
     return executor;

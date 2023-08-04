@@ -5,6 +5,7 @@ import com.sedmelluq.discord.lavaplayer.tools.io.HttpInterface;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
 import com.sedmelluq.discord.lavaplayer.track.DelegatedAudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.playback.LocalAudioTrackExecutor;
+
 import java.io.InputStream;
 
 /**
@@ -23,8 +24,8 @@ public abstract class M3uStreamAudioTrack extends DelegatedAudioTrack {
   protected abstract HttpInterface getHttpInterface();
 
   protected abstract void processJoinedStream(
-      LocalAudioTrackExecutor localExecutor,
-      InputStream stream
+    LocalAudioTrackExecutor localExecutor,
+    InputStream stream
   ) throws Exception;
 
   @Override

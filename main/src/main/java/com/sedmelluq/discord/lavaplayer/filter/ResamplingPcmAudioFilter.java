@@ -16,10 +16,10 @@ public class ResamplingPcmAudioFilter implements FloatPcmAudioFilter {
 
   /**
    * @param configuration Configuration to use
-   * @param channels Number of channels in input data
-   * @param downstream Next filter in chain
-   * @param sourceRate Source sample rate
-   * @param targetRate Target sample rate
+   * @param channels      Number of channels in input data
+   * @param downstream    Next filter in chain
+   * @param sourceRate    Source sample rate
+   * @param targetRate    Target sample rate
    */
   public ResamplingPcmAudioFilter(AudioConfiguration configuration, int channels, FloatPcmAudioFilter downstream,
                                   int sourceRate, int targetRate) {

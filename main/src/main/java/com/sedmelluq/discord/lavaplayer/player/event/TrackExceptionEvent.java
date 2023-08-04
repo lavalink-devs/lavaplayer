@@ -18,8 +18,8 @@ public class TrackExceptionEvent extends AudioEvent {
   public final FriendlyException exception;
 
   /**
-   * @param player Audio player
-   * @param track Audio track where the exception occurred
+   * @param player    Audio player
+   * @param track     Audio track where the exception occurred
    * @param exception The exception that occurred
    */
   public TrackExceptionEvent(AudioPlayer player, AudioTrack track, FriendlyException exception) {

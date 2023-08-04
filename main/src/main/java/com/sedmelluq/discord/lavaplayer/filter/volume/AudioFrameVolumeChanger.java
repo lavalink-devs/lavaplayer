@@ -8,6 +8,7 @@ import com.sedmelluq.discord.lavaplayer.track.playback.AudioFrame;
 import com.sedmelluq.discord.lavaplayer.track.playback.AudioFrameRebuilder;
 import com.sedmelluq.discord.lavaplayer.track.playback.AudioProcessingContext;
 import com.sedmelluq.discord.lavaplayer.track.playback.ImmutableAudioFrame;
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.ShortBuffer;
@@ -32,9 +33,9 @@ public class AudioFrameVolumeChanger implements AudioFrameRebuilder {
     this.newVolume = newVolume;
 
     this.sampleBuffer = ByteBuffer
-        .allocateDirect(format.totalSampleCount() * 2)
-        .order(ByteOrder.nativeOrder())
-        .asShortBuffer();
+      .allocateDirect(format.totalSampleCount() * 2)
+      .order(ByteOrder.nativeOrder())
+      .asShortBuffer();
     this.volumeProcessor = new PcmVolumeProcessor(100);
   }
 
@@ -88,11 +89,12 @@ public class AudioFrameVolumeChanger implements AudioFrameRebuilder {
 
   /**
    * Applies a volume level to the buffered frames of a frame consumer
+   *
    * @param context Configuration and output information for processing
    */
   public static void apply(AudioProcessingContext context) {
     AudioFrameVolumeChanger volumeChanger = new AudioFrameVolumeChanger(context.configuration, context.outputFormat,
-        context.playerOptions.volumeLevel.get());
+      context.playerOptions.volumeLevel.get());
 
     try {
       volumeChanger.setupLibraries();

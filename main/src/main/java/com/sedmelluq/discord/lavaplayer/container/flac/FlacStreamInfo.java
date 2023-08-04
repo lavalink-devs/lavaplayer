@@ -1,12 +1,13 @@
 package com.sedmelluq.discord.lavaplayer.container.flac;
 
 import com.sedmelluq.discord.lavaplayer.tools.io.BitBufferReader;
+
 import java.nio.ByteBuffer;
 
 /**
  * FLAC stream info metadata block contents. Field descriptions are from:
  * https://xiph.org/flac/format.html#metadata_block_streaminfo
- *
+ * <p>
  * FLAC specifies a minimum block size of 16 and a maximum block size of 65535, meaning the bit patterns corresponding
  * to the numbers 0-15 in the minimum blocksize and maximum blocksize fields are invalid.
  */
@@ -60,7 +61,7 @@ public class FlacStreamInfo {
   public final boolean hasMetadataBlocks;
 
   /**
-   * @param blockData The raw block data.
+   * @param blockData         The raw block data.
    * @param hasMetadataBlocks Whether the file has any metadata blocks after the stream info.
    */
   public FlacStreamInfo(byte[] blockData, boolean hasMetadataBlocks) {

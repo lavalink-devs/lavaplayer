@@ -3,11 +3,7 @@ package com.sedmelluq.discord.lavaplayer.container.ogg;
 import com.sedmelluq.discord.lavaplayer.tools.io.SeekableInputStream;
 import com.sedmelluq.discord.lavaplayer.tools.io.StreamTools;
 
-import java.io.DataInput;
-import java.io.DataInputStream;
-import java.io.EOFException;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.List;
 
 import static com.sedmelluq.discord.lavaplayer.container.MediaContainerDetection.checkNextBytes;
@@ -18,7 +14,7 @@ import static com.sedmelluq.discord.lavaplayer.container.MediaContainerDetection
  * with startNewTrack() when the previous one has ended (startNewPacket() has returned false).
  */
 public class OggPacketInputStream extends InputStream {
-  static final int[] OGG_PAGE_HEADER = new int[] { 0x4F, 0x67, 0x67, 0x53 };
+  static final int[] OGG_PAGE_HEADER = new int[]{0x4F, 0x67, 0x67, 0x53};
 
   private static final int SHORT_SCAN = 10240;
   private static final int LONG_SCAN = 65307;
@@ -36,7 +32,7 @@ public class OggPacketInputStream extends InputStream {
   private State state;
 
   /**
-   * @param inputStream Input stream to read in as OGG packets
+   * @param inputStream    Input stream to read in as OGG packets
    * @param closeDelegated Whether closing this stream should close the inputStream as well
    */
   public OggPacketInputStream(SeekableInputStream inputStream, boolean closeDelegated) {
@@ -53,6 +49,7 @@ public class OggPacketInputStream extends InputStream {
 
   /**
    * Load the next track from the stream. This is only valid when the stream is in a track boundary state.
+   *
    * @return True if next track is present in the stream, false if the stream has terminated.
    */
   public boolean startNewTrack() {
@@ -69,8 +66,9 @@ public class OggPacketInputStream extends InputStream {
 
   /**
    * Load the next packet from the stream. This is only valid when the stream is in a packet boundary state.
+   *
    * @return True if next packet is present in the track. State is PACKET_READ.
-   *         False if the track is finished. State is either TRACK_BOUNDARY or TERMINATED.
+   * False if the track is finished. State is either TRACK_BOUNDARY or TERMINATED.
    * @throws IOException On read error.
    */
   public boolean startNewPacket() throws IOException {
@@ -117,7 +115,7 @@ public class OggPacketInputStream extends InputStream {
     long byteStreamPosition = inputStream.getPosition() - 27;
 
     pageHeader = new OggPageHeader(flags, position, streamIdentifier, pageSequence, checksum, segmentCount,
-        byteStreamPosition);
+      byteStreamPosition);
 
     for (int i = 0; i < segmentCount; i++) {
       segmentSizes[i] = dataInput.readByte() & 0xFF;
@@ -131,8 +129,8 @@ public class OggPacketInputStream extends InputStream {
    * PACKET_READ (page starts with a continuation).
    *
    * @return True if a page belonging to the same track was loaded, state is PACKET_READ.
-   *         False if the next page cannot be loaded because the current one ended the track, state is TRACK_BOUNDARY
-   *         or TERMINATED.
+   * False if the next page cannot be loaded because the current one ended the track, state is TRACK_BOUNDARY
+   * or TERMINATED.
    * @throws IOException On read error.
    */
   private boolean loadNextNonEmptyPage() throws IOException {
@@ -150,8 +148,8 @@ public class OggPacketInputStream extends InputStream {
    * PACKET_READ (page starts with a continuation).
    *
    * @return True if a page belonging to the same track was loaded, state is PACKET_READ.
-   *         False if the next page cannot be loaded because the current one ended the track, state is TRACK_BOUNDARY
-   *         or TERMINATED.
+   * False if the next page cannot be loaded because the current one ended the track, state is TRACK_BOUNDARY
+   * or TERMINATED.
    * @throws IOException On read error.
    */
   private boolean loadNextPage() throws IOException {
@@ -181,7 +179,7 @@ public class OggPacketInputStream extends InputStream {
    * packet or a continuation of the previous one. Call only in state PACKET_READ.
    *
    * @return Returns false if the remaining size of the packet was zero, state is PACKET_BOUNDARY.
-   *         Returns true if the initialised packet has any bytes in it, state is PACKET_READ.
+   * Returns true if the initialised packet has any bytes in it, state is PACKET_READ.
    */
   private boolean initialisePacket() {
     while (nextPacketSegmentIndex < pageHeader.segmentCount) {
@@ -285,6 +283,7 @@ public class OggPacketInputStream extends InputStream {
 
   /**
    * Seeks the stream to the specified timecode.
+   *
    * @param timecode Timecode in milliseconds to seek to.
    * @return The actual timecode in milliseconds to which the stream was seeked.
    * @throws IOException On read error.
@@ -376,14 +375,14 @@ public class OggPacketInputStream extends InputStream {
     int dataLength = StreamTools.readUntilEnd(inputStream, data, 0, data.length);
 
     return new OggPageScanner(absoluteOffset, data, dataLength)
-        .scanForSizeInfo(pageHeader.byteStreamPosition, sampleRate);
+      .scanForSizeInfo(pageHeader.byteStreamPosition, sampleRate);
   }
 
   /**
    * Process request for more bytes for the packet. Call only when the state is PACKET_READ.
    *
    * @return Returns false if no more bytes for the packet are available, state is PACKET_BOUNDARY.
-   *         Returns true if more bytes were fetched for this packet, state is PACKET_READ.
+   * Returns true if more bytes were fetched for this packet, state is PACKET_READ.
    * @throws IOException On read error.
    */
   private boolean continuePacket() throws IOException {

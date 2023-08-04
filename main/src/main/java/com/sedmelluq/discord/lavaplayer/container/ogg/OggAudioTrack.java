@@ -18,7 +18,7 @@ public class OggAudioTrack extends BaseAudioTrack {
   private final SeekableInputStream inputStream;
 
   /**
-   * @param trackInfo Track info
+   * @param trackInfo   Track info
    * @param inputStream Input stream for the OGG stream
    */
   public OggAudioTrack(AudioTrackInfo trackInfo, SeekableInputStream inputStream) {

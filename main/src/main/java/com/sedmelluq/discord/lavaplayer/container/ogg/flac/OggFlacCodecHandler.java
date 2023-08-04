@@ -1,18 +1,10 @@
 package com.sedmelluq.discord.lavaplayer.container.ogg.flac;
 
-import com.sedmelluq.discord.lavaplayer.container.flac.FlacMetadataHeader;
-import com.sedmelluq.discord.lavaplayer.container.flac.FlacMetadataReader;
-import com.sedmelluq.discord.lavaplayer.container.flac.FlacStreamInfo;
-import com.sedmelluq.discord.lavaplayer.container.flac.FlacTrackInfo;
-import com.sedmelluq.discord.lavaplayer.container.flac.FlacTrackInfoBuilder;
-import com.sedmelluq.discord.lavaplayer.container.ogg.OggCodecHandler;
-import com.sedmelluq.discord.lavaplayer.container.ogg.OggMetadata;
-import com.sedmelluq.discord.lavaplayer.container.ogg.OggPacketInputStream;
-import com.sedmelluq.discord.lavaplayer.container.ogg.OggStreamSizeInfo;
-import com.sedmelluq.discord.lavaplayer.container.ogg.OggTrackBlueprint;
-import com.sedmelluq.discord.lavaplayer.container.ogg.OggTrackHandler;
+import com.sedmelluq.discord.lavaplayer.container.flac.*;
+import com.sedmelluq.discord.lavaplayer.container.ogg.*;
 import com.sedmelluq.discord.lavaplayer.tools.io.ByteBufferInputStream;
 import com.sedmelluq.discord.lavaplayer.tools.io.DirectBufferStreamBroker;
+
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -21,10 +13,10 @@ import java.nio.ByteBuffer;
  * Loader for an OGG FLAC track from an OGG packet stream.
  */
 public class OggFlacCodecHandler implements OggCodecHandler {
-  private static final int FLAC_IDENTIFIER = ByteBuffer.wrap(new byte[] { 0x7F, 'F', 'L', 'A' }).getInt();
+  private static final int FLAC_IDENTIFIER = ByteBuffer.wrap(new byte[]{0x7F, 'F', 'L', 'A'}).getInt();
 
   private static final int NATIVE_FLAC_HEADER_OFFSET = 9;
-  private static final int NATIVE_FLAC_HEADER = ByteBuffer.wrap(new byte[] { 'f', 'L', 'a', 'C' }).getInt();
+  private static final int NATIVE_FLAC_HEADER = ByteBuffer.wrap(new byte[]{'f', 'L', 'a', 'C'}).getInt();
 
   @Override
   public boolean isMatchingIdentifier(int identifier) {

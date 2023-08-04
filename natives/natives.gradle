@@ -3,27 +3,27 @@ import org.apache.tools.ant.taskdefs.condition.Os
 def getBuildParameters(base) {
   if (Os.isFamily(Os.FAMILY_WINDOWS)) {
     return [
-        'identifier': "win-x86-64",
-        'library': "${base}.dll",
-        'setupArguments': ['-DCMAKE_BUILD_TYPE=Release', '-A', 'x64'],
-        'buildArguments': ['--config', 'Release'],
-        'env': [:]
+      'identifier'    : "win-x86-64",
+      'library'       : "${base}.dll",
+      'setupArguments': ['-DCMAKE_BUILD_TYPE=Release', '-A', 'x64'],
+      'buildArguments': ['--config', 'Release'],
+      'env'           : [:]
     ]
   } else if (Os.isFamily(Os.FAMILY_MAC)) {
     return [
-        'identifier': 'darwin',
-        'library': "lib${base}.dylib",
-        'setupArguments': ['-DCMAKE_BUILD_TYPE=Release'],
-        'buildArguments': [],
-        'env': [:]
+      'identifier'    : 'darwin',
+      'library'       : "lib${base}.dylib",
+      'setupArguments': ['-DCMAKE_BUILD_TYPE=Release'],
+      'buildArguments': [],
+      'env'           : [:]
     ]
   } else {
     return [
-        'identifier': "linux-x86-64",
-        'library': "lib${base}.so",
-        'setupArguments': ['-DCMAKE_BUILD_TYPE=Release'],
-        'buildArguments': [],
-        'env': [:]
+      'identifier'    : "linux-x86-64",
+      'library'       : "lib${base}.so",
+      'setupArguments': ['-DCMAKE_BUILD_TYPE=Release'],
+      'buildArguments': [],
+      'env'           : [:]
     ]
   }
 }
@@ -68,19 +68,23 @@ def createBuildTask(tasksHolder, config) {
     environment parameters.env
   }
 
-  def deployTask = tasksHolder.create("${taskBase}-deploy") { doLast {
-    copy {
-      from distDirectory
-      into deployDirectory
+  def deployTask = tasksHolder.create("${taskBase}-deploy") {
+    doLast {
+      copy {
+        from distDirectory
+        into deployDirectory
+      }
     }
-  }}
+  }
 
-  tasksHolder.create("${taskBase}-deploy-only") { doLast {
-    copy {
-      from distDirectory
-      into deployDirectory
+  tasksHolder.create("${taskBase}-deploy-only") {
+    doLast {
+      copy {
+        from distDirectory
+        into deployDirectory
+      }
     }
-  }}
+  }
 
   if (config.setupDependency) {
     setupTask.dependsOn(config.setupDependency)

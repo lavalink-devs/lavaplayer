@@ -74,8 +74,8 @@ public class YoutubeHttpContextFilter extends BaseYoutubeHttpContextFilter {
     } else {
       try {
         URI uri = new URIBuilder(request.getURI())
-            .setParameter("key", YoutubeConstants.INNERTUBE_ANDROID_API_KEY)
-            .build();
+          .setParameter("key", YoutubeConstants.INNERTUBE_ANDROID_API_KEY)
+          .build();
 
         if (request instanceof HttpRequestBase) {
           ((HttpRequestBase) request).setURI(uri);

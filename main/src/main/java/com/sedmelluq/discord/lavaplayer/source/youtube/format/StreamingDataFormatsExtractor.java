@@ -5,13 +5,14 @@ import com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeTrackJsonData;
 import com.sedmelluq.discord.lavaplayer.tools.DataFormatTools;
 import com.sedmelluq.discord.lavaplayer.tools.JsonBrowser;
 import com.sedmelluq.discord.lavaplayer.tools.Units;
+import org.apache.http.entity.ContentType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import org.apache.http.entity.ContentType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static com.sedmelluq.discord.lavaplayer.tools.DataFormatTools.decodeUrlEncodedItems;
 import static com.sedmelluq.discord.lavaplayer.tools.Units.CONTENT_LENGTH_UNKNOWN;
@@ -54,12 +55,12 @@ public class StreamingDataFormatsExtractor implements OfflineYoutubeTrackFormatE
         }
 
         Map<String, String> cipherInfo = cipher != null
-            ? decodeUrlEncodedItems(cipher, true)
-            : Collections.emptyMap();
+          ? decodeUrlEncodedItems(cipher, true)
+          : Collections.emptyMap();
 
         Map<String, String> urlMap = DataFormatTools.isNullOrEmpty(url)
-            ? decodeUrlEncodedItems(cipherInfo.get("url"), false)
-            : decodeUrlEncodedItems(url, false);
+          ? decodeUrlEncodedItems(cipherInfo.get("url"), false)
+          : decodeUrlEncodedItems(url, false);
 
         try {
           long contentLength = formatJson.get("contentLength").asLong(CONTENT_LENGTH_UNKNOWN);
@@ -70,15 +71,15 @@ public class StreamingDataFormatsExtractor implements OfflineYoutubeTrackFormatE
           }
 
           tracks.add(new YoutubeTrackFormat(
-              ContentType.parse(formatJson.get("mimeType").text()),
-              formatJson.get("bitrate").asLong(Units.BITRATE_UNKNOWN),
-              contentLength,
-              formatJson.get("audioChannels").asLong(2),
-              cipherInfo.getOrDefault("url", url),
-              urlMap.get("n"),
-              cipherInfo.get("s"),
-              cipherInfo.getOrDefault("sp", DEFAULT_SIGNATURE_KEY),
-              formatJson.get("audioTrack").get("audioIsDefault").asBoolean(true)
+            ContentType.parse(formatJson.get("mimeType").text()),
+            formatJson.get("bitrate").asLong(Units.BITRATE_UNKNOWN),
+            contentLength,
+            formatJson.get("audioChannels").asLong(2),
+            cipherInfo.getOrDefault("url", url),
+            urlMap.get("n"),
+            cipherInfo.get("s"),
+            cipherInfo.getOrDefault("sp", DEFAULT_SIGNATURE_KEY),
+            formatJson.get("audioTrack").get("audioIsDefault").asBoolean(true)
           ));
         } catch (RuntimeException e) {
           anyFailures = true;
@@ -89,7 +90,7 @@ public class StreamingDataFormatsExtractor implements OfflineYoutubeTrackFormatE
 
     if (tracks.isEmpty() && anyFailures) {
       log.warn("In streamingData adaptive formats {}, all formats either failed to load or were skipped due to missing " +
-          "fields", formats.format());
+        "fields", formats.format());
     }
 
     return tracks;

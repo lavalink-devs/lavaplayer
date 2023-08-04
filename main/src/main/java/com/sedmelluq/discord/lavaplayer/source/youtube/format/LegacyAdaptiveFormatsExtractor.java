@@ -2,11 +2,12 @@ package com.sedmelluq.discord.lavaplayer.source.youtube.format;
 
 import com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeTrackFormat;
 import com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeTrackJsonData;
+import org.apache.http.entity.ContentType;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import org.apache.http.entity.ContentType;
 
 import static com.sedmelluq.discord.lavaplayer.tools.DataFormatTools.decodeUrlEncodedItems;
 
@@ -29,15 +30,15 @@ public class LegacyAdaptiveFormatsExtractor implements OfflineYoutubeTrackFormat
       Map<String, String> format = decodeUrlEncodedItems(formatString, false);
 
       tracks.add(new YoutubeTrackFormat(
-          ContentType.parse(format.get("type")),
-          Long.parseLong(format.get("bitrate")),
-          Long.parseLong(format.get("clen")),
-          2,
-          format.get("url"),
-          "",
-          format.get("s"),
-          format.getOrDefault("sp", DEFAULT_SIGNATURE_KEY),
-          true
+        ContentType.parse(format.get("type")),
+        Long.parseLong(format.get("bitrate")),
+        Long.parseLong(format.get("clen")),
+        2,
+        format.get("url"),
+        "",
+        format.get("s"),
+        format.getOrDefault("sp", DEFAULT_SIGNATURE_KEY),
+        true
       ));
     }
 

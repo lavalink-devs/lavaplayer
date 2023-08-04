@@ -25,7 +25,7 @@ public class ThreadLocalHttpInterfaceManager extends AbstractHttpInterfaceManage
 
     this.filter = new SettableHttpRequestFilter();
     this.httpInterfaces = ThreadLocal.withInitial(() ->
-        new HttpInterface(getSharedClient(), HttpClientContext.create(), false, filter)
+      new HttpInterface(getSharedClient(), HttpClientContext.create(), false, filter)
     );
   }
 

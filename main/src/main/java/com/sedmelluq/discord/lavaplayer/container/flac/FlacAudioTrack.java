@@ -16,7 +16,7 @@ public class FlacAudioTrack extends BaseAudioTrack {
   private final SeekableInputStream inputStream;
 
   /**
-   * @param trackInfo Track info
+   * @param trackInfo   Track info
    * @param inputStream Input stream for the FLAC file
    */
   public FlacAudioTrack(AudioTrackInfo trackInfo, SeekableInputStream inputStream) {

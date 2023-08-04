@@ -65,13 +65,13 @@ public class DirectBufferStreamBroker {
   /**
    * Consume an entire stream and append it into the buffer (or clear first if clear parameter is true).
    *
-   * @param inputStream The input stream to fully consume.
+   * @param inputStream       The input stream to fully consume.
    * @param maximumSavedBytes Maximum number of bytes to save internally. If this is exceeded, it will continue reading
    *                          and discarding until maximum read byte count is reached.
-   * @param maximumReadBytes Maximum number of bytes to read.
+   * @param maximumReadBytes  Maximum number of bytes to read.
    * @return If stream was fully read before {@code maximumReadBytes} was reached, returns {@code true}. Returns
-   *         {@code false} if the number of bytes read is {@code maximumReadBytes}, even if no more data is left in the
-   *         stream.
+   * {@code false} if the number of bytes read is {@code maximumReadBytes}, even if no more data is left in the
+   * stream.
    * @throws IOException On read error
    */
   public boolean consumeNext(InputStream inputStream, int maximumSavedBytes, int maximumReadBytes) throws IOException {

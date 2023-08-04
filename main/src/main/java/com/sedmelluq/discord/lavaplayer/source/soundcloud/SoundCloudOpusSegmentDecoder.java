@@ -6,6 +6,7 @@ import com.sedmelluq.discord.lavaplayer.container.ogg.OggTrackHandler;
 import com.sedmelluq.discord.lavaplayer.container.ogg.OggTrackLoader;
 import com.sedmelluq.discord.lavaplayer.tools.io.SeekableInputStream;
 import com.sedmelluq.discord.lavaplayer.track.playback.AudioProcessingContext;
+
 import java.io.IOException;
 import java.util.function.Supplier;
 
@@ -47,15 +48,15 @@ public class SoundCloudOpusSegmentDecoder implements SoundCloudSegmentDecoder {
 
   @Override
   public void playStream(
-      AudioProcessingContext context,
-      long startPosition,
-      long desiredPosition
+    AudioProcessingContext context,
+    long startPosition,
+    long desiredPosition
   ) throws InterruptedException, IOException {
     try (OggTrackHandler handler = blueprint.loadTrackHandler(obtainStream())) {
       handler.initialise(
-          context,
-          startPosition,
-          desiredPosition
+        context,
+        startPosition,
+        desiredPosition
       );
 
       handler.provideFrames();

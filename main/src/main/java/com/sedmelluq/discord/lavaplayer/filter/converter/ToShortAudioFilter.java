@@ -1,6 +1,7 @@
 package com.sedmelluq.discord.lavaplayer.filter.converter;
 
 import com.sedmelluq.discord.lavaplayer.filter.ShortPcmAudioFilter;
+
 import java.nio.ShortBuffer;
 
 /**
@@ -12,7 +13,7 @@ public class ToShortAudioFilter extends ConverterAudioFilter {
   private final short[] outputBuffer;
 
   /**
-   * @param downstream The short PCM filter to pass the output to.
+   * @param downstream   The short PCM filter to pass the output to.
    * @param channelCount Number of channels in the PCM data.
    */
   public ToShortAudioFilter(ShortPcmAudioFilter downstream, int channelCount) {

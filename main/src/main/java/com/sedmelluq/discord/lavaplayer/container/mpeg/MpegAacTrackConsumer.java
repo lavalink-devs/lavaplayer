@@ -28,7 +28,7 @@ public class MpegAacTrackConsumer implements MpegTrackConsumer {
 
   /**
    * @param context Configuration and output information for processing
-   * @param track The MP4 audio track descriptor
+   * @param track   The MP4 audio track descriptor
    */
   public MpegAacTrackConsumer(AudioProcessingContext context, MpegTrackInfo track) {
     this.track = track;
@@ -38,7 +38,7 @@ public class MpegAacTrackConsumer implements MpegTrackConsumer {
   @Override
   public void initialise() {
     log.debug("Initialising AAC track with expected frequency {} and channel count {}.",
-        track.sampleRate, track.channelCount);
+      track.sampleRate, track.channelCount);
   }
 
   @Override

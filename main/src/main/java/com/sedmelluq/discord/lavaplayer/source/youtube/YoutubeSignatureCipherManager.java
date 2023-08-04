@@ -45,23 +45,23 @@ public class YoutubeSignatureCipherManager implements YoutubeSignatureResolver {
   private static final String SLICE_PART = ":function\\(a,b\\)\\{return a\\.slice\\(b\\)\\}";
   private static final String SPLICE_PART = ":function\\(a,b\\)\\{a\\.splice\\(0,b\\)\\}";
   private static final String SWAP_PART = ":function\\(a,b\\)\\{" +
-      "var c=a\\[0\\];a\\[0\\]=a\\[b%a\\.length\\];a\\[b(?:%a.length|)\\]=c(?:;return a)?\\}";
+    "var c=a\\[0\\];a\\[0\\]=a\\[b%a\\.length\\];a\\[b(?:%a.length|)\\]=c(?:;return a)?\\}";
 
   private static final Pattern functionPattern = Pattern.compile("" +
-      "function(?: " + VARIABLE_PART + ")?\\(a\\)\\{" +
-      "a=a\\.split\\(\"\"\\);\\s*" +
-      "((?:(?:a=)?" + VARIABLE_PART + VARIABLE_PART_ACCESS + "\\(a,\\d+\\);)+)" +
-      "return a\\.join\\(\"\"\\)" +
-      "\\}"
+    "function(?: " + VARIABLE_PART + ")?\\(a\\)\\{" +
+    "a=a\\.split\\(\"\"\\);\\s*" +
+    "((?:(?:a=)?" + VARIABLE_PART + VARIABLE_PART_ACCESS + "\\(a,\\d+\\);)+)" +
+    "return a\\.join\\(\"\"\\)" +
+    "\\}"
   );
 
   private static final Pattern actionsPattern = Pattern.compile("" +
-      "var (" + VARIABLE_PART + ")=\\{((?:(?:" +
-      VARIABLE_PART_DEFINE + REVERSE_PART + "|" +
-      VARIABLE_PART_DEFINE + SLICE_PART + "|" +
-      VARIABLE_PART_DEFINE + SPLICE_PART + "|" +
-      VARIABLE_PART_DEFINE + SWAP_PART +
-      "),?\\n?)+)\\};"
+    "var (" + VARIABLE_PART + ")=\\{((?:(?:" +
+    VARIABLE_PART_DEFINE + REVERSE_PART + "|" +
+    VARIABLE_PART_DEFINE + SLICE_PART + "|" +
+    VARIABLE_PART_DEFINE + SPLICE_PART + "|" +
+    VARIABLE_PART_DEFINE + SWAP_PART +
+    "),?\\n?)+)\\};"
   );
 
   private static final String PATTERN_PREFIX = "(?:^|,)\\\"?(" + VARIABLE_PART + ")\\\"?";
@@ -72,10 +72,10 @@ public class YoutubeSignatureCipherManager implements YoutubeSignatureResolver {
   private static final Pattern swapPattern = Pattern.compile(PATTERN_PREFIX + SWAP_PART, Pattern.MULTILINE);
   private static final Pattern timestampPattern = Pattern.compile("(signatureTimestamp|sts)[\\:](\\d+)");
   private static final Pattern nFunctionPattern = Pattern.compile(
-      "function\\(\\s*(\\w+)\\s*\\)\\s*\\{var" +
-          "\\s*(\\w+)=\\1\\.split\\(\"\"\\),\\s*(\\w+)=(\\[.*?\\]);\\s*\\3\\[\\d+\\]" +
-          "(.*?try)(\\{.*?\\})catch\\(\\s*(\\w+)\\s*\\)\\s*\\" +
-          "{\\s*return\"enhanced_except_([A-z0-9-]+)\"\\s*\\+\\s*\\1\\s*}\\s*return\\s*\\2\\.join\\(\"\"\\)\\};", Pattern.DOTALL
+    "function\\(\\s*(\\w+)\\s*\\)\\s*\\{var" +
+      "\\s*(\\w+)=\\1\\.split\\(\"\"\\),\\s*(\\w+)=(\\[.*?\\]);\\s*\\3\\[\\d+\\]" +
+      "(.*?try)(\\{.*?\\})catch\\(\\s*(\\w+)\\s*\\)\\s*\\" +
+      "{\\s*return\"enhanced_except_([A-z0-9-]+)\"\\s*\\+\\s*\\1\\s*}\\s*return\\s*\\2\\.join\\(\"\"\\)\\};", Pattern.DOTALL
   );
 
   private static final Pattern signatureExtraction = Pattern.compile("/s/([^/]+)/");
@@ -97,9 +97,10 @@ public class YoutubeSignatureCipherManager implements YoutubeSignatureResolver {
 
   /**
    * Produces a valid playback URL for the specified track
+   *
    * @param httpInterface HTTP interface to use
-   * @param playerScript Address of the script which is used to decipher signatures
-   * @param format The track for which to get the URL
+   * @param playerScript  Address of the script which is used to decipher signatures
+   * @param format        The track for which to get the URL
    * @return Valid playback URL
    * @throws IOException On network IO error
    */
@@ -133,9 +134,10 @@ public class YoutubeSignatureCipherManager implements YoutubeSignatureResolver {
 
   /**
    * Produces a valid dash XML URL from the possibly ciphered URL.
+   *
    * @param httpInterface HTTP interface instance to use
-   * @param playerScript Address of the script which is used to decipher signatures
-   * @param dashUrl URL of the dash XML, possibly with a ciphered signature
+   * @param playerScript  Address of the script which is used to decipher signatures
+   * @param dashUrl       URL of the dash XML, possibly with a ciphered signature
    * @return Valid dash XML URL
    * @throws IOException On network IO error
    */
@@ -176,15 +178,15 @@ public class YoutubeSignatureCipherManager implements YoutubeSignatureResolver {
 
     if (!HttpClientTools.isSuccessWithContent(statusCode)) {
       throw new IOException("Received non-success response code " + statusCode + " from script url " +
-          cipherScriptUrl + " ( " + parseTokenScriptUrl(cipherScriptUrl) + " )");
+        cipherScriptUrl + " ( " + parseTokenScriptUrl(cipherScriptUrl) + " )");
     }
   }
 
   private List<String> getQuotedFunctions(String... functionNames) {
     return Stream.of(functionNames)
-        .filter(Objects::nonNull)
-        .map(Pattern::quote)
-        .collect(Collectors.toList());
+      .filter(Objects::nonNull)
+      .map(Pattern::quote)
+      .collect(Collectors.toList());
   }
 
   private void dumpProblematicScript(String script, String sourceUrl, String issue) {
@@ -197,7 +199,7 @@ public class YoutubeSignatureCipherManager implements YoutubeSignatureResolver {
       Files.write(path, script.getBytes(StandardCharsets.UTF_8));
 
       log.error("Problematic YouTube player script {} detected (issue detected with script: {}). Dumped to {}",
-          sourceUrl, issue, path.toAbsolutePath());
+        sourceUrl, issue, path.toAbsolutePath());
     } catch (Exception e) {
       log.error("Failed to dump problematic YouTube player script {} (issue detected with script: {})", sourceUrl, issue);
     }
@@ -222,9 +224,9 @@ public class YoutubeSignatureCipherManager implements YoutubeSignatureResolver {
     String swapKey = extractDollarEscapedFirstGroup(swapPattern, actionBody);
 
     Pattern extractor = Pattern.compile(
-        "(?:a=)?" + Pattern.quote(actions.group(1)) + BEFORE_ACCESS + "(" +
-            String.join("|", getQuotedFunctions(reverseKey, slicePart, splicePart, swapKey)) +
-            ")" + AFTER_ACCESS + "\\(a,(\\d+)\\)"
+      "(?:a=)?" + Pattern.quote(actions.group(1)) + BEFORE_ACCESS + "(" +
+        String.join("|", getQuotedFunctions(reverseKey, slicePart, splicePart, swapKey)) +
+        ")" + AFTER_ACCESS + "\\(a,(\\d+)\\)"
     );
 
     Matcher functions = functionPattern.matcher(script);

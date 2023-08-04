@@ -40,6 +40,7 @@ public class MpegReader {
 
   /**
    * Reads the header of the next child element. Assumes position is at the start of a header or at the end of the section.
+   *
    * @param parent The section from which to read child sections from
    * @return The element if there were any more child elements
    * @throws IOException When network exception is happened
@@ -68,6 +69,7 @@ public class MpegReader {
 
   /**
    * Skip to the end of a section.
+   *
    * @param section The section to skip
    */
   public void skip(MpegSectionInfo section) {
@@ -80,6 +82,7 @@ public class MpegReader {
 
   /**
    * Read a FourCC as a string
+   *
    * @return The FourCC string
    * @throws IOException When reading the bytes from input fails
    */
@@ -90,6 +93,7 @@ public class MpegReader {
 
   /**
    * Read an UTF string with a specified size.
+   *
    * @param size Size in bytes.
    * @return The string read from the stream
    * @throws IOException On read error
@@ -103,6 +107,7 @@ public class MpegReader {
 
   /**
    * Read a null-terminated UTF string.
+   *
    * @return The string read from the stream
    * @throws IOException On read error
    */
@@ -133,6 +138,7 @@ public class MpegReader {
 
   /**
    * Parse the flags and version for the specified section
+   *
    * @param section The section where the flags and version should be parsed
    * @return The section info with version info
    * @throws IOException On a read error
@@ -160,6 +166,7 @@ public class MpegReader {
 
   /**
    * Start a child element handling chain
+   *
    * @param parent The parent chain
    * @return The chain
    */
@@ -183,7 +190,7 @@ public class MpegReader {
     }
 
     /**
-     * @param type The FourCC of the section for which a handler is specified
+     * @param type    The FourCC of the section for which a handler is specified
      * @param handler The handler
      * @return this
      */
@@ -193,8 +200,8 @@ public class MpegReader {
     }
 
     /**
-     * @param type The FourCC of the section for which a handler is specified
-     * @param finish Whether to stop reading after this section
+     * @param type    The FourCC of the section for which a handler is specified
+     * @param finish  Whether to stop reading after this section
      * @param handler The handler
      * @return this
      */
@@ -204,7 +211,7 @@ public class MpegReader {
     }
 
     /**
-     * @param type The FourCC of the section for which a handler is specified
+     * @param type    The FourCC of the section for which a handler is specified
      * @param handler The handler which expects versioned section info
      * @return this
      */
@@ -214,8 +221,8 @@ public class MpegReader {
     }
 
     /**
-     * @param type The FourCC of the section for which a handler is specified
-     * @param finish Whether to stop reading after this section
+     * @param type    The FourCC of the section for which a handler is specified
+     * @param finish  Whether to stop reading after this section
      * @param handler The handler which expects versioned section info
      * @return this
      */
@@ -226,6 +233,7 @@ public class MpegReader {
 
     /**
      * Assign a parsing stop checker to this chain.
+     *
      * @param stopChecker Stop checker.
      * @return this
      */
@@ -236,6 +244,7 @@ public class MpegReader {
 
     /**
      * Process the current section with all the handlers specified so far
+     *
      * @throws IOException On read error
      */
     public void run() throws IOException {

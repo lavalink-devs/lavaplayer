@@ -4,14 +4,15 @@ import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.tools.ExceptionTools;
 import com.sedmelluq.discord.lavaplayer.track.TrackStateListener;
 import com.sedmelluq.discord.lavaplayer.track.playback.AudioFrame;
+
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.nio.ByteBuffer;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.AudioInputStream;
 
 /**
  * Provides an audio player as an input stream. When nothing is playing, it returns silence instead of blocking.
@@ -24,11 +25,11 @@ public class AudioPlayerInputStream extends InputStream {
   private ByteBuffer current;
 
   /**
-   * @param format Format of the frames expected from the player
-   * @param player The player to read frames from
-   * @param timeout Timeout till track stuck event is sent. Each time a new frame is required from the player, it asks
-   *                for a frame with the specified timeout. In case that timeout is reached, the track stuck event is
-   *                sent and if providing silence is enabled, silence is provided as the next frame.
+   * @param format         Format of the frames expected from the player
+   * @param player         The player to read frames from
+   * @param timeout        Timeout till track stuck event is sent. Each time a new frame is required from the player, it asks
+   *                       for a frame with the specified timeout. In case that timeout is reached, the track stuck event is
+   *                       sent and if providing silence is enabled, silence is provided as the next frame.
    * @param provideSilence True if the stream should return silence instead of blocking in case nothing is playing or
    *                       read times out.
    */
@@ -73,9 +74,9 @@ public class AudioPlayerInputStream extends InputStream {
   /**
    * Create an instance of AudioInputStream using an AudioPlayer as a source.
    *
-   * @param player Format of the frames expected from the player
-   * @param format The player to read frames from
-   * @param stuckTimeout Timeout till track stuck event is sent and silence is returned on reading
+   * @param player         Format of the frames expected from the player
+   * @param format         The player to read frames from
+   * @param stuckTimeout   Timeout till track stuck event is sent and silence is returned on reading
    * @param provideSilence Returns true if the stream should provide silence if no track is being played or when getting
    *                       track frames times out.
    * @return An audio input stream usable with JDK sound system

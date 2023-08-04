@@ -4,6 +4,7 @@ import com.sedmelluq.discord.lavaplayer.filter.volume.VolumePostProcessor;
 import com.sedmelluq.discord.lavaplayer.format.AudioDataFormat;
 import com.sedmelluq.discord.lavaplayer.format.transcoder.AudioChunkEncoder;
 import com.sedmelluq.discord.lavaplayer.track.playback.AudioProcessingContext;
+
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -12,19 +13,19 @@ import java.util.Collection;
  */
 public class AudioPipelineFactory {
   /**
-   * @param context Audio processing context to check output format from
+   * @param context     Audio processing context to check output format from
    * @param inputFormat Input format of the audio
    * @return True if no audio processing is currently required with this context and input format combination.
    */
   public static boolean isProcessingRequired(AudioProcessingContext context, AudioDataFormat inputFormat) {
     return !context.outputFormat.equals(inputFormat) || context.playerOptions.volumeLevel.get() != 100 ||
-        context.playerOptions.filterFactory.get() != null;
+      context.playerOptions.filterFactory.get() != null;
   }
 
   /**
    * Creates an audio pipeline instance based on provided settings.
    *
-   * @param context Configuration and output information for processing
+   * @param context     Configuration and output information for processing
    * @param inputFormat The parameters of the PCM input.
    * @return A pipeline which delivers the input to the final frame destination.
    */
@@ -43,12 +44,12 @@ public class AudioPipelineFactory {
 
     if (inputFormat.sampleRate != context.outputFormat.sampleRate) {
       builder.addFirst(new ResamplingPcmAudioFilter(context.configuration, outputChannels,
-          builder.makeFirstFloat(outputChannels), inputFormat.sampleRate, context.outputFormat.sampleRate));
+        builder.makeFirstFloat(outputChannels), inputFormat.sampleRate, context.outputFormat.sampleRate));
     }
 
     if (inputChannels != outputChannels) {
       builder.addFirst(new ChannelCountPcmAudioFilter(inputChannels, outputChannels,
-          builder.makeFirstUniversal(outputChannels)));
+        builder.makeFirstUniversal(outputChannels)));
     }
 
     return new AudioPipeline(builder.build(null, inputChannels));
@@ -58,8 +59,8 @@ public class AudioPipelineFactory {
     AudioChunkEncoder chunkEncoder = context.outputFormat.createEncoder(context.configuration);
 
     return Arrays.asList(
-        new VolumePostProcessor(context),
-        new BufferingPostProcessor(context, chunkEncoder)
+      new VolumePostProcessor(context),
+      new BufferingPostProcessor(context, chunkEncoder)
     );
   }
 }

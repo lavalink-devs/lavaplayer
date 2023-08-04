@@ -67,7 +67,7 @@ public abstract class AbstractRoutePlanner implements HttpRoutePlanner {
     final InetAddress address = getLastAddress(context);
     if (address == null) {
       log.warn("Call to markAddressFailing() without chosen IP set",
-          new RuntimeException("Report this to the devs: address is null"));
+        new RuntimeException("Report this to the devs: address is null"));
       return;
     }
     this.failingAddresses.put(address.toString(), System.currentTimeMillis());

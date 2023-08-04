@@ -5,19 +5,16 @@ import com.sedmelluq.discord.lavaplayer.player.AudioConfiguration;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerOptions;
 import com.sedmelluq.discord.lavaplayer.tools.ExceptionTools;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
-import com.sedmelluq.discord.lavaplayer.track.AudioTrackState;
-import com.sedmelluq.discord.lavaplayer.track.InternalAudioTrack;
-import com.sedmelluq.discord.lavaplayer.track.TrackMarker;
-import com.sedmelluq.discord.lavaplayer.track.TrackMarkerTracker;
-import com.sedmelluq.discord.lavaplayer.track.TrackStateListener;
+import com.sedmelluq.discord.lavaplayer.track.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.InterruptedIOException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static com.sedmelluq.discord.lavaplayer.tools.ExceptionTools.findDeepException;
 import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.FAULT;
@@ -47,12 +44,12 @@ public class LocalAudioTrackExecutor implements AudioTrackExecutor {
   private volatile Throwable trackException;
 
   /**
-   * @param audioTrack The audio track that this executor executes
-   * @param configuration Configuration to use for audio processing
-   * @param playerOptions Mutable player options (for example volume).
+   * @param audioTrack      The audio track that this executor executes
+   * @param configuration   Configuration to use for audio processing
+   * @param playerOptions   Mutable player options (for example volume).
    * @param useSeekGhosting Whether to keep providing old frames continuing from the previous position during a seek
    *                        until frames from the new position arrive.
-   * @param bufferDuration The size of the frame buffer in milliseconds
+   * @param bufferDuration  The size of the frame buffer in milliseconds
    */
   public LocalAudioTrackExecutor(InternalAudioTrack audioTrack, AudioConfiguration configuration,
                                  AudioPlayerOptions playerOptions, boolean useSeekGhosting, int bufferDuration) {
@@ -181,6 +178,7 @@ public class LocalAudioTrackExecutor implements AudioTrackExecutor {
 
   /**
    * Interrupt the buffering thread, either stop or seek should have been set beforehand.
+   *
    * @return True if there was a thread to interrupt.
    */
   public boolean interrupt() {
@@ -251,6 +249,7 @@ public class LocalAudioTrackExecutor implements AudioTrackExecutor {
 
   /**
    * Execute the read and seek loop for the track.
+   *
    * @param readExecutor Callback for reading the track
    * @param seekExecutor Callback for performing a seek on the track, may be null on a non-seekable track
    */
@@ -370,6 +369,7 @@ public class LocalAudioTrackExecutor implements AudioTrackExecutor {
 
   /**
    * Performs a seek if it scheduled.
+   *
    * @param seekExecutor Callback for performing a seek on the track
    * @return True if a seek was performed
    */
@@ -447,7 +447,7 @@ public class LocalAudioTrackExecutor implements AudioTrackExecutor {
 
   @Override
   public boolean provide(MutableAudioFrame targetFrame, long timeout, TimeUnit unit)
-      throws TimeoutException, InterruptedException {
+    throws TimeoutException, InterruptedException {
 
     if (frameBuffer.provide(targetFrame, timeout, unit)) {
       processProvidedFrame(targetFrame);

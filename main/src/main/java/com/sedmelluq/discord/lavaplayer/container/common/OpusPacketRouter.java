@@ -9,11 +9,12 @@ import com.sedmelluq.discord.lavaplayer.format.OpusAudioDataFormat;
 import com.sedmelluq.discord.lavaplayer.natives.opus.OpusDecoder;
 import com.sedmelluq.discord.lavaplayer.track.playback.AudioProcessingContext;
 import com.sedmelluq.discord.lavaplayer.track.playback.MutableAudioFrame;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.ShortBuffer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * A router for opus packets to the output specified by an audio processing context. It automatically detects if the
@@ -40,9 +41,9 @@ public class OpusPacketRouter {
   private int lastFrameSize;
 
   /**
-   * @param context Configuration and output information for processing
+   * @param context        Configuration and output information for processing
    * @param inputFrequency Sample rate of the opus track
-   * @param inputChannels Number of channels in the opus track
+   * @param inputChannels  Number of channels in the opus track
    */
   public OpusPacketRouter(AudioProcessingContext context, int inputFrequency, int inputChannels) {
     this.context = context;
@@ -60,7 +61,7 @@ public class OpusPacketRouter {
    * Notify downstream handlers about a seek.
    *
    * @param requestedTimecode Timecode in milliseconds to which the seek was requested to
-   * @param providedTimecode Timecode in milliseconds to which the seek was actually performed to
+   * @param providedTimecode  Timecode in milliseconds to which the seek was actually performed to
    */
   public void seekPerformed(long requestedTimecode, long providedTimecode) {
     this.requestedTimecode = requestedTimecode;
@@ -73,6 +74,7 @@ public class OpusPacketRouter {
 
   /**
    * Indicates that no more input is coming. Flush any buffers to output.
+   *
    * @throws InterruptedException When interrupted externally (or for seek/stop).
    */
   public void flush() throws InterruptedException {
@@ -83,6 +85,7 @@ public class OpusPacketRouter {
 
   /**
    * Process one opus packet.
+   *
    * @param buffer Byte buffer of the packet
    * @throws InterruptedException When interrupted externally (or for seek/stop).
    */

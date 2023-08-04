@@ -1,11 +1,12 @@
 package com.sedmelluq.discord.lavaplayer.tools.io;
 
-import java.io.DataInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.BoundedInputStream;
 import org.apache.commons.io.input.CountingInputStream;
+
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * An input for messages with their size known so unknown messages can be skipped.
@@ -26,9 +27,9 @@ public class MessageInput {
 
   /**
    * @return Data input for the next message. Note that it does not automatically skip over the last message if it was
-   *         not fully read, for that purpose, skipRemainingBytes() should be explicitly called after reading every
-   *         message. A null return value indicates the position where MessageOutput#finish() had written the end
-   *         marker.
+   * not fully read, for that purpose, skipRemainingBytes() should be explicitly called after reading every
+   * message. A null return value indicates the position where MessageOutput#finish() had written the end
+   * marker.
    * @throws IOException On IO error
    */
   public DataInputStream nextMessage() throws IOException {
@@ -53,6 +54,7 @@ public class MessageInput {
   /**
    * Skip the remaining bytes of the last message returned from nextMessage(). This must be called if it is not certain
    * that all of the bytes of the message were consumed.
+   *
    * @throws IOException On IO error
    */
   public void skipRemainingBytes() throws IOException {

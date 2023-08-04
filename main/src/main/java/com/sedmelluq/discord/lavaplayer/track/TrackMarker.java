@@ -18,7 +18,7 @@ public class TrackMarker {
 
   /**
    * @param timecode The position of the track in milliseconds when this marker should trigger.
-   * @param handler The handler for the marker.
+   * @param handler  The handler for the marker.
    */
   public TrackMarker(long timecode, TrackMarkerHandler handler) {
     this.timecode = timecode;

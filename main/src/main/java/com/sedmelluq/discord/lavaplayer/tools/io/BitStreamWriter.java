@@ -21,7 +21,7 @@ public class BitStreamWriter {
 
   /**
    * @param value The value to take the bits from (lower order bits first)
-   * @param bits Number of bits to write
+   * @param bits  Number of bits to write
    * @throws IOException On write error
    */
   public void write(long value, int bits) throws IOException {
@@ -50,6 +50,7 @@ public class BitStreamWriter {
 
   /**
    * Flush the current byte even if there are remaining unused bits left
+   *
    * @throws IOException On write error
    */
   public void flush() throws IOException {

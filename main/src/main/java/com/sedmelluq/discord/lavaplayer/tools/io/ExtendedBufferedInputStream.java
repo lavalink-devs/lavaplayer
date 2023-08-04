@@ -16,7 +16,7 @@ public class ExtendedBufferedInputStream extends BufferedInputStream {
   }
 
   /**
-   * @param in Underlying input stream
+   * @param in   Underlying input stream
    * @param size Size of the buffer
    */
   public ExtendedBufferedInputStream(InputStream in, int size) {
@@ -25,7 +25,7 @@ public class ExtendedBufferedInputStream extends BufferedInputStream {
 
   /**
    * @return The number of bytes left in the buffer. This is useful for calculating the actual position in the buffer
-   *         if the position in the underlying buffer is known.
+   * if the position in the underlying buffer is known.
    */
   public int getBufferedByteCount() {
     return count - pos;

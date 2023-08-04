@@ -1,6 +1,7 @@
 package com.sedmelluq.discord.lavaplayer.container.ogg;
 
 import com.sedmelluq.discord.lavaplayer.track.playback.AudioProcessingContext;
+
 import java.io.Closeable;
 import java.io.IOException;
 

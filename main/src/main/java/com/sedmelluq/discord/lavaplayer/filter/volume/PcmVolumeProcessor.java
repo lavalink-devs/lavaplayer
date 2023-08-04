@@ -32,8 +32,8 @@ public class PcmVolumeProcessor {
 
   /**
    * @param initialVolume The input volume of the samples
-   * @param targetVolume The target volume of the samples
-   * @param buffer The buffer containing the samples
+   * @param targetVolume  The target volume of the samples
+   * @param buffer        The buffer containing the samples
    */
   public void applyVolume(int initialVolume, int targetVolume, ShortBuffer buffer) {
     if (initialVolume != 100 && initialVolume != 0) {

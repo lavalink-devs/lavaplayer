@@ -1,6 +1,7 @@
 package com.sedmelluq.discord.lavaplayer.natives.opus;
 
 import com.sedmelluq.lava.common.natives.NativeResourceHolder;
+
 import java.nio.ByteBuffer;
 import java.nio.ShortBuffer;
 
@@ -13,8 +14,8 @@ public class OpusEncoder extends NativeResourceHolder {
 
   /**
    * @param sampleRate Input sample rate
-   * @param channels Channel count
-   * @param quality Encoding quality (0-10)
+   * @param channels   Channel count
+   * @param quality    Encoding quality (0-10)
    */
   public OpusEncoder(int sampleRate, int channels, int quality) {
     library = OpusEncoderLibrary.getInstance();
@@ -27,8 +28,9 @@ public class OpusEncoder extends NativeResourceHolder {
 
   /**
    * Encode the input buffer to output.
-   * @param directInput Input sample buffer
-   * @param frameSize Number of samples per channel
+   *
+   * @param directInput  Input sample buffer
+   * @param frameSize    Number of samples per channel
    * @param directOutput Output byte buffer
    * @return Number of bytes written to the output
    */

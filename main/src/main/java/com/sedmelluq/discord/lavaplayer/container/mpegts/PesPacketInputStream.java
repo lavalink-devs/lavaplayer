@@ -1,6 +1,7 @@
 package com.sedmelluq.discord.lavaplayer.container.mpegts;
 
 import com.sedmelluq.discord.lavaplayer.tools.io.GreedyInputStream;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -10,7 +11,7 @@ import java.nio.ByteBuffer;
  * upstream.
  */
 public class PesPacketInputStream extends InputStream {
-  private static final byte[] SYNC_BYTES = new byte[] { 0x00, 0x00, 0x01 };
+  private static final byte[] SYNC_BYTES = new byte[]{0x00, 0x00, 0x01};
 
   private final InputStream inputStream;
   private final byte[] lengthBufferBytes;

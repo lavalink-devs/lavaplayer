@@ -20,7 +20,7 @@ public interface AudioPlayer extends AudioFrameProvider {
   void playTrack(AudioTrack track);
 
   /**
-   * @param track The track to start playing, passing null will stop the current track and return false
+   * @param track       The track to start playing, passing null will stop the current track and return false
    * @param noInterrupt Whether to only start if nothing else is playing
    * @return True if the track was started
    */
@@ -56,18 +56,21 @@ public interface AudioPlayer extends AudioFrameProvider {
 
   /**
    * Add a listener to events from this player.
+   *
    * @param listener New listener
    */
   void addListener(AudioEventListener listener);
 
   /**
    * Remove an attached listener using identity comparison.
+   *
    * @param listener The listener to remove
    */
   void removeListener(AudioEventListener listener);
 
   /**
    * Check if the player should be "cleaned up" - stopped due to nothing using it, with the given threshold.
+   *
    * @param threshold Threshold in milliseconds to use
    */
   void checkCleanup(long threshold);

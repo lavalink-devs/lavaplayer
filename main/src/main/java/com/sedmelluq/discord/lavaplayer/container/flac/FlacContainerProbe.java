@@ -8,9 +8,10 @@ import com.sedmelluq.discord.lavaplayer.track.AudioReference;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
 import com.sedmelluq.discord.lavaplayer.track.info.AudioTrackInfoBuilder;
-import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
 
 import static com.sedmelluq.discord.lavaplayer.container.MediaContainerDetection.checkNextBytes;
 import static com.sedmelluq.discord.lavaplayer.container.MediaContainerDetectionResult.supportedFormat;
@@ -45,10 +46,10 @@ public class FlacContainerProbe implements MediaContainerProbe {
     FlacTrackInfo fileInfo = new FlacFileLoader(inputStream).parseHeaders();
 
     AudioTrackInfo trackInfo = AudioTrackInfoBuilder.create(reference, inputStream)
-        .setTitle(fileInfo.tags.get(TITLE_TAG))
-        .setAuthor(fileInfo.tags.get(ARTIST_TAG))
-        .setLength(fileInfo.duration)
-        .build();
+      .setTitle(fileInfo.tags.get(TITLE_TAG))
+      .setAuthor(fileInfo.tags.get(ARTIST_TAG))
+      .setLength(fileInfo.duration)
+      .build();
 
     return supportedFormat(this, null, trackInfo);
   }

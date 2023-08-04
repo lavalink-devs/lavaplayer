@@ -1,9 +1,10 @@
 package com.sedmelluq.lava.common.natives;
 
 import com.sedmelluq.lava.common.natives.architecture.SystemType;
-import java.io.InputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.InputStream;
 
 public class ResourceNativeLibraryBinaryProvider implements NativeLibraryBinaryProvider {
   private static final Logger log = LoggerFactory.getLogger(ResourceNativeLibraryBinaryProvider.class);
@@ -21,7 +22,7 @@ public class ResourceNativeLibraryBinaryProvider implements NativeLibraryBinaryP
     String resourcePath = nativesRoot + systemType.formatSystemName() + "/" + systemType.formatLibraryName(libraryName);
 
     log.debug("Native library {}: trying to find from resources at {} with {} as classloader reference", libraryName,
-        resourcePath, classLoaderSample.getName());
+      resourcePath, classLoaderSample.getName());
 
     return classLoaderSample.getResourceAsStream(resourcePath);
   }

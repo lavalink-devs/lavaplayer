@@ -11,14 +11,15 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
 import com.sedmelluq.discord.lavaplayer.track.DelegatedAudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.playback.LocalAudioTrackExecutor;
-import java.io.IOException;
-import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
 
 import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.SUSPICIOUS;
 
@@ -31,7 +32,7 @@ public class VimeoAudioTrack extends DelegatedAudioTrack {
   private final VimeoAudioSourceManager sourceManager;
 
   /**
-   * @param trackInfo Track info
+   * @param trackInfo     Track info
    * @param sourceManager Source manager which was used to find this track
    */
   public VimeoAudioTrack(AudioTrackInfo trackInfo, VimeoAudioSourceManager sourceManager) {
@@ -71,7 +72,7 @@ public class VimeoAudioTrack extends DelegatedAudioTrack {
 
       if (!HttpClientTools.isSuccessWithContent(statusCode)) {
         throw new FriendlyException("Server responded with an error.", SUSPICIOUS,
-            new IllegalStateException("Response code for player config is " + statusCode));
+          new IllegalStateException("Response code for player config is " + statusCode));
       }
 
       return sourceManager.loadConfigJsonFromPageContent(IOUtils.toString(response.getEntity().getContent(), StandardCharsets.UTF_8));
@@ -84,7 +85,7 @@ public class VimeoAudioTrack extends DelegatedAudioTrack {
 
       if (!HttpClientTools.isSuccessWithContent(statusCode)) {
         throw new FriendlyException("Server responded with an error.", SUSPICIOUS,
-            new IllegalStateException("Response code for track access info is " + statusCode));
+          new IllegalStateException("Response code for track access info is " + statusCode));
       }
 
       return JsonBrowser.parse(response.getEntity().getContent());

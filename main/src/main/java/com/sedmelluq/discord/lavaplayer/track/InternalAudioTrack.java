@@ -10,7 +10,7 @@ import com.sedmelluq.discord.lavaplayer.track.playback.LocalAudioTrackExecutor;
  */
 public interface InternalAudioTrack extends AudioTrack, AudioFrameProvider {
   /**
-   * @param executor Executor to assign to the track
+   * @param executor             Executor to assign to the track
    * @param applyPrimordialState True if the state previously applied to this track should be copied to new executor.
    */
   void assignExecutor(AudioTrackExecutor executor, boolean applyPrimordialState);
@@ -22,6 +22,7 @@ public interface InternalAudioTrack extends AudioTrack, AudioFrameProvider {
 
   /**
    * Perform any necessary loading and then enter the read/seek loop
+   *
    * @param executor The local executor which processes this track
    * @throws Exception In case anything explodes.
    */
@@ -30,7 +31,7 @@ public interface InternalAudioTrack extends AudioTrack, AudioFrameProvider {
   /**
    * @param playerManager The player manager which is executing this track
    * @return A custom local executor for this track. Unless this track requires a special executor, this should return
-   *         null as the default one will be used in that case.
+   * null as the default one will be used in that case.
    */
   AudioTrackExecutor createLocalExecutor(AudioPlayerManager playerManager);
 }

@@ -1,6 +1,7 @@
 package com.sedmelluq.discord.lavaplayer.container.playlists;
 
 import com.sedmelluq.discord.lavaplayer.tools.DataFormatTools;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,6 +17,7 @@ public class ExtendedM3uParser {
 
   /**
    * Parses one line.
+   *
    * @param line Line.
    * @return Line object describing the directive or data on the line.
    */

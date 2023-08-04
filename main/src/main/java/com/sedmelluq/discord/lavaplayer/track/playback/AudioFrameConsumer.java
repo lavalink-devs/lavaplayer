@@ -6,6 +6,7 @@ package com.sedmelluq.discord.lavaplayer.track.playback;
 public interface AudioFrameConsumer {
   /**
    * Consumes the frame, may block
+   *
    * @param frame The frame to consume
    * @throws InterruptedException When interrupted externally (or for seek/stop).
    */
@@ -13,6 +14,7 @@ public interface AudioFrameConsumer {
 
   /**
    * Rebuild all caches frames
+   *
    * @param rebuilder The rebuilder to use
    */
   void rebuild(AudioFrameRebuilder rebuilder);

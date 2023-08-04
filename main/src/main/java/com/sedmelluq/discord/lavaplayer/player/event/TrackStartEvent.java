@@ -14,7 +14,7 @@ public class TrackStartEvent extends AudioEvent {
 
   /**
    * @param player Audio player
-   * @param track Audio track that started
+   * @param track  Audio track that started
    */
   public TrackStartEvent(AudioPlayer player, AudioTrack track) {
     super(player);

@@ -32,7 +32,7 @@ public class TwitchStreamSegmentUrlProvider extends M3uStreamSegmentUrlProvider 
 
   /**
    * @param channelName Channel identifier.
-   * @param manager Twitch source manager.
+   * @param manager     Twitch source manager.
    */
   public TwitchStreamSegmentUrlProvider(String channelName, TwitchStreamAudioSourceManager manager) {
     this.channelName = channelName;
@@ -53,8 +53,8 @@ public class TwitchStreamSegmentUrlProvider extends M3uStreamSegmentUrlProvider 
 
     JsonBrowser tokenJson = manager.fetchAccessToken(channelName);
     AccessToken token = new AccessToken(
-        JsonBrowser.parse(tokenJson.get("data").get("streamPlaybackAccessToken").get("value").text()),
-        tokenJson.get("data").get("streamPlaybackAccessToken").get("signature").text()
+      JsonBrowser.parse(tokenJson.get("data").get("streamPlaybackAccessToken").get("value").text()),
+      tokenJson.get("data").get("streamPlaybackAccessToken").get("signature").text()
     );
     String url = getChannelStreamsUrl(token).toString();
     HttpUriRequest request = new HttpGet(url);
@@ -103,22 +103,22 @@ public class TwitchStreamSegmentUrlProvider extends M3uStreamSegmentUrlProvider 
     }
 
     return new ChannelStreams(
-        (long) (Double.parseDouble(serverTimeValue) * 1000.0),
-        streams
+      (long) (Double.parseDouble(serverTimeValue) * 1000.0),
+      streams
     );
   }
 
   private URI getChannelStreamsUrl(AccessToken token) {
     try {
       return new URIBuilder("https://usher.ttvnw.net/api/channel/hls/" + channelName + ".m3u8")
-          .addParameter(TOKEN_PARAMETER, token.value.format())
-          .addParameter("sig", token.signature)
-          .addParameter("allow_source", "true")
-          .addParameter("allow_spectre", "true")
-          .addParameter("allow_audio_only", "true")
-          .addParameter("player_backend", "html5")
-          .addParameter("expgroup", "regular")
-          .build();
+        .addParameter(TOKEN_PARAMETER, token.value.format())
+        .addParameter("sig", token.signature)
+        .addParameter("allow_source", "true")
+        .addParameter("allow_spectre", "true")
+        .addParameter("allow_audio_only", "true")
+        .addParameter("player_backend", "html5")
+        .addParameter("expgroup", "regular")
+        .build();
     } catch (URISyntaxException e) {
       throw new RuntimeException(e);
     }

@@ -9,6 +9,7 @@ import com.sedmelluq.discord.lavaplayer.filter.AudioPipelineFactory;
 import com.sedmelluq.discord.lavaplayer.filter.PcmFormat;
 import com.sedmelluq.discord.lavaplayer.tools.io.BitStreamReader;
 import com.sedmelluq.discord.lavaplayer.track.playback.AudioProcessingContext;
+
 import java.io.IOException;
 
 /**
@@ -24,7 +25,7 @@ public class OggFlacTrackHandler implements OggTrackHandler {
   private AudioPipeline downstream;
 
   /**
-   * @param info FLAC track info
+   * @param info              FLAC track info
    * @param packetInputStream OGG packet input stream
    */
   public OggFlacTrackHandler(FlacTrackInfo info, OggPacketInputStream packetInputStream) {
@@ -44,7 +45,7 @@ public class OggFlacTrackHandler implements OggTrackHandler {
   @Override
   public void initialise(AudioProcessingContext context, long timecode, long desiredTimecode) {
     downstream = AudioPipelineFactory.create(context,
-        new PcmFormat(info.stream.channelCount, info.stream.sampleRate));
+      new PcmFormat(info.stream.channelCount, info.stream.sampleRate));
     downstream.seekPerformed(desiredTimecode, timecode);
   }
 

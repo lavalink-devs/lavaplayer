@@ -29,7 +29,7 @@ public class MpegFragmentedFileTrackProvider implements MpegFileTrackProvider {
 
   /**
    * @param reader MP4-specific reader
-   * @param root Root section info (synthetic section wrapping the entire file)
+   * @param root   Root section info (synthetic section wrapping the entire file)
    */
   public MpegFragmentedFileTrackProvider(MpegReader reader, MpegSectionInfo root) {
     this.reader = reader;
@@ -109,6 +109,7 @@ public class MpegFragmentedFileTrackProvider implements MpegFileTrackProvider {
 
   /**
    * Handle mvex section.
+   *
    * @param mvex Section header.
    * @throws IOException On read error
    */
@@ -120,6 +121,7 @@ public class MpegFragmentedFileTrackProvider implements MpegFileTrackProvider {
 
   /**
    * Handle segment index section.
+   *
    * @param sbix Section header.
    * @throws IOException On read error
    */

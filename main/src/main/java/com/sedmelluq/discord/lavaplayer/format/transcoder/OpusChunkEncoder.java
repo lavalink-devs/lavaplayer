@@ -3,6 +3,7 @@ package com.sedmelluq.discord.lavaplayer.format.transcoder;
 import com.sedmelluq.discord.lavaplayer.format.AudioDataFormat;
 import com.sedmelluq.discord.lavaplayer.natives.opus.OpusEncoder;
 import com.sedmelluq.discord.lavaplayer.player.AudioConfiguration;
+
 import java.nio.ByteBuffer;
 import java.nio.ShortBuffer;
 
@@ -16,7 +17,7 @@ public class OpusChunkEncoder implements AudioChunkEncoder {
 
   /**
    * @param configuration Audio configuration used for configuring the encoder
-   * @param format Target audio format.
+   * @param format        Target audio format.
    */
   public OpusChunkEncoder(AudioConfiguration configuration, AudioDataFormat format) {
     encodedBuffer = ByteBuffer.allocateDirect(format.maximumChunkSize());

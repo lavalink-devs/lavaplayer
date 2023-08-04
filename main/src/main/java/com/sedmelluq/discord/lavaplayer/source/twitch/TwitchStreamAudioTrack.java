@@ -22,7 +22,7 @@ public class TwitchStreamAudioTrack extends MpegTsM3uStreamAudioTrack {
   private final M3uStreamSegmentUrlProvider segmentUrlProvider;
 
   /**
-   * @param trackInfo Track info
+   * @param trackInfo     Track info
    * @param sourceManager Source manager which was used to find this track
    */
   public TwitchStreamAudioTrack(AudioTrackInfo trackInfo, TwitchStreamAudioSourceManager sourceManager) {

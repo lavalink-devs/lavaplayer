@@ -1,10 +1,6 @@
 package com.sedmelluq.discord.lavaplayer.natives.statistics;
 
-import static com.sedmelluq.discord.lavaplayer.natives.statistics.CpuStatisticsLibrary.Timings.PROCESS_KERNEL;
-import static com.sedmelluq.discord.lavaplayer.natives.statistics.CpuStatisticsLibrary.Timings.PROCESS_USER;
-import static com.sedmelluq.discord.lavaplayer.natives.statistics.CpuStatisticsLibrary.Timings.SYSTEM_KERNEL;
-import static com.sedmelluq.discord.lavaplayer.natives.statistics.CpuStatisticsLibrary.Timings.SYSTEM_TOTAL;
-import static com.sedmelluq.discord.lavaplayer.natives.statistics.CpuStatisticsLibrary.Timings.SYSTEM_USER;
+import static com.sedmelluq.discord.lavaplayer.natives.statistics.CpuStatisticsLibrary.Timings.*;
 
 /**
  * Provides information about system CPU usage.
@@ -22,11 +18,11 @@ public class CpuStatistics {
     library.getSystemTimes(values);
 
     return new Times(
-        values[SYSTEM_TOTAL.id()],
-        values[SYSTEM_USER.id()],
-        values[SYSTEM_KERNEL.id()],
-        values[PROCESS_USER.id()],
-        values[PROCESS_KERNEL.id()]
+      values[SYSTEM_TOTAL.id()],
+      values[SYSTEM_USER.id()],
+      values[SYSTEM_KERNEL.id()],
+      values[PROCESS_USER.id()],
+      values[PROCESS_KERNEL.id()]
     );
   }
 
@@ -56,10 +52,10 @@ public class CpuStatistics {
     public final long processKernel;
 
     /**
-     * @param systemTotal Total amount of CPU time since system start
-     * @param systemUser Total amount of CPU time spent in user mode
-     * @param systemKernel Total amount of CPU time spent in kernel mode
-     * @param processUser Total amount of CPU time this process has spent in user mode
+     * @param systemTotal   Total amount of CPU time since system start
+     * @param systemUser    Total amount of CPU time spent in user mode
+     * @param systemKernel  Total amount of CPU time spent in kernel mode
+     * @param processUser   Total amount of CPU time this process has spent in user mode
      * @param processKernel Total amount of CPU time this process has spent in kernel mode
      */
     public Times(long systemTotal, long systemUser, long systemKernel, long processUser, long processKernel) {
@@ -94,17 +90,17 @@ public class CpuStatistics {
   }
 
   /**
-   * @param old Older timing values
+   * @param old     Older timing values
    * @param current Newer timing values
    * @return Difference between two timings
    */
   public static Times diff(Times old, Times current) {
     return new Times(
-        current.systemTotal - old.systemTotal,
-        current.systemUser - old.systemUser,
-        current.systemKernel - old.systemKernel,
-        current.processUser - old.processUser,
-        current.processKernel - old.processKernel
+      current.systemTotal - old.systemTotal,
+      current.systemUser - old.systemUser,
+      current.systemKernel - old.systemKernel,
+      current.processUser - old.processUser,
+      current.processKernel - old.processKernel
     );
   }
 }

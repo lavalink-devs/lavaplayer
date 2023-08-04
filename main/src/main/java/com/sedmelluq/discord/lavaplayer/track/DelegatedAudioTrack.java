@@ -17,7 +17,7 @@ public abstract class DelegatedAudioTrack extends BaseAudioTrack {
   }
 
   protected synchronized void processDelegate(InternalAudioTrack delegate, LocalAudioTrackExecutor localExecutor)
-      throws Exception {
+    throws Exception {
 
     this.delegate = delegate;
 

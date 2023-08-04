@@ -18,8 +18,8 @@ public class TrackEndEvent extends AudioEvent {
   public final AudioTrackEndReason endReason;
 
   /**
-   * @param player Audio player
-   * @param track Audio track that ended
+   * @param player    Audio player
+   * @param track     Audio track that ended
    * @param endReason The reason why the track stopped playing
    */
   public TrackEndEvent(AudioPlayer player, AudioTrack track, AudioTrackEndReason endReason) {

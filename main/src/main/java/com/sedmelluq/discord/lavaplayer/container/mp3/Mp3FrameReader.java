@@ -2,6 +2,7 @@ package com.sedmelluq.discord.lavaplayer.container.mp3;
 
 import com.sedmelluq.discord.lavaplayer.natives.mp3.Mp3Decoder;
 import com.sedmelluq.discord.lavaplayer.tools.io.SeekableInputStream;
+
 import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -37,7 +38,7 @@ public class Mp3FrameReader {
    * @param throwOnLimit Whether to throw an exception when maximum number of bytes is reached, but no frame has been
    *                     found and EOF has not been reached.
    * @return True if a frame was found, false if EOF was encountered.
-   * @throws IOException On IO error
+   * @throws IOException           On IO error
    * @throws IllegalStateException If the maximum number of bytes to check was reached before a frame was found
    */
   public boolean scanForFrame(int bytesToCheck, boolean throwOnLimit) throws IOException {
@@ -102,6 +103,7 @@ public class Mp3FrameReader {
   /**
    * Fills the buffer for the current frame. If no frame header has been read previously, it will first scan for the
    * sync bytes of the next frame in the stream.
+   *
    * @return False if EOF was encountered while looking for the next frame, true otherwise
    * @throws IOException On IO error
    */
@@ -141,7 +143,7 @@ public class Mp3FrameReader {
    * Append some bytes to the frame sync scan buffer. This must be called when some bytes have been read externally that
    * may actually be part of the next frame header.
    *
-   * @param data The buffer to copy from
+   * @param data   The buffer to copy from
    * @param offset The offset in the buffer
    * @param length The length of the region to copy
    */

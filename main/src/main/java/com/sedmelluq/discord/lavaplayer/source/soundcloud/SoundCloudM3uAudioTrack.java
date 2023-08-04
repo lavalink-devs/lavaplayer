@@ -10,14 +10,15 @@ import com.sedmelluq.discord.lavaplayer.tools.io.SeekableInputStream;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
 import com.sedmelluq.discord.lavaplayer.track.DelegatedAudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.playback.LocalAudioTrackExecutor;
+import org.apache.http.client.methods.HttpGet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
-import org.apache.http.client.methods.HttpGet;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class SoundCloudM3uAudioTrack extends DelegatedAudioTrack {
   private static final Logger log = LoggerFactory.getLogger(SoundCloudM3uAudioTrack.class);
@@ -39,9 +40,9 @@ public class SoundCloudM3uAudioTrack extends DelegatedAudioTrack {
       segmentTracker.decoder.prepareStream(true);
 
       localExecutor.executeProcessingLoop(() -> segmentTracker.decoder.playStream(
-          localExecutor.getProcessingContext(),
-          segmentTracker.streamStartPosition,
-          segmentTracker.desiredPosition
+        localExecutor.getProcessingContext(),
+        segmentTracker.streamStartPosition,
+        segmentTracker.desiredPosition
       ), segmentTracker::seekToTimecode, true);
     }
   }

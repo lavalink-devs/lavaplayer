@@ -16,13 +16,13 @@ public class AudioDataFormatTools {
   public static AudioFormat toAudioFormat(AudioDataFormat format) {
     if (format instanceof Pcm16AudioDataFormat) {
       return new AudioFormat(
-          PCM_SIGNED,
-          format.sampleRate,
-          16,
-          format.channelCount,
-          format.channelCount * 2,
-          format.sampleRate,
-          format.codecName().equals(Pcm16AudioDataFormat.CODEC_NAME_BE)
+        PCM_SIGNED,
+        format.sampleRate,
+        16,
+        format.channelCount,
+        format.channelCount * 2,
+        format.sampleRate,
+        format.codecName().equals(Pcm16AudioDataFormat.CODEC_NAME_BE)
       );
     } else {
       throw new IllegalStateException("Only PCM is currently supported.");

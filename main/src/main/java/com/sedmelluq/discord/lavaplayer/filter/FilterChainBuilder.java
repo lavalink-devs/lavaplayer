@@ -3,6 +3,7 @@ package com.sedmelluq.discord.lavaplayer.filter;
 import com.sedmelluq.discord.lavaplayer.filter.converter.ToFloatAudioFilter;
 import com.sedmelluq.discord.lavaplayer.filter.converter.ToShortAudioFilter;
 import com.sedmelluq.discord.lavaplayer.filter.converter.ToSplitShortAudioFilter;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,7 +30,7 @@ public class FilterChainBuilder {
   /**
    * @param channelCount Number of input channels expected by the current head of the chain.
    * @return The first chain in the filter as a float PCM filter, or if it is not, then adds an adapter filter to the
-   *         beginning and returns that.
+   * beginning and returns that.
    */
   public FloatPcmAudioFilter makeFirstFloat(int channelCount) {
     AudioFilter first = first();
@@ -44,7 +45,7 @@ public class FilterChainBuilder {
   /**
    * @param channelCount Number of input channels expected by the current head of the chain.
    * @return The first chain in the filter as an universal PCM filter, or if it is not, then adds an adapter filter to
-   *         the beginning and returns that.
+   * the beginning and returns that.
    */
   public UniversalPcmAudioFilter makeFirstUniversal(int channelCount) {
     AudioFilter first = first();
@@ -57,7 +58,7 @@ public class FilterChainBuilder {
   }
 
   /**
-   * @param context See {@link AudioFilterChain#context}.
+   * @param context      See {@link AudioFilterChain#context}.
    * @param channelCount Number of input channels expected by the current head of the chain.
    * @return The built filter chain. Adds an adapter to the beginning of the chain if the first filter is not universal.
    */

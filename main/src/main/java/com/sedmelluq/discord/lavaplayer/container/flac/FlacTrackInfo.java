@@ -33,10 +33,10 @@ public class FlacTrackInfo {
   public final long duration;
 
   /**
-   * @param stream FLAC stream information.
-   * @param seekPoints An array of seek points.
-   * @param seekPointCount The actual number of seek points that are not placeholders.
-   * @param tags The map of tag values from comment metadata block.
+   * @param stream             FLAC stream information.
+   * @param seekPoints         An array of seek points.
+   * @param seekPointCount     The actual number of seek points that are not placeholders.
+   * @param tags               The map of tag values from comment metadata block.
    * @param firstFramePosition The position in the stream where the first frame starts.
    */
   public FlacTrackInfo(FlacStreamInfo stream, FlacSeekPoint[] seekPoints, int seekPointCount, Map<String, String> tags,

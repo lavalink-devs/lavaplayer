@@ -3,13 +3,14 @@ package com.sedmelluq.discord.lavaplayer.source.youtube.format;
 import com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeTrackFormat;
 import com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeTrackJsonData;
 import com.sedmelluq.discord.lavaplayer.tools.DataFormatTools;
+import org.apache.http.entity.ContentType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import org.apache.http.entity.ContentType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static com.sedmelluq.discord.lavaplayer.tools.DataFormatTools.decodeUrlEncodedItems;
 
@@ -48,15 +49,15 @@ public class LegacyStreamMapFormatsExtractor implements OfflineYoutubeTrackForma
         }
 
         tracks.add(new YoutubeTrackFormat(
-            ContentType.parse(format.get("type")),
-            qualityToBitrateValue(format.get("quality")),
-            Long.parseLong(contentLength),
-            2,
-            url,
-            "",
-            format.get("s"),
-            format.getOrDefault("sp", DEFAULT_SIGNATURE_KEY),
-            true
+          ContentType.parse(format.get("type")),
+          qualityToBitrateValue(format.get("quality")),
+          Long.parseLong(contentLength),
+          2,
+          url,
+          "",
+          format.get("s"),
+          format.getOrDefault("sp", DEFAULT_SIGNATURE_KEY),
+          true
         ));
       } catch (RuntimeException e) {
         anyFailures = true;
@@ -66,7 +67,7 @@ public class LegacyStreamMapFormatsExtractor implements OfflineYoutubeTrackForma
 
     if (tracks.isEmpty() && anyFailures) {
       log.warn("In adaptive format map {}, all formats either failed to load or were skipped due to missing fields",
-          adaptiveFormats);
+        adaptiveFormats);
     }
 
     return tracks;

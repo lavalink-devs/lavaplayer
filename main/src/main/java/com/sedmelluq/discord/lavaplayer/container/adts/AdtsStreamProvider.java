@@ -7,6 +7,7 @@ import com.sedmelluq.discord.lavaplayer.natives.aac.AacDecoder;
 import com.sedmelluq.discord.lavaplayer.tools.io.DirectBufferStreamBroker;
 import com.sedmelluq.discord.lavaplayer.tools.io.ResettableBoundedInputStream;
 import com.sedmelluq.discord.lavaplayer.track.playback.AudioProcessingContext;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -30,7 +31,7 @@ public class AdtsStreamProvider {
 
   /**
    * @param inputStream Input stream to read from.
-   * @param context Configuration and output information for processing
+   * @param context     Configuration and output information for processing
    */
   public AdtsStreamProvider(InputStream inputStream, AudioProcessingContext context) {
     this.context = context;
@@ -45,7 +46,7 @@ public class AdtsStreamProvider {
    * continuous.
    *
    * @param requestedTimecode The timecode at which the samples from this stream should be outputted.
-   * @param providedTimecode The timecode at which this stream starts.
+   * @param providedTimecode  The timecode at which this stream starts.
    */
   public void setInitialSeek(long requestedTimecode, long providedTimecode) {
     this.requestedTimecode = requestedTimecode;
@@ -54,6 +55,7 @@ public class AdtsStreamProvider {
 
   /**
    * Provides frames to the frame consumer.
+   *
    * @throws InterruptedException When interrupted externally (or for seek/stop).
    */
   public void provideFrames() throws InterruptedException {
@@ -96,7 +98,7 @@ public class AdtsStreamProvider {
 
       downstream = AudioPipelineFactory.create(context, new PcmFormat(streamInfo.channels, streamInfo.sampleRate));
       outputBuffer = ByteBuffer.allocateDirect(2 * streamInfo.frameSize * streamInfo.channels)
-          .order(ByteOrder.nativeOrder()).asShortBuffer();
+        .order(ByteOrder.nativeOrder()).asShortBuffer();
 
       if (requestedTimecode != null) {
         downstream.seekPerformed(requestedTimecode, providedTimecode);

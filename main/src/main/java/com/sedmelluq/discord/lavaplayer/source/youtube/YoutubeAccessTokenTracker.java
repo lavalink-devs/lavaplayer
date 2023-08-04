@@ -32,19 +32,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.ANDROID_AUTH_URL;
-import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.CHECKIN_ACCOUNT_URL;
-import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.LOGIN_ACCOUNT_URL;
-import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.SAVE_ACCOUNT_URL;
-import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.TOKEN_PAYLOAD;
-import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.TOKEN_REFRESH_PAYLOAD;
-import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.TV_AUTH_CODE_PAYLOAD;
-import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.TV_AUTH_CODE_URL;
-import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.TV_AUTH_TOKEN_PAYLOAD;
-import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.TV_AUTH_TOKEN_REFRESH_PAYLOAD;
-import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.TV_AUTH_TOKEN_URL;
-import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.VISITOR_ID_URL;
-import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.YOUTUBE_ORIGIN;
+import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.*;
 import static com.sedmelluq.discord.lavaplayer.tools.DataFormatTools.convertToMapLayout;
 import static com.sedmelluq.discord.lavaplayer.tools.ExceptionTools.throwWithDebugInfo;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -150,8 +138,8 @@ public class YoutubeAccessTokenTracker {
       try {
         accessToken = fetchAccessToken();
         log.info("Updating YouTube access token succeeded, new token is {}, next update will be after {} seconds.",
-            accessToken,
-            TimeUnit.MILLISECONDS.toSeconds(accessTokenRefreshInterval)
+          accessToken,
+          TimeUnit.MILLISECONDS.toSeconds(accessTokenRefreshInterval)
         );
       } catch (Exception e) {
         log.error("YouTube access token update failed.", e);
@@ -176,8 +164,8 @@ public class YoutubeAccessTokenTracker {
       try {
         visitorId = fetchVisitorId();
         log.info("Updating YouTube visitor id succeeded, new one is {}, next update will be after {} seconds.",
-            visitorId,
-            TimeUnit.MILLISECONDS.toSeconds(VISITOR_ID_REFRESH_INTERVAL)
+          visitorId,
+          TimeUnit.MILLISECONDS.toSeconds(VISITOR_ID_REFRESH_INTERVAL)
         );
       } catch (Exception e) {
         log.error("YouTube visitor id update failed.", e);
@@ -294,9 +282,9 @@ public class YoutubeAccessTokenTracker {
 
       HttpPost post = new HttpPost(TV_AUTH_TOKEN_URL);
       post.setEntity(new StringEntity(String.format(TV_AUTH_TOKEN_REFRESH_PAYLOAD,
-          cachedAuthScript.clientId,
-          cachedAuthScript.clientSecret,
-          masterToken
+        cachedAuthScript.clientId,
+        cachedAuthScript.clientSecret,
+        masterToken
       ), "UTF-8"));
 
       try (CloseableHttpResponse response = httpInterface.execute(post)) {
@@ -432,18 +420,18 @@ public class YoutubeAccessTokenTracker {
 
   private String waitForAuth(HttpInterface httpInterface, JsonBrowser json, CachedAuthScript script) throws IOException, InterruptedException {
     log.info("Open your browser, go to {} and enter code {}, this is required to complete auth in provided account," +
-            " usually this needed to be done once," +
-            " LavaPlayer will wait and check for auth completion every 5 seconds.",
-        json.get("verification_url").text(),
-        json.get("user_code").text()
+        " usually this needed to be done once," +
+        " LavaPlayer will wait and check for auth completion every 5 seconds.",
+      json.get("verification_url").text(),
+      json.get("user_code").text()
     );
     Thread.sleep(5000L);
 
     HttpPost authPost = new HttpPost(TV_AUTH_TOKEN_URL);
     authPost.setEntity(new StringEntity(String.format(TV_AUTH_TOKEN_PAYLOAD,
-        script.clientId,
-        script.clientSecret,
-        json.get("device_code").text()
+      script.clientId,
+      script.clientSecret,
+      json.get("device_code").text()
     ), "UTF-8"));
 
     try (CloseableHttpResponse authResponse = httpInterface.execute(authPost)) {
@@ -471,9 +459,9 @@ public class YoutubeAccessTokenTracker {
         String refreshToken = responseJson.get("refresh_token").text();
         HttpPost savePost = new HttpPost(SAVE_ACCOUNT_URL);
         savePost.setEntity(new StringEntity(String.format(TOKEN_REFRESH_PAYLOAD,
-            email,
-            password,
-            refreshToken
+          email,
+          password,
+          refreshToken
         ), "UTF-8"));
 
         try (CloseableHttpResponse saveResponse = httpInterface.execute(savePost)) {
@@ -484,8 +472,8 @@ public class YoutubeAccessTokenTracker {
           lastAccessTokenUpdate = System.currentTimeMillis();
           masterTokenFromTV = true;
           log.info("Auth was successful and updating YouTube access token succeeded, new token is {}, next update will be after {} seconds.",
-              accessToken,
-              TimeUnit.MILLISECONDS.toSeconds(accessTokenRefreshInterval)
+            accessToken,
+            TimeUnit.MILLISECONDS.toSeconds(accessTokenRefreshInterval)
           );
           return refreshToken;
         }
@@ -496,8 +484,8 @@ public class YoutubeAccessTokenTracker {
   private URI buildUri(String url, List<NameValuePair> params) {
     try {
       return new URIBuilder(url)
-          .addParameters(params)
-          .build();
+        .addParameters(params)
+        .build();
     } catch (URISyntaxException e) {
       throw new RuntimeException(e);
     }

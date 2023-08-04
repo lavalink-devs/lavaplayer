@@ -3,19 +3,7 @@ package com.sedmelluq.discord.lavaplayer.source.youtube;
 import com.sedmelluq.discord.lavaplayer.tools.io.HttpInterface;
 import org.json.JSONObject;
 
-import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.CLIENT_ANDROID_NAME;
-import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.CLIENT_ANDROID_VERSION;
-import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.CLIENT_MUSIC_NAME;
-import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.CLIENT_MUSIC_VERSION;
-import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.CLIENT_SCREEN_EMBED;
-import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.CLIENT_THIRD_PARTY_EMBED;
-import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.CLIENT_TVHTML5_NAME;
-import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.CLIENT_TVHTML5_VERSION;
-import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.CLIENT_WEB_NAME;
-import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.CLIENT_WEB_VERSION;
-import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.INNERTUBE_ANDROID_API_KEY;
-import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.INNERTUBE_MUSIC_API_KEY;
-import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.INNERTUBE_WEB_API_KEY;
+import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeConstants.*;
 import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeHttpContextFilter.ATTRIBUTE_USER_AGENT_SPECIFIED;
 import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubePayloadHelper.putOnceAndJoin;
 
@@ -23,32 +11,32 @@ public class YoutubeClientConfig extends JSONObject {
   public static final AndroidVersion DEFAULT_ANDROID_VERSION = AndroidVersion.ANDROID_11;
 
   public static YoutubeClientConfig ANDROID = new YoutubeClientConfig()
-      .withApiKey(INNERTUBE_ANDROID_API_KEY)
-      .withUserAgent(String.format("com.google.android.youtube/%s (Linux; U; Android %s) gzip", CLIENT_ANDROID_VERSION, DEFAULT_ANDROID_VERSION.getOsVersion()))
-      .withClientName(CLIENT_ANDROID_NAME)
-      .withClientField("clientVersion", CLIENT_ANDROID_VERSION)
-      .withClientField("androidSdkVersion", DEFAULT_ANDROID_VERSION.getSdkVersion())
-      //.withClientField("osName", "Android")
-      //.withClientField("osVersion", DEFAULT_ANDROID_VERSION.getOsVersion())
-      .withClientDefaultScreenParameters();
+    .withApiKey(INNERTUBE_ANDROID_API_KEY)
+    .withUserAgent(String.format("com.google.android.youtube/%s (Linux; U; Android %s) gzip", CLIENT_ANDROID_VERSION, DEFAULT_ANDROID_VERSION.getOsVersion()))
+    .withClientName(CLIENT_ANDROID_NAME)
+    .withClientField("clientVersion", CLIENT_ANDROID_VERSION)
+    .withClientField("androidSdkVersion", DEFAULT_ANDROID_VERSION.getSdkVersion())
+    //.withClientField("osName", "Android")
+    //.withClientField("osVersion", DEFAULT_ANDROID_VERSION.getOsVersion())
+    .withClientDefaultScreenParameters();
 
   public static YoutubeClientConfig TV_EMBEDDED = new YoutubeClientConfig()
-      .withApiKey(INNERTUBE_WEB_API_KEY) //.withApiKey(INNERTUBE_TV_API_KEY) // Requires header (Referer tv.youtube.com)
-      .withClientName(CLIENT_TVHTML5_NAME)
-      .withClientField("clientVersion", CLIENT_TVHTML5_VERSION)
-      .withClientField("clientScreen", CLIENT_SCREEN_EMBED)
-      .withClientDefaultScreenParameters()
-      .withThirdPartyEmbedUrl(CLIENT_THIRD_PARTY_EMBED);
+    .withApiKey(INNERTUBE_WEB_API_KEY) //.withApiKey(INNERTUBE_TV_API_KEY) // Requires header (Referer tv.youtube.com)
+    .withClientName(CLIENT_TVHTML5_NAME)
+    .withClientField("clientVersion", CLIENT_TVHTML5_VERSION)
+    .withClientField("clientScreen", CLIENT_SCREEN_EMBED)
+    .withClientDefaultScreenParameters()
+    .withThirdPartyEmbedUrl(CLIENT_THIRD_PARTY_EMBED);
 
   public static YoutubeClientConfig WEB = new YoutubeClientConfig()
-      .withApiKey(INNERTUBE_WEB_API_KEY)
-      .withClientName(CLIENT_WEB_NAME)
-      .withClientField("clientVersion", CLIENT_WEB_VERSION);
+    .withApiKey(INNERTUBE_WEB_API_KEY)
+    .withClientName(CLIENT_WEB_NAME)
+    .withClientField("clientVersion", CLIENT_WEB_VERSION);
 
   public static YoutubeClientConfig MUSIC = new YoutubeClientConfig()
-      .withApiKey(INNERTUBE_MUSIC_API_KEY) // Requires header (Referer music.youtube.com)
-      .withClientName(CLIENT_MUSIC_NAME)
-      .withClientField("clientVersion", CLIENT_MUSIC_VERSION);
+    .withApiKey(INNERTUBE_MUSIC_API_KEY) // Requires header (Referer music.youtube.com)
+    .withClientName(CLIENT_MUSIC_NAME)
+    .withClientField("clientVersion", CLIENT_MUSIC_VERSION);
 
   private String name;
   private String userAgent;
@@ -133,7 +121,7 @@ public class YoutubeClientConfig extends JSONObject {
   }
 
   public YoutubeClientConfig withUserField(String key, Object value) {
-    JSONObject context = putOnceAndJoin(root,"context");
+    JSONObject context = putOnceAndJoin(root, "context");
     JSONObject user = putOnceAndJoin(context, "user");
     user.put(key, value);
     return this;

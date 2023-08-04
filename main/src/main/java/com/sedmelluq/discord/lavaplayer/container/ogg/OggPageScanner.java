@@ -8,7 +8,7 @@ import java.util.List;
  * Scanner for determining OGG stream information by seeking around in it.
  */
 public class OggPageScanner {
-  private static final int OGG_PAGE_HEADER_INT = ByteBuffer.wrap(new byte[] { 0x4F, 0x67, 0x67, 0x53 }).getInt(0);
+  private static final int OGG_PAGE_HEADER_INT = ByteBuffer.wrap(new byte[]{0x4F, 0x67, 0x67, 0x53}).getInt(0);
 
   private final long absoluteOffset;
   private final byte[] data;
@@ -22,8 +22,8 @@ public class OggPageScanner {
 
   /**
    * @param absoluteOffset Current position of the stream in bytes.
-   * @param data Byte array with data starting at that position.
-   * @param dataLength Length of data.
+   * @param data           Byte array with data starting at that position.
+   * @param dataLength     Length of data.
    */
   public OggPageScanner(long absoluteOffset, byte[] data, int dataLength) {
     this.absoluteOffset = absoluteOffset;
@@ -33,9 +33,9 @@ public class OggPageScanner {
 
   /**
    * @param firstPageOffset Absolute position of the first page in the stream.
-   * @param sampleRate Sample rate of the track in the stream.
+   * @param sampleRate      Sample rate of the track in the stream.
    * @return If the data contains the header of the last page in the OGG stream, then stream size information,
-   *         otherwise <code>null</code>.
+   * otherwise <code>null</code>.
    */
   public OggStreamSizeInfo scanForSizeInfo(long firstPageOffset, int sampleRate) {
     ByteBuffer buffer = ByteBuffer.wrap(data, 0, dataLength);
@@ -49,7 +49,7 @@ public class OggPageScanner {
           do {
             if ((flags & OggPageHeader.FLAG_LAST_PAGE) != 0) {
               return new OggStreamSizeInfo((byteStreamPosition - firstPageOffset) + pageSize,
-                  Long.reverseBytes(reversedPosition), firstPageOffset, byteStreamPosition, sampleRate);
+                Long.reverseBytes(reversedPosition), firstPageOffset, byteStreamPosition, sampleRate);
             }
           } while (attemptReadHeader(buffer));
         }

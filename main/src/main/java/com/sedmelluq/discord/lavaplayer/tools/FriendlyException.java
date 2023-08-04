@@ -13,8 +13,8 @@ public class FriendlyException extends RuntimeException {
 
   /**
    * @param friendlyMessage A message which is understandable to end-users
-   * @param severity Severity of the exception
-   * @param cause The cause of the exception with technical details
+   * @param severity        Severity of the exception
+   * @param cause           The cause of the exception with technical details
    */
   public FriendlyException(String friendlyMessage, Severity severity, Throwable cause) {
     super(friendlyMessage, cause);

@@ -10,9 +10,10 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
 import com.sedmelluq.discord.lavaplayer.track.DelegatedAudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.InternalAudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.playback.LocalAudioTrackExecutor;
-import java.net.URI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.net.URI;
 
 /**
  * Audio track that handles processing HTTP addresses as audio tracks.
@@ -24,9 +25,9 @@ public class HttpAudioTrack extends DelegatedAudioTrack {
   private final HttpAudioSourceManager sourceManager;
 
   /**
-   * @param trackInfo Track info
+   * @param trackInfo             Track info
    * @param containerTrackFactory Container track factory - contains the probe with its parameters.
-   * @param sourceManager Source manager used to load this track
+   * @param sourceManager         Source manager used to load this track
    */
   public HttpAudioTrack(AudioTrackInfo trackInfo, MediaContainerDescriptor containerTrackFactory,
                         HttpAudioSourceManager sourceManager) {

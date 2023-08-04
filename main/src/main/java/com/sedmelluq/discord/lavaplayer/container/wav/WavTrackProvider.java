@@ -5,6 +5,7 @@ import com.sedmelluq.discord.lavaplayer.filter.AudioPipelineFactory;
 import com.sedmelluq.discord.lavaplayer.filter.PcmFormat;
 import com.sedmelluq.discord.lavaplayer.tools.io.SeekableInputStream;
 import com.sedmelluq.discord.lavaplayer.track.playback.AudioProcessingContext;
+
 import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -29,9 +30,9 @@ public class WavTrackProvider {
   private final ShortBuffer nioBuffer;
 
   /**
-   * @param context Configuration and output information for processing
+   * @param context     Configuration and output information for processing
    * @param inputStream Input stream to use
-   * @param info Information about the WAV file
+   * @param info        Information about the WAV file
    */
   public WavTrackProvider(AudioProcessingContext context, SeekableInputStream inputStream, WavFileInfo info) {
     this.inputStream = inputStream;
@@ -47,6 +48,7 @@ public class WavTrackProvider {
 
   /**
    * Seeks to the specified timecode.
+   *
    * @param timecode The timecode in milliseconds
    */
   public void seekToTimecode(long timecode) {
@@ -61,6 +63,7 @@ public class WavTrackProvider {
 
   /**
    * Reads audio frames and sends them to frame consumer
+   *
    * @throws InterruptedException When interrupted externally (or for seek/stop).
    */
   public void provideFrames() throws InterruptedException {

@@ -15,7 +15,7 @@ public class EqualizerConfiguration {
   }
 
   /**
-   * @param band The index of the band. If this is not a valid band index, the method has no effect.
+   * @param band  The index of the band. If this is not a valid band index, the method has no effect.
    * @param value The multiplier for this band. Default value is 0. Valid values are from -0.25 to 1. -0.25 means that
    *              the given frequency is completely muted and 0.25 means it is doubled. Note that this may change the
    *              volume of the output.

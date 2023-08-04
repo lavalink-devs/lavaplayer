@@ -30,9 +30,9 @@ public class ImmutableAudioFrame implements AudioFrame {
 
   /**
    * @param timecode Timecode of this frame in milliseconds.
-   * @param data Buffer for this frame, in the format specified in the format field.
-   * @param volume Volume level of the audio in this frame.
-   * @param format Specifies the format of audio in the data buffer.
+   * @param data     Buffer for this frame, in the format specified in the format field.
+   * @param volume   Volume level of the audio in this frame.
+   * @param format   Specifies the format of audio in the data buffer.
    */
   public ImmutableAudioFrame(long timecode, byte[] data, int volume, AudioDataFormat format) {
     this.timecode = timecode;

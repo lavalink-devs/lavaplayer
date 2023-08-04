@@ -15,102 +15,104 @@ ext.vorbisVersion = '1.3.6'
 ext.sampleRateVersion = '0.1.9'
 ext.fdkAacVersion = '2.0.0'
 
-task load { doLast {
-  if (!file("$projectDir/samplerate/src").exists()) {
-    def downloadPath = "$buildDir/tmp/libsamplerate.tar.gz"
-    def unpackPath = "$buildDir/tmp"
+task load {
+  doLast {
+    if (!file("$projectDir/samplerate/src").exists()) {
+      def downloadPath = "$buildDir/tmp/libsamplerate.tar.gz"
+      def unpackPath = "$buildDir/tmp"
 
-    download.run {
-      src "https://www.mega-nerd.com/SRC/libsamplerate-${sampleRateVersion}.tar.gz"
-      dest downloadPath
+      download.run {
+        src "https://www.mega-nerd.com/SRC/libsamplerate-${sampleRateVersion}.tar.gz"
+        dest downloadPath
+      }
+
+      copy {
+        from tarTree(resources.gzip(downloadPath))
+        into unpackPath
+      }
+
+      copy {
+        from "$unpackPath/libsamplerate-${sampleRateVersion}/src"
+        into "$projectDir/samplerate/src"
+      }
     }
 
-    copy {
-      from tarTree(resources.gzip(downloadPath))
-      into unpackPath
+    if (!file("$projectDir/fdk-aac/libAACdec").exists()) {
+      def downloadPath = "$buildDir/tmp/fdk-aac-v${fdkAacVersion}.zip"
+      def unpackPath = "$buildDir"
+
+      download.run {
+        src "https://github.com/mstorsjo/fdk-aac/archive/v${fdkAacVersion}.zip"
+        dest downloadPath
+      }
+
+      copy {
+        from zipTree(file(downloadPath))
+        into unpackPath
+      }
+
+      copy {
+        from "$unpackPath/fdk-aac-${fdkAacVersion}"
+        into "$projectDir/fdk-aac"
+      }
     }
 
-    copy {
-      from "$unpackPath/libsamplerate-${sampleRateVersion}/src"
-      into "$projectDir/samplerate/src"
+    if (!file("$projectDir/vorbis/libogg-${oggVersion}").exists()) {
+      def downloadPath = "$buildDir/tmp/temp.zip"
+      def unpackPath = "$buildDir"
+
+      download.run {
+        src "https://downloads.xiph.org/releases/ogg/libogg-${oggVersion}.zip"
+        dest downloadPath
+      }
+
+      copy {
+        from zipTree(file(downloadPath))
+        into "$projectDir/vorbis"
+      }
+
+      download.run {
+        src "https://downloads.xiph.org/releases/vorbis/libvorbis-${vorbisVersion}.zip"
+        dest downloadPath
+      }
+
+      copy {
+        from zipTree(file(downloadPath))
+        into "$projectDir/vorbis"
+      }
+    }
+
+    if (!file("$projectDir/opus/opus-${opusVersion}").exists()) {
+      def downloadPath = "$buildDir/tmp/temp.tar.gz"
+      def unpackPath = "$buildDir"
+
+      download.run {
+        src "https://downloads.xiph.org/releases/opus/opus-${opusVersion}.tar.gz"
+        dest downloadPath
+      }
+
+      copy {
+        from tarTree(file(downloadPath))
+        into "$projectDir/opus"
+      }
+    }
+
+    if (!Os.isFamily(Os.FAMILY_WINDOWS) && !file("$projectDir/mp3/mpg123-${mpg123Version}").exists()) {
+      def downloadPath = "$buildDir/tmp/temp.tar.bz2"
+      def unpackPath = "$buildDir"
+
+      download.run {
+        src "https://www.mpg123.de/download/mpg123-${mpg123Version}.tar.bz2"
+        dest downloadPath
+      }
+
+      copy {
+        from tarTree(file(downloadPath))
+        into "$projectDir/mp3"
+      }
     }
   }
-
-  if (!file("$projectDir/fdk-aac/libAACdec").exists()) {
-    def downloadPath = "$buildDir/tmp/fdk-aac-v${fdkAacVersion}.zip"
-    def unpackPath = "$buildDir"
-
-    download.run {
-      src "https://github.com/mstorsjo/fdk-aac/archive/v${fdkAacVersion}.zip"
-      dest downloadPath
-    }
-
-    copy {
-      from zipTree(file(downloadPath))
-      into unpackPath
-    }
-
-    copy {
-      from "$unpackPath/fdk-aac-${fdkAacVersion}"
-      into "$projectDir/fdk-aac"
-    }
-  }
-
-  if (!file("$projectDir/vorbis/libogg-${oggVersion}").exists()) {
-    def downloadPath = "$buildDir/tmp/temp.zip"
-    def unpackPath = "$buildDir"
-
-    download.run {
-      src "https://downloads.xiph.org/releases/ogg/libogg-${oggVersion}.zip"
-      dest downloadPath
-    }
-
-    copy {
-      from zipTree(file(downloadPath))
-      into "$projectDir/vorbis"
-    }
-
-    download.run {
-      src "https://downloads.xiph.org/releases/vorbis/libvorbis-${vorbisVersion}.zip"
-      dest downloadPath
-    }
-
-    copy {
-      from zipTree(file(downloadPath))
-      into "$projectDir/vorbis"
-    }
-  }
-
-  if (!file("$projectDir/opus/opus-${opusVersion}").exists()) {
-    def downloadPath = "$buildDir/tmp/temp.tar.gz"
-    def unpackPath = "$buildDir"
-
-    download.run {
-      src "https://downloads.xiph.org/releases/opus/opus-${opusVersion}.tar.gz"
-      dest downloadPath
-    }
-
-    copy {
-      from tarTree(file(downloadPath))
-      into "$projectDir/opus"
-    }
-  }
-
-  if (!Os.isFamily(Os.FAMILY_WINDOWS) && !file("$projectDir/mp3/mpg123-${mpg123Version}").exists()) {
-    def downloadPath = "$buildDir/tmp/temp.tar.bz2"
-    def unpackPath = "$buildDir"
-
-    download.run {
-      src "https://www.mpg123.de/download/mpg123-${mpg123Version}.tar.bz2"
-      dest downloadPath
-    }
-
-    copy {
-      from tarTree(file(downloadPath))
-      into "$projectDir/mp3"
-    }
-  }
-}}
+}
 
 ext.devEnvPath = null
 
@@ -155,7 +157,7 @@ def buildOpusOnWindows(force) {
     def platformName = "x64"
 
     def process = [devenv, "opus.sln", "/Project", "opus", "/Build", "Release|${platformName}"].
-        execute(null as String[], file("$projectDir/opus/opus-${opusVersion}/win32/VS2015"))
+      execute(null as String[], file("$projectDir/opus/opus-${opusVersion}/win32/VS2015"))
 
     process.waitForProcessOutput(System.out as Appendable, System.err)
 
@@ -179,7 +181,7 @@ def buildOpusOnLinux(force) {
   if (force || !present) {
     def flags = "-fPIC -O3 -fdata-sections -ffunction-sections"
     def process = ["./configure", "--enable-static", "--with-cpu=x64-64", "--with-pic", "CFLAGS=${flags}", "CXXFLAGS=${flags}", "LDFLAGS=${flags}"].
-        execute(null as String[], file("$projectDir/opus/opus-${opusVersion}"))
+      execute(null as String[], file("$projectDir/opus/opus-${opusVersion}"))
 
     waitForAndCheckSuccess(process, "Opus ./configure")
 
@@ -219,7 +221,7 @@ def buildMpg123OnLinux(force) {
 
     def flags = "-fPIC -O3 -fdata-sections -ffunction-sections"
     def process = ['./configure', '--enable-static', '--with-cpu=x86-64', '--with-pic', "CFLAGS=$flags", "CXXFLAGS=$flags"].
-        execute(null as String[], file("$projectDir/mp3/mpg123-${mpg123Version}"))
+      execute(null as String[], file("$projectDir/mp3/mpg123-${mpg123Version}"))
 
     waitForAndCheckSuccess(process, "Mpg123 ./configure")
 
@@ -241,7 +243,7 @@ def prepareOggOnLinux(force) {
 
   if (force || !configured) {
     def process = ["./configure", "--enable-static", "--build=x86_64-pc-linux-gnu", "--with-pic"].
-        execute(null as String[], file("$projectDir/vorbis/libogg-${oggVersion}"))
+      execute(null as String[], file("$projectDir/vorbis/libogg-${oggVersion}"))
 
     process.waitForProcessOutput(System.out as Appendable, System.err)
   }
@@ -257,18 +259,18 @@ def prepareBuilds(force) {
   }
 }
 
-task compileNatives() { }
-task checkNatives() { }
+task compileNatives() {}
+task checkNatives() {}
 
 def buildTaskConfig = [
-    buildBase: buildDir,
-    projectBase: projectDir,
-    deployBase: project(':natives-publish').projectDir,
-    setupDependency: tasks.load,
-    setupDoFirst: { config -> prepareBuilds(false) },
-    compileTask: tasks.compileNatives,
-    checkTask: tasks.checkNatives,
-    name: 'connector'
+  buildBase      : buildDir,
+  projectBase    : projectDir,
+  deployBase     : project(':natives-publish').projectDir,
+  setupDependency: tasks.load,
+  setupDoFirst   : { config -> prepareBuilds(false) },
+  compileTask    : tasks.compileNatives,
+  checkTask      : tasks.checkNatives,
+  name           : 'connector'
 ]
 
 createBuildTask(tasks, buildTaskConfig)

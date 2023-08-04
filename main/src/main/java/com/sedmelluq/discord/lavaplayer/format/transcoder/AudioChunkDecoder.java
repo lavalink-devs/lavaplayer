@@ -8,7 +8,7 @@ import java.nio.ShortBuffer;
 public interface AudioChunkDecoder {
   /**
    * @param encoded Encoded bytes
-   * @param buffer Output buffer for the PCM data
+   * @param buffer  Output buffer for the PCM data
    */
   void decode(byte[] encoded, ShortBuffer buffer);
 

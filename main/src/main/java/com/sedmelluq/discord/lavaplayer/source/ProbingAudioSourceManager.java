@@ -8,6 +8,7 @@ import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioItem;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -46,7 +47,7 @@ public abstract class ProbingAudioSourceManager implements AudioSourceManager {
 
   protected void encodeTrackFactory(MediaContainerDescriptor factory, DataOutput output) throws IOException {
     String probeInfo = factory.probe.getName() + (factory.parameters != null ? PARAMETERS_SEPARATOR +
-        factory.parameters : "");
+      factory.parameters : "");
 
     output.writeUTF(probeInfo);
   }

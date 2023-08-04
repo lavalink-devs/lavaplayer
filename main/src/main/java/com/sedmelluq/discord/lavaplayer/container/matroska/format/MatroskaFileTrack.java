@@ -36,13 +36,13 @@ public class MatroskaFileTrack {
   public final AudioDetails audio;
 
   /**
-   * @param index Track index/number.
-   * @param type Type of the track.
-   * @param trackUid The unique track UID.
-   * @param name Name of the track.
-   * @param codecId ID of the codec.
+   * @param index        Track index/number.
+   * @param type         Type of the track.
+   * @param trackUid     The unique track UID.
+   * @param name         Name of the track.
+   * @param codecId      ID of the codec.
    * @param codecPrivate Custom data for the codec (header).
-   * @param audio Information specific to audio tracks (null for non-audio tracks).
+   * @param audio        Information specific to audio tracks (null for non-audio tracks).
    */
   public MatroskaFileTrack(int index, Type type, long trackUid, String name, String codecId, byte[] codecPrivate, AudioDetails audio) {
     this.index = index;
@@ -112,10 +112,10 @@ public class MatroskaFileTrack {
     public final int bitDepth;
 
     /**
-     * @param samplingFrequency Sampling frequency in Hz.
+     * @param samplingFrequency       Sampling frequency in Hz.
      * @param outputSamplingFrequency Real output sampling frequency in Hz.
-     * @param channels Number of channels in the track.
-     * @param bitDepth Number of bits per sample.
+     * @param channels                Number of channels in the track.
+     * @param bitDepth                Number of bits per sample.
      */
     public AudioDetails(float samplingFrequency, float outputSamplingFrequency, int channels, int bitDepth) {
       this.samplingFrequency = samplingFrequency;
@@ -127,7 +127,7 @@ public class MatroskaFileTrack {
 
   /**
    * @param trackElement The track element
-   * @param reader Matroska file reader
+   * @param reader       Matroska file reader
    * @return The parsed track
    * @throws IOException On read error
    */

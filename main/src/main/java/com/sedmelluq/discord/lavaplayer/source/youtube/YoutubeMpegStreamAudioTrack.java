@@ -40,9 +40,9 @@ public class YoutubeMpegStreamAudioTrack extends MpegAudioTrack {
   private final URI signedUrl;
 
   /**
-   * @param trackInfo Track info
+   * @param trackInfo     Track info
    * @param httpInterface HTTP interface to use for loading segments
-   * @param signedUrl URI of the base stream with signature resolved
+   * @param signedUrl     URI of the base stream with signature resolved
    */
   public YoutubeMpegStreamAudioTrack(AudioTrackInfo trackInfo, HttpInterface httpInterface, URI signedUrl) {
     super(trackInfo, null);
@@ -81,8 +81,8 @@ public class YoutubeMpegStreamAudioTrack extends MpegAudioTrack {
   }
 
   private void processNextSegmentWithRetry(
-      LocalAudioTrackExecutor localExecutor,
-      TrackState state
+    LocalAudioTrackExecutor localExecutor,
+    TrackState state
   ) throws InterruptedException {
     if (processNextSegment(localExecutor, state)) {
       return;
@@ -107,8 +107,8 @@ public class YoutubeMpegStreamAudioTrack extends MpegAudioTrack {
   }
 
   private boolean processNextSegment(
-      LocalAudioTrackExecutor localExecutor,
-      TrackState state
+    LocalAudioTrackExecutor localExecutor,
+    TrackState state
   ) throws InterruptedException {
     URI segmentUrl = getNextSegmentUrl(state);
 
@@ -159,8 +159,8 @@ public class YoutubeMpegStreamAudioTrack extends MpegAudioTrack {
 
   private URI getNextSegmentUrl(TrackState state) {
     URIBuilder builder = new URIBuilder(state.baseUrl)
-        .setParameter("rn", String.valueOf(state.relativeSequence))
-        .setParameter("rbuf", "0");
+      .setParameter("rn", String.valueOf(state.relativeSequence))
+      .setParameter("rbuf", "0");
 
     if (state.absoluteSequence != null) {
       builder.setParameter("sq", String.valueOf(state.absoluteSequence + 1));

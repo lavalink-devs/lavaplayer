@@ -42,7 +42,7 @@ public interface AudioFrame {
 
   /**
    * @return Whether this frame is a terminator. This is an internal concept of the player and should never be
-   *         <code>true</code> in any frames received by the user.
+   * <code>true</code> in any frames received by the user.
    */
   boolean isTerminator();
 }

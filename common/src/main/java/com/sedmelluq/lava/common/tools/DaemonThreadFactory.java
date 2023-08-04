@@ -26,7 +26,7 @@ public class DaemonThreadFactory implements ThreadFactory {
   }
 
   /**
-   * @param name Name that will be included in thread names.
+   * @param name         Name that will be included in thread names.
    * @param exitCallback Runnable to be executed when the thread exits.
    */
   public DaemonThreadFactory(String name, Runnable exitCallback) {

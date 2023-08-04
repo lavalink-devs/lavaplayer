@@ -1,6 +1,7 @@
 package com.sedmelluq.discord.lavaplayer.natives.opus;
 
 import com.sedmelluq.lava.common.natives.NativeResourceHolder;
+
 import java.nio.ByteBuffer;
 import java.nio.ShortBuffer;
 
@@ -14,7 +15,7 @@ public class OpusDecoder extends NativeResourceHolder {
 
   /**
    * @param sampleRate Input sample rate
-   * @param channels Channel count
+   * @param channels   Channel count
    */
   public OpusDecoder(int sampleRate, int channels) {
     library = OpusDecoderLibrary.getInstance();
@@ -23,13 +24,14 @@ public class OpusDecoder extends NativeResourceHolder {
 
     if (instance == 0) {
       throw new IllegalStateException("Failed to create a decoder instance with sample rate " +
-          sampleRate + " and channel count " + channels);
+        sampleRate + " and channel count " + channels);
     }
   }
 
   /**
    * Encode the input buffer to output.
-   * @param directInput Input byte buffer
+   *
+   * @param directInput  Input byte buffer
    * @param directOutput Output sample buffer
    * @return Number of bytes written to the output
    */
@@ -60,10 +62,11 @@ public class OpusDecoder extends NativeResourceHolder {
 
   /**
    * Get the frame size from an opus packet
+   *
    * @param sampleRate The sample rate of the packet
-   * @param buffer The buffer containing the packet
-   * @param offset Packet offset in the buffer
-   * @param length Packet length in the buffer
+   * @param buffer     The buffer containing the packet
+   * @param offset     Packet offset in the buffer
+   * @param length     Packet length in the buffer
    * @return Frame size
    */
   public static int getPacketFrameSize(int sampleRate, byte[] buffer, int offset, int length) {

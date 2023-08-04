@@ -15,7 +15,7 @@ public interface AudioChunkEncoder {
 
   /**
    * @param buffer Input buffer containing the PCM samples.
-   * @param out Output buffer to store the encoded bytes in
+   * @param out    Output buffer to store the encoded bytes in
    */
   void encode(ShortBuffer buffer, ByteBuffer out);
 

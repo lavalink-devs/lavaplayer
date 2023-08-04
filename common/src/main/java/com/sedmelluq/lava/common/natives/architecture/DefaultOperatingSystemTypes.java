@@ -4,7 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
@@ -48,13 +47,13 @@ public enum DefaultOperatingSystemTypes implements OperatingSystemType {
   public static OperatingSystemType detect() {
     String osFullName = System.getProperty("os.name");
 
-    if(osFullName.startsWith("Windows")) {
+    if (osFullName.startsWith("Windows")) {
       return WINDOWS;
-    } else if(osFullName.startsWith("Mac OS X")) {
+    } else if (osFullName.startsWith("Mac OS X")) {
       return DARWIN;
-    } else if(osFullName.startsWith("Solaris")) {
+    } else if (osFullName.startsWith("Solaris")) {
       return SOLARIS;
-    } else if(osFullName.toLowerCase().startsWith("linux")) {
+    } else if (osFullName.toLowerCase().startsWith("linux")) {
       return checkMusl() ? LINUX_MUSL : LINUX;
     } else {
       throw new IllegalArgumentException("Unknown operating system: " + osFullName);
@@ -63,8 +62,8 @@ public enum DefaultOperatingSystemTypes implements OperatingSystemType {
 
   private static boolean checkMusl() {
     Boolean b = cachedMusl;
-    if(b == null) {
-      synchronized(DefaultOperatingSystemTypes.class) {
+    if (b == null) {
+      synchronized (DefaultOperatingSystemTypes.class) {
         boolean check = false;
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(Files.newInputStream(Paths.get("/proc/self/maps"))))) {
           String line;
@@ -74,7 +73,7 @@ public enum DefaultOperatingSystemTypes implements OperatingSystemType {
               break;
             }
           }
-        } catch(IOException fail) {
+        } catch (IOException fail) {
           log.error("Failed to detect libc type, assuming glibc", fail);
           check = false;
         }

@@ -1,10 +1,6 @@
 package com.sedmelluq.discord.lavaplayer.tools.io;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutput;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 
 /**
  * An output for  a series of messages which each have sizes specified before the start of the message. Even when the
@@ -36,6 +32,7 @@ public class MessageOutput {
 
   /**
    * Commit previously started message to the underlying output stream.
+   *
    * @throws IOException On IO error
    */
   public void commitMessage() throws IOException {
@@ -45,6 +42,7 @@ public class MessageOutput {
 
   /**
    * Commit previously started message to the underlying output stream.
+   *
    * @param flags Flags to use when committing the message (0-3).
    * @throws IOException On IO error
    */
@@ -55,6 +53,7 @@ public class MessageOutput {
 
   /**
    * Write an end marker to the stream so that decoder knows to return null at this position.
+   *
    * @throws IOException On IO error
    */
   public void finish() throws IOException {

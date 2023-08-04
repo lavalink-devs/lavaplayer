@@ -2,11 +2,7 @@ package com.sedmelluq.discord.lavaplayer.source.twitch;
 
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManager;
-import com.sedmelluq.discord.lavaplayer.tools.DataFormatTools;
-import com.sedmelluq.discord.lavaplayer.tools.ExceptionTools;
-import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
-import com.sedmelluq.discord.lavaplayer.tools.JsonBrowser;
-import com.sedmelluq.discord.lavaplayer.tools.Units;
+import com.sedmelluq.discord.lavaplayer.tools.*;
 import com.sedmelluq.discord.lavaplayer.tools.io.HttpClientTools;
 import com.sedmelluq.discord.lavaplayer.tools.io.HttpConfigurable;
 import com.sedmelluq.discord.lavaplayer.tools.io.HttpInterface;
@@ -86,12 +82,12 @@ public class TwitchStreamAudioSourceManager implements AudioSourceManager, HttpC
       String title = channelInfo.get("lastBroadcast").get("title").text();
 
       return new TwitchStreamAudioTrack(new AudioTrackInfo(
-          title,
-          streamName,
-          Units.DURATION_MS_UNKNOWN,
-          reference.identifier,
-          true,
-          reference.identifier
+        title,
+        streamName,
+        Units.DURATION_MS_UNKNOWN,
+        reference.identifier,
+        true,
+        reference.identifier
       ), this);
     }
   }
@@ -113,6 +109,7 @@ public class TwitchStreamAudioSourceManager implements AudioSourceManager, HttpC
 
   /**
    * Extract channel identifier from a channel URL.
+   *
    * @param url Channel URL
    * @return Channel identifier (for API requests)
    */

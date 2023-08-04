@@ -1,11 +1,12 @@
 package com.sedmelluq.lava.extensions.youtuberotator;
 
-import java.io.IOException;
-import java.net.BindException;
-import java.net.SocketException;
 import org.apache.http.client.HttpRequestRetryHandler;
 import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
 import org.apache.http.protocol.HttpContext;
+
+import java.io.IOException;
+import java.net.BindException;
+import java.net.SocketException;
 
 public class YoutubeIpRotatorRetryHandler implements HttpRequestRetryHandler {
   @Override

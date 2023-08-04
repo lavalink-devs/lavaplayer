@@ -16,7 +16,7 @@ public class WavAudioTrack extends BaseAudioTrack {
   private final SeekableInputStream inputStream;
 
   /**
-   * @param trackInfo Track info
+   * @param trackInfo   Track info
    * @param inputStream Input stream for the WAV file
    */
   public WavAudioTrack(AudioTrackInfo trackInfo, SeekableInputStream inputStream) {

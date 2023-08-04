@@ -3,6 +3,7 @@ package com.sedmelluq.discord.lavaplayer.filter;
 import com.sedmelluq.discord.lavaplayer.format.transcoder.AudioChunkEncoder;
 import com.sedmelluq.discord.lavaplayer.track.playback.AudioProcessingContext;
 import com.sedmelluq.discord.lavaplayer.track.playback.MutableAudioFrame;
+
 import java.nio.ByteBuffer;
 import java.nio.ShortBuffer;
 

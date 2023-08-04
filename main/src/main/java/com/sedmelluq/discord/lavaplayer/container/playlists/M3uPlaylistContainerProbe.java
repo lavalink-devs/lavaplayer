@@ -14,10 +14,11 @@ import com.sedmelluq.discord.lavaplayer.track.AudioReference;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
 import com.sedmelluq.discord.lavaplayer.track.info.AudioTrackInfoBuilder;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import static com.sedmelluq.discord.lavaplayer.container.MediaContainerDetection.checkNextBytes;
 import static com.sedmelluq.discord.lavaplayer.container.MediaContainerDetectionResult.refer;
@@ -33,14 +34,14 @@ public class M3uPlaylistContainerProbe implements MediaContainerProbe {
   private static final String TYPE_HLS_OUTER = "hls-outer";
   private static final String TYPE_HLS_INNER = "hls-inner";
 
-  private static final int[] M3U_HEADER_TAG = new int[] { '#', 'E', 'X', 'T', 'M', '3', 'U' };
-  private static final int[] M3U_ENTRY_TAG = new int[] { '#', 'E', 'X', 'T', 'I', 'N', 'F' };
+  private static final int[] M3U_HEADER_TAG = new int[]{'#', 'E', 'X', 'T', 'M', '3', 'U'};
+  private static final int[] M3U_ENTRY_TAG = new int[]{'#', 'E', 'X', 'T', 'I', 'N', 'F'};
 
   private final HttpInterfaceManager httpInterfaceManager = new ThreadLocalHttpInterfaceManager(
-      HttpClientTools
-          .createSharedCookiesHttpBuilder()
-          .setRedirectStrategy(new HttpClientTools.NoRedirectsStrategy()),
-      HttpClientTools.DEFAULT_REQUEST_CONFIG
+    HttpClientTools
+      .createSharedCookiesHttpBuilder()
+      .setRedirectStrategy(new HttpClientTools.NoRedirectsStrategy()),
+    HttpClientTools.DEFAULT_REQUEST_CONFIG
   );
 
   @Override
@@ -72,7 +73,7 @@ public class M3uPlaylistContainerProbe implements MediaContainerProbe {
         return supportedFormat(this, TYPE_HLS_OUTER, infoBuilder.setIdentifier(httpReference.identifier).build());
       } else {
         return refer(this, new AudioReference(hlsStreamUrl, infoBuilder.getTitle(),
-            new MediaContainerDescriptor(this, TYPE_HLS_INNER)));
+          new MediaContainerDescriptor(this, TYPE_HLS_INNER)));
       }
     }
 
