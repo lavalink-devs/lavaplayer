@@ -16,127 +16,127 @@ import java.net.URISyntaxException;
  * the start position at which to start reading on a new connection.
  */
 public class YoutubePersistentHttpStream extends PersistentHttpStream {
-  private static final Logger log = LoggerFactory.getLogger(YoutubePersistentHttpStream.class);
+    private static final Logger log = LoggerFactory.getLogger(YoutubePersistentHttpStream.class);
 
-  // Valid range for requesting without throttling is 0-11862014
-  private static final long BUFFER_SIZE = 11862014;
+    // Valid range for requesting without throttling is 0-11862014
+    private static final long BUFFER_SIZE = 11862014;
 
-  private long rangeEnd;
+    private long rangeEnd;
 
-  /**
-   * @param httpInterface The HTTP interface to use for requests
-   * @param contentUrl The URL of the resource
-   * @param contentLength The length of the resource in bytes
-   */
-  public YoutubePersistentHttpStream(HttpInterface httpInterface, URI contentUrl, long contentLength) {
-    super(httpInterface, contentUrl, contentLength);
-  }
-
-  @Override
-  protected URI getConnectUrl() {
-    if (!contentUrl.toString().contains("rn=")) {
-      URI rangeUrl = getNextRangeUrl();
-
-      log.debug("Range URL: {}", rangeUrl.toString());
-
-      return rangeUrl;
-    } else {
-      return contentUrl;
+    /**
+     * @param httpInterface The HTTP interface to use for requests
+     * @param contentUrl    The URL of the resource
+     * @param contentLength The length of the resource in bytes
+     */
+    public YoutubePersistentHttpStream(HttpInterface httpInterface, URI contentUrl, long contentLength) {
+        super(httpInterface, contentUrl, contentLength);
     }
-  }
 
-  @Override
-  protected int internalRead(byte[] b, int off, int len, boolean attemptReconnect) throws IOException {
-    connect(false);
-    long nextExpectedPosition = position + len + (len / 2);
+    @Override
+    protected URI getConnectUrl() {
+        if (!contentUrl.toString().contains("rn=")) {
+            URI rangeUrl = getNextRangeUrl();
 
-    try {
-      int result;
-      if (nextExpectedPosition >= rangeEnd && rangeEnd != 0) {
-        if (rangeEnd == contentLength) {
-          result = currentContent.read(b, off, len);
-          position += result;
+            log.debug("Range URL: {}", rangeUrl.toString());
+
+            return rangeUrl;
         } else {
-          result = 0;
-          handleRangeEnd(null, attemptReconnect);
+            return contentUrl;
         }
-      } else {
-        result = currentContent.read(b, off, len);
-        if (result >= 0) {
-          position += result;
-          if (position >= rangeEnd && !contentUrl.toString().contains("rn=")) {
-            handleRangeEnd(null, attemptReconnect);
-          }
+    }
+
+    @Override
+    protected int internalRead(byte[] b, int off, int len, boolean attemptReconnect) throws IOException {
+        connect(false);
+        long nextExpectedPosition = position + len + (len / 2);
+
+        try {
+            int result;
+            if (nextExpectedPosition >= rangeEnd && rangeEnd != 0) {
+                if (rangeEnd == contentLength) {
+                    result = currentContent.read(b, off, len);
+                    position += result;
+                } else {
+                    result = 0;
+                    handleRangeEnd(null, attemptReconnect);
+                }
+            } else {
+                result = currentContent.read(b, off, len);
+                if (result >= 0) {
+                    position += result;
+                    if (position >= rangeEnd && !contentUrl.toString().contains("rn=")) {
+                        handleRangeEnd(null, attemptReconnect);
+                    }
+                }
+            }
+
+            return result;
+        } catch (IOException e) {
+            handleRangeEnd(e, attemptReconnect);
+            return internalRead(b, off, len, false);
         }
-      }
-
-      return result;
-    } catch (IOException e) {
-      handleRangeEnd(e, attemptReconnect);
-      return internalRead(b, off, len, false);
     }
-  }
 
-  @Override
-  protected long internalSkip(long n, boolean attemptReconnect) throws IOException {
-    connect(false);
-    long nextExpectedPosition = position + n;
+    @Override
+    protected long internalSkip(long n, boolean attemptReconnect) throws IOException {
+        connect(false);
+        long nextExpectedPosition = position + n;
 
-    try {
-      long result;
-      if (nextExpectedPosition >= rangeEnd && rangeEnd != 0) {
-        if (rangeEnd == contentLength) {
-          result = currentContent.skip(n);
-          position += result;
-        } else {
-          result = n;
-          position += n;
-          handleRangeEnd(null, attemptReconnect);
+        try {
+            long result;
+            if (nextExpectedPosition >= rangeEnd && rangeEnd != 0) {
+                if (rangeEnd == contentLength) {
+                    result = currentContent.skip(n);
+                    position += result;
+                } else {
+                    result = n;
+                    position += n;
+                    handleRangeEnd(null, attemptReconnect);
+                }
+            } else {
+                result = currentContent.skip(n);
+                position += result;
+                if (position >= rangeEnd && !contentUrl.toString().contains("rn=")) {
+                    handleRangeEnd(null, attemptReconnect);
+                }
+            }
+
+            return result;
+        } catch (IOException e) {
+            handleRangeEnd(e, attemptReconnect);
+            return internalSkip(n, false);
         }
-      } else {
-        result = currentContent.skip(n);
-        position += result;
-        if (position >= rangeEnd && !contentUrl.toString().contains("rn=")) {
-          handleRangeEnd(null, attemptReconnect);
+    }
+
+    private URI getNextRangeUrl() {
+        rangeEnd = position + BUFFER_SIZE;
+
+        if (rangeEnd > contentLength) {
+            rangeEnd = contentLength;
         }
-      }
 
-      return result;
-    } catch (IOException e) {
-      handleRangeEnd(e, attemptReconnect);
-      return internalSkip(n, false);
-    }
-  }
-
-  private URI getNextRangeUrl() {
-    rangeEnd = position + BUFFER_SIZE;
-
-    if (rangeEnd > contentLength) {
-      rangeEnd = contentLength;
+        try {
+            return new URIBuilder(contentUrl).addParameter("range", position + "-" + rangeEnd).build();
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    try {
-      return new URIBuilder(contentUrl).addParameter("range", position + "-" + rangeEnd).build();
-    } catch (URISyntaxException e) {
-      throw new RuntimeException(e);
-    }
-  }
+    private void handleRangeEnd(IOException exception, boolean attemptReconnect) throws IOException {
+        if (!attemptReconnect || (!HttpClientTools.isRetriableNetworkException(exception) && exception != null)) {
+            throw exception;
+        }
 
-  private void handleRangeEnd(IOException exception, boolean attemptReconnect) throws IOException {
-    if (!attemptReconnect || (!HttpClientTools.isRetriableNetworkException(exception) && exception != null)) {
-      throw exception;
+        close();
     }
 
-    close();
-  }
+    @Override
+    protected boolean useHeadersForRange() {
+        return false;
+    }
 
-  @Override
-  protected boolean useHeadersForRange() {
-    return false;
-  }
-
-  @Override
-  public boolean canSeekHard() {
-    return true;
-  }
+    @Override
+    public boolean canSeekHard() {
+        return true;
+    }
 }

@@ -15,7 +15,7 @@ public class PcmFormat {
 
   /**
    * @param channelCount See {@link #channelCount}.
-   * @param sampleRate See {@link #sampleRate}.
+   * @param sampleRate   See {@link #sampleRate}.
    */
   public PcmFormat(int channelCount, int sampleRate) {
     this.channelCount = channelCount;

@@ -14,7 +14,7 @@ public class YoutubeCipherOperation {
   public final int parameter;
 
   /**
-   * @param type The type of the operation.
+   * @param type      The type of the operation.
    * @param parameter The parameter for the operation.
    */
   public YoutubeCipherOperation(YoutubeCipherOperationType type, int parameter) {
