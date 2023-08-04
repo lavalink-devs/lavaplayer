@@ -20,8 +20,8 @@ public class TrackStuckEvent extends AudioEvent {
   public final StackTraceElement[] stackTrace;
 
   /**
-   * @param player Audio player
-   * @param track Audio track where the exception occurred
+   * @param player      Audio player
+   * @param track       Audio track where the exception occurred
    * @param thresholdMs The wait threshold that was exceeded for this event to trigger
    */
   public TrackStuckEvent(AudioPlayer player, AudioTrack track, long thresholdMs, StackTraceElement[] stackTrace) {

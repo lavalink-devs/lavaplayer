@@ -3,6 +3,7 @@ package com.sedmelluq.discord.lavaplayer.container.mp3;
 import com.sedmelluq.discord.lavaplayer.natives.mp3.Mp3Decoder;
 import com.sedmelluq.discord.lavaplayer.tools.DataFormatTools;
 import com.sedmelluq.discord.lavaplayer.tools.io.SeekableInputStream;
+
 import java.io.IOException;
 
 import static com.sedmelluq.discord.lavaplayer.natives.mp3.Mp3Decoder.MPEG1_SAMPLES_PER_FRAME;
@@ -13,9 +14,9 @@ import static com.sedmelluq.discord.lavaplayer.natives.mp3.Mp3Decoder.MPEG1_SAMP
  */
 public class Mp3ConstantRateSeeker implements Mp3Seeker {
   private static final int META_TAG_OFFSET = 36;
-  private static final byte[][] META_TAGS = new byte[][] {
-      new byte[] {'I', 'n', 'f', 'o'},
-      new byte[] { 'L', 'A', 'M', 'E' }
+  private static final byte[][] META_TAGS = new byte[][]{
+    new byte[]{'I', 'n', 'f', 'o'},
+    new byte[]{'L', 'A', 'M', 'E'}
   };
 
   private final double averageFrameSize;
@@ -32,8 +33,8 @@ public class Mp3ConstantRateSeeker implements Mp3Seeker {
 
   /**
    * @param firstFramePosition Position of the first frame in the file
-   * @param contentLength Total length of the file
-   * @param frameBuffer Buffer of the first frame
+   * @param contentLength      Total length of the file
+   * @param frameBuffer        Buffer of the first frame
    * @return Constant rate seeker, will always succeed, never null.
    */
   public static Mp3ConstantRateSeeker createFromFrame(long firstFramePosition, long contentLength, byte[] frameBuffer) {

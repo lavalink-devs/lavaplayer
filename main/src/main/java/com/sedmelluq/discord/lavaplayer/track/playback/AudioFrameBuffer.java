@@ -18,6 +18,7 @@ public interface AudioFrameBuffer extends AudioFrameProvider, AudioFrameConsumer
 
   /**
    * Wait until another thread has consumed a terminator frame from this buffer
+   *
    * @throws InterruptedException When interrupted externally (or for seek/stop).
    */
   void waitForTermination() throws InterruptedException;
@@ -56,7 +57,7 @@ public interface AudioFrameBuffer extends AudioFrameProvider, AudioFrameConsumer
 
   /**
    * @return The timecode of the last frame in the buffer, null if the buffer is empty or is marked to be cleared upon
-   *         receiving the next frame.
+   * receiving the next frame.
    */
   Long getLastInputTimecode();
 }

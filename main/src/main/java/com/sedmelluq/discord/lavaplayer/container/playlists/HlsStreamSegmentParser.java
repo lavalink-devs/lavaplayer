@@ -1,10 +1,11 @@
 package com.sedmelluq.discord.lavaplayer.container.playlists;
 
 import com.sedmelluq.discord.lavaplayer.tools.io.HttpInterface;
+import org.apache.http.client.methods.HttpGet;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.http.client.methods.HttpGet;
 
 import static com.sedmelluq.discord.lavaplayer.tools.io.HttpClientTools.fetchResponseLines;
 

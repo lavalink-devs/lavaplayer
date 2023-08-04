@@ -5,7 +5,7 @@ package com.sedmelluq.discord.lavaplayer.filter;
  */
 public interface SplitShortPcmAudioFilter extends AudioFilter {
   /**
-   * @param input An array of samples for each channel
+   * @param input  An array of samples for each channel
    * @param offset Offset in the array
    * @param length Length of the sequence in the array
    * @throws InterruptedException When interrupted externally (or for seek/stop).

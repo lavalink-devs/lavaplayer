@@ -21,25 +21,25 @@ public class YoutubeTrackFormat {
   private final boolean defaultAudioTrack;
 
   /**
-   * @param type Mime type of the format
-   * @param bitrate Bitrate of the format
+   * @param type          Mime type of the format
+   * @param bitrate       Bitrate of the format
    * @param contentLength Length in bytes of the media
    * @param audioChannels Number of audio channels
-   * @param url Base URL for the playback of this format
-   * @param nParameter n parameter for this format
-   * @param signature Cipher signature for this format
-   * @param signatureKey The key to use for deciphered signature in the final playback URL
+   * @param url           Base URL for the playback of this format
+   * @param nParameter    n parameter for this format
+   * @param signature     Cipher signature for this format
+   * @param signatureKey  The key to use for deciphered signature in the final playback URL
    */
   public YoutubeTrackFormat(
-      ContentType type,
-      long bitrate,
-      long contentLength,
-      long audioChannels,
-      String url,
-      String nParameter,
-      String signature,
-      String signatureKey,
-      boolean isDefaultAudioTrack
+    ContentType type,
+    long bitrate,
+    long contentLength,
+    long audioChannels,
+    String url,
+    String nParameter,
+    String signature,
+    String signatureKey,
+    boolean isDefaultAudioTrack
   ) {
     this.info = YoutubeFormatInfo.get(type);
     this.type = type;

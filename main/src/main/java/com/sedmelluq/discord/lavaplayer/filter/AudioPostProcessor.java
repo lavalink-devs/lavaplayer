@@ -11,7 +11,7 @@ public interface AudioPostProcessor {
    * the output format.
    *
    * @param timecode Absolute starting timecode of the chunk in milliseconds
-   * @param buffer PCM buffer of samples in the chunk
+   * @param buffer   PCM buffer of samples in the chunk
    * @throws InterruptedException When interrupted externally (or for seek/stop).
    */
   void process(long timecode, ShortBuffer buffer) throws InterruptedException;

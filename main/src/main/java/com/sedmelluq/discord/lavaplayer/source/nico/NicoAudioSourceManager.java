@@ -12,16 +12,6 @@ import com.sedmelluq.discord.lavaplayer.track.AudioItem;
 import com.sedmelluq.discord.lavaplayer.track.AudioReference;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.apache.http.Header;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
@@ -34,6 +24,17 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.parser.Parser;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.COMMON;
 import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.SUSPICIOUS;
@@ -52,7 +53,7 @@ public class NicoAudioSourceManager implements AudioSourceManager, HttpConfigura
   private final AtomicBoolean loggedIn;
 
   /**
-   * @param email Site account email
+   * @param email    Site account email
    * @param password Site account password
    */
   public NicoAudioSourceManager(String email, String password) {
@@ -154,8 +155,8 @@ public class NicoAudioSourceManager implements AudioSourceManager, HttpConfigura
       HttpPost loginRequest = new HttpPost("https://secure.nicovideo.jp/secure/login");
 
       loginRequest.setEntity(new UrlEncodedFormEntity(Arrays.asList(
-          new BasicNameValuePair("mail", email),
-          new BasicNameValuePair("password", password)
+        new BasicNameValuePair("mail", email),
+        new BasicNameValuePair("password", password)
       ), StandardCharsets.UTF_8));
 
       try (HttpInterface httpInterface = getHttpInterface()) {

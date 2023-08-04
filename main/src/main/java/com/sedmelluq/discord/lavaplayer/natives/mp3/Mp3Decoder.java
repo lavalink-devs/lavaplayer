@@ -1,6 +1,7 @@
 package com.sedmelluq.discord.lavaplayer.natives.mp3;
 
 import com.sedmelluq.lava.common.natives.NativeResourceHolder;
+
 import java.nio.ByteBuffer;
 import java.nio.ShortBuffer;
 
@@ -32,7 +33,8 @@ public class Mp3Decoder extends NativeResourceHolder {
 
   /**
    * Encode the input buffer to output.
-   * @param directInput Input byte buffer
+   *
+   * @param directInput  Input byte buffer
    * @param directOutput Output sample buffer
    * @return Number of samples written to the output
    */
@@ -72,20 +74,34 @@ public class Mp3Decoder extends NativeResourceHolder {
 
   private static int getFrameBitRateV1(byte[] buffer, int offset) {
     switch ((buffer[offset + 2] & 0xF0) >>> 4) {
-      case 1: return 32000;
-      case 2: return 40000;
-      case 3: return 48000;
-      case 4: return 56000;
-      case 5: return 64000;
-      case 6: return 80000;
-      case 7: return 96000;
-      case 8: return 112000;
-      case 9: return 128000;
-      case 10: return 160000;
-      case 11: return 192000;
-      case 12: return 224000;
-      case 13: return 256000;
-      case 14: return 320000;
+      case 1:
+        return 32000;
+      case 2:
+        return 40000;
+      case 3:
+        return 48000;
+      case 4:
+        return 56000;
+      case 5:
+        return 64000;
+      case 6:
+        return 80000;
+      case 7:
+        return 96000;
+      case 8:
+        return 112000;
+      case 9:
+        return 128000;
+      case 10:
+        return 160000;
+      case 11:
+        return 192000;
+      case 12:
+        return 224000;
+      case 13:
+        return 256000;
+      case 14:
+        return 320000;
       default:
         throw new IllegalArgumentException("Not valid bitrate");
     }
@@ -93,20 +109,34 @@ public class Mp3Decoder extends NativeResourceHolder {
 
   private static int getFrameBitRateV2(byte[] buffer, int offset) {
     switch ((buffer[offset + 2] & 0xF0) >>> 4) {
-      case 1: return 8000;
-      case 2: return 16000;
-      case 3: return 24000;
-      case 4: return 32000;
-      case 5: return 40000;
-      case 6: return 48000;
-      case 7: return 56000;
-      case 8: return 64000;
-      case 9: return 80000;
-      case 10: return 96000;
-      case 11: return 112000;
-      case 12: return 128000;
-      case 13: return 144000;
-      case 14: return 160000;
+      case 1:
+        return 8000;
+      case 2:
+        return 16000;
+      case 3:
+        return 24000;
+      case 4:
+        return 32000;
+      case 5:
+        return 40000;
+      case 6:
+        return 48000;
+      case 7:
+        return 56000;
+      case 8:
+        return 64000;
+      case 9:
+        return 80000;
+      case 10:
+        return 96000;
+      case 11:
+        return 112000;
+      case 12:
+        return 128000;
+      case 13:
+        return 144000;
+      case 14:
+        return 160000;
       default:
         throw new IllegalArgumentException("Not valid bitrate");
     }
@@ -118,6 +148,7 @@ public class Mp3Decoder extends NativeResourceHolder {
 
   /**
    * Get the sample rate for the current frame
+   *
    * @param buffer Buffer which contains the frame header
    * @param offset Offset to the frame header
    * @return Sample rate
@@ -128,6 +159,7 @@ public class Mp3Decoder extends NativeResourceHolder {
 
   /**
    * Get the number of channels in the current frame
+   *
    * @param buffer Buffer which contains the frame header
    * @param offset Offset to the frame header
    * @return Number of channels
@@ -138,9 +170,12 @@ public class Mp3Decoder extends NativeResourceHolder {
 
   private static int getFrameSampleRateV1(byte[] buffer, int offset) {
     switch ((buffer[offset + 2] & 0x0C) >>> 2) {
-      case 0: return 44100;
-      case 1: return 48000;
-      case 2: return 32000;
+      case 0:
+        return 44100;
+      case 1:
+        return 48000;
+      case 2:
+        return 32000;
       default:
         throw new IllegalArgumentException("Not valid sample rate");
     }
@@ -148,9 +183,12 @@ public class Mp3Decoder extends NativeResourceHolder {
 
   private static int getFrameSampleRateV2(byte[] buffer, int offset) {
     switch ((buffer[offset + 2] & 0x0C) >>> 2) {
-      case 0: return 22050;
-      case 1: return 24000;
-      case 2: return 16000;
+      case 0:
+        return 22050;
+      case 1:
+        return 24000;
+      case 2:
+        return 16000;
       default:
         throw new IllegalArgumentException("Not valid sample rate");
     }
@@ -158,6 +196,7 @@ public class Mp3Decoder extends NativeResourceHolder {
 
   /**
    * Get the frame size of the specified 4 bytes
+   *
    * @param buffer Buffer which contains the frame header
    * @param offset Offset to the frame header
    * @return Frame size, or zero if not a valid frame header
@@ -168,11 +207,11 @@ public class Mp3Decoder extends NativeResourceHolder {
     int third = buffer[offset + 2] & 0xFF;
 
     boolean invalid = (first != 0xFF || (second & 0xE0) != 0xE0) // Frame sync does not match
-        || (second & 0x10) != 0x10 // Not MPEG-1 nor MPEG-2, not dealing with this stuff
-        || (second & 0x06) != 0x02 // Not Layer III, not dealing with this stuff
-        || (third & 0xF0) == 0x00 // No defined bitrate
-        || (third & 0xF0) == 0xF0 // Invalid bitrate
-        || (third & 0x0C) == 0x0C; // Invalid sampling rate
+      || (second & 0x10) != 0x10 // Not MPEG-1 nor MPEG-2, not dealing with this stuff
+      || (second & 0x06) != 0x02 // Not Layer III, not dealing with this stuff
+      || (third & 0xF0) == 0x00 // No defined bitrate
+      || (third & 0xF0) == 0xF0 // Invalid bitrate
+      || (third & 0x0C) == 0x0C; // Invalid sampling rate
 
     if (invalid) {
       return 0;
@@ -187,6 +226,7 @@ public class Mp3Decoder extends NativeResourceHolder {
 
   /**
    * Get the average frame size based on this frame
+   *
    * @param buffer Buffer which contains the frame header
    * @param offset Offset to the frame header
    * @return Average frame size, assuming CBR

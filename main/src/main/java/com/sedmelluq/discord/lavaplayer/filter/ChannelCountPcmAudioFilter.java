@@ -5,7 +5,7 @@ import java.nio.ShortBuffer;
 /**
  * For short PCM buffers, guarantees that the output has the required number of channels and that no outgoing
  * buffer contains any partial frames.
- *
+ * <p>
  * For example if the input is three channels, and output is two channels, then:
  * in [0, 1, 2, 0, 1, 2, 0, 1] out [0, 1, 0, 1] saved [0, 1]
  * in [2, 0, 1, 2] out [0, 1, 0, 1] saved []
@@ -23,9 +23,9 @@ public class ChannelCountPcmAudioFilter implements UniversalPcmAudioFilter {
   private int inputIndex;
 
   /**
-   * @param inputChannels Number of input channels
+   * @param inputChannels  Number of input channels
    * @param outputChannels Number of output channels
-   * @param downstream The next filter in line
+   * @param downstream     The next filter in line
    */
   public ChannelCountPcmAudioFilter(int inputChannels, int outputChannels, UniversalPcmAudioFilter downstream) {
     this.downstream = downstream;

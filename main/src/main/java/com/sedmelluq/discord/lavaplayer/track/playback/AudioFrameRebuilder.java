@@ -6,6 +6,7 @@ package com.sedmelluq.discord.lavaplayer.track.playback;
 public interface AudioFrameRebuilder {
   /**
    * Rebuilds a frame (for example by reencoding)
+   *
    * @param frame The audio frame
    * @return The new frame (may be the same as input)
    */

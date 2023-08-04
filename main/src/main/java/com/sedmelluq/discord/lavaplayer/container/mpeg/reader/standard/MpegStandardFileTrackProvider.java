@@ -5,6 +5,7 @@ import com.sedmelluq.discord.lavaplayer.container.mpeg.reader.MpegFileTrackProvi
 import com.sedmelluq.discord.lavaplayer.container.mpeg.reader.MpegReader;
 import com.sedmelluq.discord.lavaplayer.container.mpeg.reader.MpegVersionedSectionInfo;
 import com.sedmelluq.discord.lavaplayer.tools.io.DetachedByteChannel;
+
 import java.io.IOException;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
@@ -104,7 +105,8 @@ public class MpegStandardFileTrackProvider implements MpegFileTrackProvider {
 
   /**
    * Read the mdhd section for a track.
-   * @param mdhd The section header
+   *
+   * @param mdhd    The section header
    * @param trackId Track ID
    * @throws IOException On read error.
    */
@@ -128,18 +130,19 @@ public class MpegStandardFileTrackProvider implements MpegFileTrackProvider {
 
   /**
    * Attaches standard format specific handlers to sample table section handle chain.
+   *
    * @param sampleTableChain Sample table child section handler chain.
-   * @param trackId Track ID
+   * @param trackId          Track ID
    */
   public void attachSampleTableParsers(MpegReader.Chain sampleTableChain, int trackId) {
     final TrackSeekInfoBuilder seekInfoBuilder = new TrackSeekInfoBuilder(trackId);
 
     sampleTableChain
-        .handleVersioned("stts", stts -> parseTimeToSample(seekInfoBuilder))
-        .handleVersioned("stsc", stsc -> parseSampleToChunk(seekInfoBuilder))
-        .handleVersioned("stsz", stsz -> parseSampleSizes(seekInfoBuilder))
-        .handleVersioned("stco", stco -> parseChunkOffsets32(seekInfoBuilder))
-        .handleVersioned("co64", co64 -> parseChunkOffsets64(seekInfoBuilder));
+      .handleVersioned("stts", stts -> parseTimeToSample(seekInfoBuilder))
+      .handleVersioned("stsc", stsc -> parseSampleToChunk(seekInfoBuilder))
+      .handleVersioned("stsz", stsz -> parseSampleSizes(seekInfoBuilder))
+      .handleVersioned("stco", stco -> parseChunkOffsets32(seekInfoBuilder))
+      .handleVersioned("co64", co64 -> parseChunkOffsets64(seekInfoBuilder));
 
     builders.add(seekInfoBuilder);
   }

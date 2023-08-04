@@ -22,9 +22,9 @@ public class MpegGlobalSeekInfo {
   public final long[] fileOffsets;
 
   /**
-   * @param timescale The value of the internal timecodes that corresponds to one second
+   * @param timescale  The value of the internal timecodes that corresponds to one second
    * @param baseOffset The file offset of the first segment
-   * @param entries Size and duration information for each segment
+   * @param entries    Size and duration information for each segment
    */
   public MpegGlobalSeekInfo(int timescale, long baseOffset, MpegSegmentEntry[] entries) {
     this.timescale = timescale;
@@ -35,8 +35,8 @@ public class MpegGlobalSeekInfo {
     fileOffsets[0] = baseOffset;
 
     for (int i = 1; i < entries.length; i++) {
-      timeOffsets[i] = timeOffsets[i-1] + entries[i-1].duration;
-      fileOffsets[i] = fileOffsets[i-1] + entries[i-1].size;
+      timeOffsets[i] = timeOffsets[i - 1] + entries[i - 1].duration;
+      fileOffsets[i] = fileOffsets[i - 1] + entries[i - 1].size;
     }
   }
 }

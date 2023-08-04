@@ -46,7 +46,7 @@ public class YoutubeSignatureCipher {
   }
 
   /**
-   * @param text Text to transform
+   * @param text         Text to transform
    * @param scriptEngine JavaScript engine to execute function
    * @return The result of the n parameter transformation
    */

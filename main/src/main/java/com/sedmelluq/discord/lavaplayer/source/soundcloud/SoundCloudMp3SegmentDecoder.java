@@ -3,6 +3,7 @@ package com.sedmelluq.discord.lavaplayer.source.soundcloud;
 import com.sedmelluq.discord.lavaplayer.container.mp3.Mp3TrackProvider;
 import com.sedmelluq.discord.lavaplayer.tools.io.SeekableInputStream;
 import com.sedmelluq.discord.lavaplayer.track.playback.AudioProcessingContext;
+
 import java.io.IOException;
 import java.util.function.Supplier;
 
@@ -25,9 +26,9 @@ public class SoundCloudMp3SegmentDecoder implements SoundCloudSegmentDecoder {
 
   @Override
   public void playStream(
-      AudioProcessingContext context,
-      long startPosition,
-      long desiredPosition
+    AudioProcessingContext context,
+    long startPosition,
+    long desiredPosition
   ) throws InterruptedException, IOException {
     try (SeekableInputStream stream = nextStreamProvider.get()) {
       Mp3TrackProvider trackProvider = new Mp3TrackProvider(context, stream);

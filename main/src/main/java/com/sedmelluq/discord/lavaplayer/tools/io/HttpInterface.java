@@ -2,14 +2,15 @@ package com.sedmelluq.discord.lavaplayer.tools.io;
 
 import com.sedmelluq.discord.lavaplayer.tools.ExceptionTools;
 import com.sedmelluq.discord.lavaplayer.tools.http.HttpContextFilter;
-import java.io.Closeable;
-import java.io.IOException;
-import java.net.URI;
-import java.util.List;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.impl.client.CloseableHttpClient;
+
+import java.io.Closeable;
+import java.io.IOException;
+import java.net.URI;
+import java.util.List;
 
 /**
  * An HTTP interface for performing HTTP requests in one specific thread. This also means it is not thread safe and should
@@ -25,8 +26,8 @@ public class HttpInterface implements Closeable {
   private boolean available;
 
   /**
-   * @param client The http client instance used.
-   * @param context The http context instance used.
+   * @param client      The http client instance used.
+   * @param context     The http context instance used.
    * @param ownedClient True if the client should be closed when this instance is closed.
    * @param filter
    */
@@ -83,10 +84,10 @@ public class HttpInterface implements Closeable {
             throw (RuntimeException) e;
           } else //noinspection ConstantConditions
             if (e instanceof IOException) {
-            throw (IOException) e;
-          } else {
-            throw new RuntimeException(e);
-          }
+              throw (IOException) e;
+            } else {
+              throw new RuntimeException(e);
+            }
         } else {
           ExceptionTools.rethrowErrors(e);
         }
@@ -98,7 +99,7 @@ public class HttpInterface implements Closeable {
 
   /**
    * @return The final URL after redirects for the last processed request. Original URL if no redirects were performed.
-   *         Null if no requests have been executed. Undefined state if last request threw an exception.
+   * Null if no requests have been executed. Undefined state if last request threw an exception.
    */
   public URI getFinalLocation() {
     List<URI> redirectLocations = context.getRedirectLocations();

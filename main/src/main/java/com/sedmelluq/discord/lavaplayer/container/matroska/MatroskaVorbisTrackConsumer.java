@@ -7,6 +7,7 @@ import com.sedmelluq.discord.lavaplayer.filter.AudioPipelineFactory;
 import com.sedmelluq.discord.lavaplayer.filter.PcmFormat;
 import com.sedmelluq.discord.lavaplayer.natives.vorbis.VorbisDecoder;
 import com.sedmelluq.discord.lavaplayer.track.playback.AudioProcessingContext;
+
 import java.nio.ByteBuffer;
 
 /**
@@ -25,7 +26,7 @@ public class MatroskaVorbisTrackConsumer implements MatroskaTrackConsumer {
 
   /**
    * @param context Configuration and output information for processing
-   * @param track The associated matroska track
+   * @param track   The associated matroska track
    */
   public MatroskaVorbisTrackConsumer(AudioProcessingContext context, MatroskaFileTrack track) {
 
@@ -35,7 +36,7 @@ public class MatroskaVorbisTrackConsumer implements MatroskaTrackConsumer {
 
     AudioDetails audioTrack = fillMissingDetails(track.audio, track.codecPrivate);
     this.downstream = AudioPipelineFactory.create(context,
-        new PcmFormat(audioTrack.channels, (int) audioTrack.samplingFrequency));
+      new PcmFormat(audioTrack.channels, (int) audioTrack.samplingFrequency));
   }
 
   @Override

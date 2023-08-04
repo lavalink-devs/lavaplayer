@@ -2,12 +2,13 @@ package com.sedmelluq.discord.lavaplayer.filter;
 
 import com.sedmelluq.discord.lavaplayer.format.AudioDataFormat;
 import com.sedmelluq.discord.lavaplayer.track.playback.AudioProcessingContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.ShortBuffer;
 import java.util.Collection;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Collects buffers of the required chunk size and passes them on to audio post processors.
@@ -25,15 +26,15 @@ public class FinalPcmAudioFilter implements UniversalPcmAudioFilter {
   private long timecodeSampleOffset;
 
   /**
-   * @param context Configuration and output information for processing
+   * @param context        Configuration and output information for processing
    * @param postProcessors Post processors to pass the final audio buffers to
    */
   public FinalPcmAudioFilter(AudioProcessingContext context, Collection<AudioPostProcessor> postProcessors) {
     this.format = context.outputFormat;
     this.frameBuffer = ByteBuffer
-        .allocateDirect(format.totalSampleCount() * 2)
-        .order(ByteOrder.nativeOrder())
-        .asShortBuffer();
+      .allocateDirect(format.totalSampleCount() * 2)
+      .order(ByteOrder.nativeOrder())
+      .asShortBuffer();
     this.postProcessors = postProcessors;
 
     timecodeBase = 0;
@@ -41,7 +42,7 @@ public class FinalPcmAudioFilter implements UniversalPcmAudioFilter {
   }
 
   private short decodeSample(float sample) {
-    return (short) Math.min(Math.max((int)(sample * 32768.f), -32768), 32767);
+    return (short) Math.min(Math.max((int) (sample * 32768.f), -32768), 32767);
   }
 
   @Override

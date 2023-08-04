@@ -6,10 +6,6 @@ import com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeTrackJsonData;
 import com.sedmelluq.discord.lavaplayer.tools.DataFormatTools;
 import com.sedmelluq.discord.lavaplayer.tools.io.HttpClientTools;
 import com.sedmelluq.discord.lavaplayer.tools.io.HttpInterface;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.entity.ContentType;
@@ -20,14 +16,19 @@ import org.jsoup.parser.Parser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 public class LegacyDashMpdFormatsExtractor implements YoutubeTrackFormatExtractor {
   private static final Logger log = LoggerFactory.getLogger(LegacyDashMpdFormatsExtractor.class);
 
   @Override
   public List<YoutubeTrackFormat> extract(
-      YoutubeTrackJsonData data,
-      HttpInterface httpInterface,
-      YoutubeSignatureResolver signatureResolver
+    YoutubeTrackJsonData data,
+    HttpInterface httpInterface,
+    YoutubeSignatureResolver signatureResolver
   ) {
     String dashUrl = data.polymerArguments.get("dashmpd").text();
 
@@ -43,10 +44,10 @@ public class LegacyDashMpdFormatsExtractor implements YoutubeTrackFormatExtracto
   }
 
   private List<YoutubeTrackFormat> loadTrackFormatsFromDash(
-      String dashUrl,
-      HttpInterface httpInterface,
-      YoutubeSignatureResolver signatureResolver,
-      String playerScriptUrl
+    String dashUrl,
+    HttpInterface httpInterface,
+    YoutubeSignatureResolver signatureResolver,
+    String playerScriptUrl
   ) throws Exception {
     String resolvedDashUrl = signatureResolver.resolveDashUrl(httpInterface, playerScriptUrl, dashUrl);
 
@@ -54,7 +55,7 @@ public class LegacyDashMpdFormatsExtractor implements YoutubeTrackFormatExtracto
       HttpClientTools.assertSuccessWithContent(response, "track info page response");
 
       Document document = Jsoup.parse(response.getEntity().getContent(), StandardCharsets.UTF_8.name(), "",
-          Parser.xmlParser());
+        Parser.xmlParser());
       return loadTrackFormatsFromDashDocument(document);
     }
   }
@@ -76,15 +77,15 @@ public class LegacyDashMpdFormatsExtractor implements YoutubeTrackFormatExtracto
         }
 
         tracks.add(new YoutubeTrackFormat(
-            ContentType.parse(contentType),
-            Long.parseLong(representation.attr("bandwidth")),
-            Long.parseLong(contentLength),
-            2,
-            url,
-            "",
-            null,
-            DEFAULT_SIGNATURE_KEY,
-            true
+          ContentType.parse(contentType),
+          Long.parseLong(representation.attr("bandwidth")),
+          Long.parseLong(contentLength),
+          2,
+          url,
+          "",
+          null,
+          DEFAULT_SIGNATURE_KEY,
+          true
         ));
       }
     }

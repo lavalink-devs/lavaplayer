@@ -1,12 +1,8 @@
 package com.sedmelluq.discord.lavaplayer.container.matroska;
 
-import com.sedmelluq.discord.lavaplayer.container.matroska.format.MatroskaBlock;
-import com.sedmelluq.discord.lavaplayer.container.matroska.format.MatroskaCuePoint;
-import com.sedmelluq.discord.lavaplayer.container.matroska.format.MatroskaElement;
-import com.sedmelluq.discord.lavaplayer.container.matroska.format.MatroskaElementType;
-import com.sedmelluq.discord.lavaplayer.container.matroska.format.MatroskaFileReader;
-import com.sedmelluq.discord.lavaplayer.container.matroska.format.MatroskaFileTrack;
+import com.sedmelluq.discord.lavaplayer.container.matroska.format.*;
 import com.sedmelluq.discord.lavaplayer.tools.io.SeekableInputStream;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -90,10 +86,9 @@ public class MatroskaStreamingFile {
 
     if (segmentElement.is(MatroskaElementType.Segment)) {
       parseSegmentElement(segmentElement);
-    }
-    else {
+    } else {
       throw new RuntimeException(String.format("Segment not the second element in the file: was %s (%d) instead",
-          segmentElement.getType().name(), segmentElement.getId()));
+        segmentElement.getType().name(), segmentElement.getId()));
     }
   }
 
@@ -225,7 +220,8 @@ public class MatroskaStreamingFile {
 
   /**
    * Perform a seek to a specified timecode
-   * @param trackId ID of the reference track
+   *
+   * @param trackId  ID of the reference track
    * @param timecode Timecode using the timescale of the file
    */
   public void seekToTimecode(int trackId, long timecode) {
@@ -282,6 +278,7 @@ public class MatroskaStreamingFile {
 
   /**
    * Provide data chunks for the specified track consumer
+   *
    * @param consumer Track data consumer
    * @throws InterruptedException When interrupted externally (or for seek/stop).
    */
@@ -289,7 +286,7 @@ public class MatroskaStreamingFile {
     try {
       long position = reader.getPosition();
       MatroskaElement child = position == firstClusterElement.getDataPosition()
-          ? firstClusterElement : reader.readNextElement(segmentElement);
+        ? firstClusterElement : reader.readNextElement(segmentElement);
 
       while (child != null) {
         if (child.is(MatroskaElementType.Cluster)) {
@@ -327,7 +324,7 @@ public class MatroskaStreamingFile {
   }
 
   private void parseClusterSimpleBlock(MatroskaElement simpleBlock, MatroskaTrackConsumer consumer, long clusterTimecode)
-      throws InterruptedException, IOException {
+    throws InterruptedException, IOException {
 
     MatroskaBlock block = reader.readBlockHeader(simpleBlock, consumer.getTrack().index);
 
@@ -337,7 +334,7 @@ public class MatroskaStreamingFile {
   }
 
   private void parseClusterBlockGroup(MatroskaElement blockGroup, MatroskaTrackConsumer consumer, long clusterTimecode)
-      throws InterruptedException, IOException {
+    throws InterruptedException, IOException {
 
     MatroskaElement child;
 
@@ -355,7 +352,7 @@ public class MatroskaStreamingFile {
   }
 
   private void processFrameInBlock(MatroskaBlock block, MatroskaTrackConsumer consumer, long clusterTimecode)
-      throws InterruptedException, IOException {
+    throws InterruptedException, IOException {
 
     long timecode = clusterTimecode + block.getTimecode();
 

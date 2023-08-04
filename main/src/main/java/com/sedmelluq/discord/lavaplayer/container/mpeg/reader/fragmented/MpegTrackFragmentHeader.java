@@ -26,11 +26,11 @@ public class MpegTrackFragmentHeader {
   public final int[] sampleSizes;
 
   /**
-   * @param trackId Track ID which this header is for
-   * @param baseTimecode The timecode at which this track is at the start of this fragment
-   * @param dataOffset The offset of the data for this track in this fragment
+   * @param trackId         Track ID which this header is for
+   * @param baseTimecode    The timecode at which this track is at the start of this fragment
+   * @param dataOffset      The offset of the data for this track in this fragment
    * @param sampleDurations Duration of each sample for this track in this fragment using file timescale
-   * @param sampleSizes Size of each sample for this track in this fragment
+   * @param sampleSizes     Size of each sample for this track in this fragment
    */
   public MpegTrackFragmentHeader(int trackId, long baseTimecode, int dataOffset, int[] sampleDurations, int[] sampleSizes) {
     this.trackId = trackId;
@@ -84,9 +84,10 @@ public class MpegTrackFragmentHeader {
 
     /**
      * Create sample duration and size arrays
+     *
      * @param hasDurations If duration data is present
-     * @param hasSizes If size data is present
-     * @param sampleCount Number of samples
+     * @param hasSizes     If size data is present
+     * @param sampleCount  Number of samples
      */
     public void createSampleArrays(boolean hasDurations, boolean hasSizes, int sampleCount) {
       this.sampleCount = sampleCount;
@@ -102,7 +103,8 @@ public class MpegTrackFragmentHeader {
 
     /**
      * Set the duration of a specific sample
-     * @param i Sample index
+     *
+     * @param i     Sample index
      * @param value Duration using the file timescale
      */
     public void setDuration(int i, int value) {
@@ -111,7 +113,8 @@ public class MpegTrackFragmentHeader {
 
     /**
      * Set the size of a specific sample
-     * @param i Sample index
+     *
+     * @param i     Sample index
      * @param value Size
      */
     public void setSize(int i, int value) {

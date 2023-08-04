@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -42,6 +43,7 @@ public class JsonBrowser {
 
   /**
    * Get an element at an index for a list value
+   *
    * @param index List index
    * @return JsonBrowser instance which wraps the value at the specified index
    */
@@ -55,6 +57,7 @@ public class JsonBrowser {
 
   /**
    * Get an element by key from a map value
+   *
    * @param key Map key
    * @return JsonBrowser instance which wraps the value with the specified key
    */
@@ -68,7 +71,8 @@ public class JsonBrowser {
 
   /**
    * Put a value into the map if this instance contains a map.
-   * @param key The map entry key
+   *
+   * @param key  The map entry key
    * @param item The map entry value
    */
   public void put(String key, Object item) {
@@ -85,6 +89,7 @@ public class JsonBrowser {
 
   /**
    * Returns a list of all the values in this element
+   *
    * @return The list of values as JsonBrowser elements
    */
   public List<JsonBrowser> values() {
@@ -99,6 +104,7 @@ public class JsonBrowser {
 
   /**
    * Attempt to retrieve the value in the specified format
+   *
    * @param klass The class to retrieve the value as
    * @return The value as an instance of the specified class
    * @throws IllegalArgumentException If conversion is impossible
@@ -196,6 +202,7 @@ public class JsonBrowser {
 
   /**
    * Parse from string.
+   *
    * @param json The JSON object as a string
    * @return JsonBrowser instance for navigating in the result
    * @throws IOException When parsing the JSON failed
@@ -206,6 +213,7 @@ public class JsonBrowser {
 
   /**
    * Parse from string.
+   *
    * @param stream The JSON object as a stream
    * @return JsonBrowser instance for navigating in the result
    * @throws IOException When parsing the JSON failed

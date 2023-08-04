@@ -7,6 +7,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
 import com.sedmelluq.discord.lavaplayer.track.DelegatedAudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.InternalAudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.playback.LocalAudioTrackExecutor;
+
 import java.io.File;
 
 /**
@@ -18,9 +19,9 @@ public class LocalAudioTrack extends DelegatedAudioTrack {
   private final LocalAudioSourceManager sourceManager;
 
   /**
-   * @param trackInfo Track info
+   * @param trackInfo             Track info
    * @param containerTrackFactory Probe track factory - contains the probe with its parameters.
-   * @param sourceManager Source manager used to load this track
+   * @param sourceManager         Source manager used to load this track
    */
   public LocalAudioTrack(AudioTrackInfo trackInfo, MediaContainerDescriptor containerTrackFactory,
                          LocalAudioSourceManager sourceManager) {

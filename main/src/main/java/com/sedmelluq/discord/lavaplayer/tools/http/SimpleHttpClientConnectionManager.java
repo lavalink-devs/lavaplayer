@@ -1,20 +1,17 @@
 package com.sedmelluq.discord.lavaplayer.tools.http;
 
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.util.concurrent.TimeUnit;
 import org.apache.http.HttpClientConnection;
 import org.apache.http.HttpHost;
 import org.apache.http.config.ConnectionConfig;
 import org.apache.http.config.SocketConfig;
-import org.apache.http.conn.ConnectionRequest;
-import org.apache.http.conn.HttpClientConnectionManager;
-import org.apache.http.conn.HttpClientConnectionOperator;
-import org.apache.http.conn.HttpConnectionFactory;
-import org.apache.http.conn.ManagedHttpClientConnection;
+import org.apache.http.conn.*;
 import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.impl.conn.ManagedHttpClientConnectionFactory;
 import org.apache.http.protocol.HttpContext;
+
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.util.concurrent.TimeUnit;
 
 public class SimpleHttpClientConnectionManager implements HttpClientConnectionManager {
   private final HttpClientConnectionOperator connectionOperator;
@@ -23,8 +20,8 @@ public class SimpleHttpClientConnectionManager implements HttpClientConnectionMa
   private volatile ConnectionConfig connectionConfig = ConnectionConfig.DEFAULT;
 
   public SimpleHttpClientConnectionManager(
-      HttpClientConnectionOperator connectionOperator,
-      HttpConnectionFactory<HttpRoute, ManagedHttpClientConnection> factory
+    HttpClientConnectionOperator connectionOperator,
+    HttpConnectionFactory<HttpRoute, ManagedHttpClientConnection> factory
   ) {
     this.connectionOperator = connectionOperator;
     this.connectionFactory = factory != null ? factory : ManagedHttpClientConnectionFactory.INSTANCE;
@@ -57,10 +54,10 @@ public class SimpleHttpClientConnectionManager implements HttpClientConnectionMa
 
   @Override
   public void releaseConnection(
-      HttpClientConnection connection,
-      Object newState,
-      long validDuration,
-      TimeUnit timeUnit
+    HttpClientConnection connection,
+    Object newState,
+    long validDuration,
+    TimeUnit timeUnit
   ) {
     try {
       connection.close();
@@ -71,10 +68,10 @@ public class SimpleHttpClientConnectionManager implements HttpClientConnectionMa
 
   @Override
   public void connect(
-      HttpClientConnection connection,
-      HttpRoute route,
-      int connectTimeout,
-      HttpContext context
+    HttpClientConnection connection,
+    HttpRoute route,
+    int connectTimeout,
+    HttpContext context
   ) throws IOException {
     HttpHost host;
 

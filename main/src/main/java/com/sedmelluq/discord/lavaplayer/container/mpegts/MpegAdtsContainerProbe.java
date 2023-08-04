@@ -10,9 +10,10 @@ import com.sedmelluq.discord.lavaplayer.track.AudioReference;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
 import com.sedmelluq.discord.lavaplayer.track.info.AudioTrackInfoBuilder;
-import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
 
 import static com.sedmelluq.discord.lavaplayer.container.MediaContainerDetectionResult.supportedFormat;
 import static com.sedmelluq.discord.lavaplayer.container.mpegts.MpegTsElementaryInputStream.ADTS_ELEMENTARY_STREAM;
@@ -32,10 +33,10 @@ public class MpegAdtsContainerProbe implements MediaContainerProbe {
 
   @Override
   public MediaContainerDetectionResult probe(AudioReference reference, SeekableInputStream inputStream)
-      throws IOException {
+    throws IOException {
 
     SavedHeadSeekableInputStream head = inputStream instanceof SavedHeadSeekableInputStream ?
-        (SavedHeadSeekableInputStream) inputStream : null;
+      (SavedHeadSeekableInputStream) inputStream : null;
 
     if (head != null) {
       head.setAllowDirectReads(false);
@@ -50,9 +51,9 @@ public class MpegAdtsContainerProbe implements MediaContainerProbe {
         log.debug("Track {} is an MPEG-TS stream with an ADTS track.", reference.identifier);
 
         return supportedFormat(this, null,
-            AudioTrackInfoBuilder.create(reference, inputStream)
-                .apply(tsStream.getLoadedMetadata())
-                .build()
+          AudioTrackInfoBuilder.create(reference, inputStream)
+            .apply(tsStream.getLoadedMetadata())
+            .build()
         );
       }
     } catch (IndexOutOfBoundsException ignored) {

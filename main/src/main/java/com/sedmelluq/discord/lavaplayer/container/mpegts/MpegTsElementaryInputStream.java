@@ -3,12 +3,13 @@ package com.sedmelluq.discord.lavaplayer.container.mpegts;
 import com.sedmelluq.discord.lavaplayer.tools.io.BitBufferReader;
 import com.sedmelluq.discord.lavaplayer.tools.io.GreedyInputStream;
 import com.sedmelluq.discord.lavaplayer.track.info.AudioTrackInfoProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Input stream which takes in a stream providing MPEG TS data and outputs a single track from it specified by the
@@ -40,7 +41,7 @@ public class MpegTsElementaryInputStream extends InputStream {
   private String serviceName;
 
   /**
-   * @param inputStream Underlying input stream
+   * @param inputStream        Underlying input stream
    * @param elementaryDataType ID of the media type to pass upstream
    */
   public MpegTsElementaryInputStream(InputStream inputStream, int elementaryDataType) {

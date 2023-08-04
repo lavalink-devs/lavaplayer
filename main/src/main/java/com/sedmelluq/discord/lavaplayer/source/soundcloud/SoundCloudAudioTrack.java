@@ -9,10 +9,11 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
 import com.sedmelluq.discord.lavaplayer.track.DelegatedAudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.playback.LocalAudioTrackExecutor;
-import java.io.IOException;
-import java.net.URI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.net.URI;
 
 /**
  * Audio track that handles processing SoundCloud tracks.
@@ -23,7 +24,7 @@ public class SoundCloudAudioTrack extends DelegatedAudioTrack {
   private final SoundCloudAudioSourceManager sourceManager;
 
   /**
-   * @param trackInfo Track info
+   * @param trackInfo     Track info
    * @param sourceManager Source manager which was used to find this track
    */
   public SoundCloudAudioTrack(AudioTrackInfo trackInfo, SoundCloudAudioSourceManager sourceManager) {
@@ -40,10 +41,10 @@ public class SoundCloudAudioTrack extends DelegatedAudioTrack {
   }
 
   private void playFromIdentifier(
-      HttpInterface httpInterface,
-      String identifier,
-      boolean recursion,
-      LocalAudioTrackExecutor localExecutor
+    HttpInterface httpInterface,
+    String identifier,
+    boolean recursion,
+    LocalAudioTrackExecutor localExecutor
   ) throws Exception {
     SoundCloudM3uInfo m3uInfo = sourceManager.getFormatHandler().getM3uInfo(identifier);
 
@@ -68,9 +69,9 @@ public class SoundCloudAudioTrack extends DelegatedAudioTrack {
   }
 
   private void loadFromMp3Url(
-      LocalAudioTrackExecutor localExecutor,
-      HttpInterface httpInterface,
-      String trackUrl
+    LocalAudioTrackExecutor localExecutor,
+    HttpInterface httpInterface,
+    String trackUrl
   ) throws Exception {
     log.debug("Starting SoundCloud track from URL: {}", trackUrl);
 

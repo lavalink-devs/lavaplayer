@@ -2,10 +2,6 @@ package com.sedmelluq.discord.lavaplayer.tools.http;
 
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.tools.io.TrustManagerBuilder;
-import java.util.concurrent.TimeUnit;
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.X509TrustManager;
 import org.apache.http.HttpResponseFactory;
 import org.apache.http.ProtocolVersion;
 import org.apache.http.config.MessageConstraints;
@@ -36,6 +32,11 @@ import org.apache.http.ssl.SSLContexts;
 import org.apache.http.util.CharArrayBuffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.X509TrustManager;
+import java.util.concurrent.TimeUnit;
 
 import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.COMMON;
 import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.SUSPICIOUS;
@@ -91,41 +92,41 @@ public class ExtendedHttpClientBuilder extends HttpClientBuilder {
 
   private HttpClientConnectionManager createConnectionManager() {
     return connectionManagerFactory.create(
-        new ExtendedConnectionOperator(createConnectionSocketFactory(), null, null),
-        createConnectionFactory()
+      new ExtendedConnectionOperator(createConnectionSocketFactory(), null, null),
+      createConnectionFactory()
     );
   }
 
   private Registry<ConnectionSocketFactory> createConnectionSocketFactory() {
     HostnameVerifier hostnameVerifier = new DefaultHostnameVerifier(PublicSuffixMatcherLoader.getDefault());
     ConnectionSocketFactory defaultSslSocketFactory = new SSLConnectionSocketFactory(sslContextOverride != null ?
-        sslContextOverride : defaultSslContext, sslSupportedProtocols, null, hostnameVerifier);
+      sslContextOverride : defaultSslContext, sslSupportedProtocols, null, hostnameVerifier);
 
     return RegistryBuilder.<ConnectionSocketFactory>create()
-        .register("http", plainSocketFactory != null ? plainSocketFactory : PlainConnectionSocketFactory.getSocketFactory())
-        .register("https", sslSocketFactory != null ? sslSocketFactory : defaultSslSocketFactory)
-        .build();
+      .register("http", plainSocketFactory != null ? plainSocketFactory : PlainConnectionSocketFactory.getSocketFactory())
+      .register("https", sslSocketFactory != null ? sslSocketFactory : defaultSslSocketFactory)
+      .build();
   }
 
   private static ManagedHttpClientConnectionFactory createConnectionFactory() {
     return new ManagedHttpClientConnectionFactory(null, (buffer, constraints) ->
-        new GarbageAllergicHttpResponseParser(
-            buffer,
-            IcyHttpLineParser.ICY_INSTANCE,
-            DefaultHttpResponseFactory.INSTANCE,
-            constraints
-        ));
+      new GarbageAllergicHttpResponseParser(
+        buffer,
+        IcyHttpLineParser.ICY_INSTANCE,
+        DefaultHttpResponseFactory.INSTANCE,
+        constraints
+      ));
   }
 
   private static HttpClientConnectionManager createDefaultConnectionManager(
-      HttpClientConnectionOperator operator,
-      HttpConnectionFactory<HttpRoute, ManagedHttpClientConnection> connectionFactory
+    HttpClientConnectionOperator operator,
+    HttpConnectionFactory<HttpRoute, ManagedHttpClientConnection> connectionFactory
   ) {
     PoolingHttpClientConnectionManager manager = new PoolingHttpClientConnectionManager(
-        operator,
-        connectionFactory,
-        -1,
-        TimeUnit.MILLISECONDS
+      operator,
+      connectionFactory,
+      -1,
+      TimeUnit.MILLISECONDS
     );
 
     manager.setMaxTotal(3000);
@@ -137,12 +138,12 @@ public class ExtendedHttpClientBuilder extends HttpClientBuilder {
   private static SSLContext setupSslContext() {
     try {
       X509TrustManager trustManager = new TrustManagerBuilder()
-          .addBuiltinCertificates()
-          .addFromResourceDirectory("/certificates")
-          .build();
+        .addBuiltinCertificates()
+        .addFromResourceDirectory("/certificates")
+        .build();
 
       SSLContext context = SSLContext.getInstance("TLS");
-      context.init(null, new X509TrustManager[] { trustManager }, null);
+      context.init(null, new X509TrustManager[]{trustManager}, null);
       return context;
     } catch (Exception e) {
       log.error("Failed to build custom SSL context, using default one.", e);
@@ -152,10 +153,10 @@ public class ExtendedHttpClientBuilder extends HttpClientBuilder {
 
   private static class GarbageAllergicHttpResponseParser extends DefaultHttpResponseParser {
     public GarbageAllergicHttpResponseParser(
-        SessionInputBuffer buffer,
-        LineParser lineParser,
-        HttpResponseFactory responseFactory,
-        MessageConstraints constraints
+      SessionInputBuffer buffer,
+      LineParser lineParser,
+      HttpResponseFactory responseFactory,
+      MessageConstraints constraints
     ) {
       super(buffer, lineParser, responseFactory, constraints);
     }
@@ -204,8 +205,8 @@ public class ExtendedHttpClientBuilder extends HttpClientBuilder {
 
   public interface ConnectionManagerFactory {
     HttpClientConnectionManager create(
-        HttpClientConnectionOperator operator,
-        HttpConnectionFactory<HttpRoute, ManagedHttpClientConnection> connectionFactory
+      HttpClientConnectionOperator operator,
+      HttpConnectionFactory<HttpRoute, ManagedHttpClientConnection> connectionFactory
     );
   }
 }

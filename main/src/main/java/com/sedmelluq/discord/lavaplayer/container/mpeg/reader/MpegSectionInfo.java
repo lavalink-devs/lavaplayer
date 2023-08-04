@@ -20,7 +20,7 @@ public class MpegSectionInfo {
   /**
    * @param offset Absolute offset of the section
    * @param length Length of the section
-   * @param type Type (fourCC) of the section
+   * @param type   Type (fourCC) of the section
    */
   public MpegSectionInfo(long offset, long length, String type) {
     this.offset = offset;

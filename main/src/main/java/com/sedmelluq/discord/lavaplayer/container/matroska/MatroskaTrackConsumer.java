@@ -1,6 +1,7 @@
 package com.sedmelluq.discord.lavaplayer.container.matroska;
 
 import com.sedmelluq.discord.lavaplayer.container.matroska.format.MatroskaFileTrack;
+
 import java.nio.ByteBuffer;
 
 /**
@@ -21,7 +22,7 @@ public interface MatroskaTrackConsumer extends AutoCloseable {
    * Indicates that the next frame is not a direct continuation of the previous one
    *
    * @param requestedTimecode Timecode in milliseconds to which the seek was requested to
-   * @param providedTimecode Timecode in milliseconds to which the seek was actually performed to
+   * @param providedTimecode  Timecode in milliseconds to which the seek was actually performed to
    */
   void seekPerformed(long requestedTimecode, long providedTimecode);
 

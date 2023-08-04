@@ -29,24 +29,24 @@ public class YoutubeMixProvider implements YoutubeMixLoader {
   /**
    * Loads tracks from mix in parallel into a playlist entry.
    *
-   * @param mixId ID of the mix
+   * @param mixId           ID of the mix
    * @param selectedVideoId Selected track, {@link AudioPlaylist#getSelectedTrack()} will return this.
    * @return Playlist of the tracks in the mix.
    */
   public AudioPlaylist load(
-      HttpInterface httpInterface,
-      String mixId,
-      String selectedVideoId,
-      Function<AudioTrackInfo, AudioTrack> trackFactory
+    HttpInterface httpInterface,
+    String mixId,
+    String selectedVideoId,
+    Function<AudioTrackInfo, AudioTrack> trackFactory
   ) {
     String playlistTitle = "YouTube mix";
     List<AudioTrack> tracks = new ArrayList<>();
 
     HttpPost post = new HttpPost(NEXT_URL);
     YoutubeClientConfig clientConfig = YoutubeClientConfig.ANDROID.copy()
-        .withRootField("videoId", selectedVideoId)
-        .withRootField("playlistId", mixId)
-        .setAttribute(httpInterface);
+      .withRootField("videoId", selectedVideoId)
+      .withRootField("playlistId", mixId)
+      .setAttribute(httpInterface);
     StringEntity payload = new StringEntity(clientConfig.toJsonString(), "UTF-8");
     post.setEntity(payload);
 
@@ -55,9 +55,9 @@ public class YoutubeMixProvider implements YoutubeMixLoader {
 
       JsonBrowser body = JsonBrowser.parse(response.getEntity().getContent());
       JsonBrowser playlist = body.get("contents")
-              .get("singleColumnWatchNextResults")
-              .get("playlist")
-              .get("playlist");
+        .get("singleColumnWatchNextResults")
+        .get("playlist")
+        .get("playlist");
 
       JsonBrowser title = playlist.get("title");
 
@@ -79,9 +79,9 @@ public class YoutubeMixProvider implements YoutubeMixLoader {
   }
 
   private void extractPlaylistTracks(
-      JsonBrowser browser,
-      List<AudioTrack> tracks,
-      Function<AudioTrackInfo, AudioTrack> trackFactory
+    JsonBrowser browser,
+    List<AudioTrack> tracks,
+    Function<AudioTrackInfo, AudioTrack> trackFactory
   ) {
     for (JsonBrowser video : browser.values()) {
       JsonBrowser renderer = video.get("playlistPanelVideoRenderer");

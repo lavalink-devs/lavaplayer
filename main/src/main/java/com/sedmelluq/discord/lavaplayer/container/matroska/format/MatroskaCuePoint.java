@@ -14,7 +14,7 @@ public class MatroskaCuePoint {
   public final long[] trackClusterOffsets;
 
   /**
-   * @param timecode Timecode using the file timescale
+   * @param timecode            Timecode using the file timescale
    * @param trackClusterOffsets Absolute offset to the cluster
    */
   public MatroskaCuePoint(long timecode, long[] trackClusterOffsets) {

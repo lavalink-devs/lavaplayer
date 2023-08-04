@@ -5,11 +5,12 @@ import com.sedmelluq.discord.lavaplayer.tools.io.GreedyInputStream;
 import com.sedmelluq.discord.lavaplayer.tools.io.SavedHeadSeekableInputStream;
 import com.sedmelluq.discord.lavaplayer.tools.io.SeekableInputStream;
 import com.sedmelluq.discord.lavaplayer.track.AudioReference;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.regex.Pattern;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static com.sedmelluq.discord.lavaplayer.container.MediaContainerDetectionResult.unknownFormat;
 import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.SUSPICIOUS;
@@ -32,9 +33,9 @@ public class MediaContainerDetection {
   private final MediaContainerHints hints;
 
   /**
-   * @param reference Reference to the track with an identifier, used in the AudioTrackInfo in result
+   * @param reference   Reference to the track with an identifier, used in the AudioTrackInfo in result
    * @param inputStream Input stream of the file
-   * @param hints Hints about the format (mime type, extension)
+   * @param hints       Hints about the format (mime type, extension)
    */
   public MediaContainerDetection(MediaContainerRegistry containerRegistry, AudioReference reference,
                                  SeekableInputStream inputStream, MediaContainerHints hints) {
@@ -68,7 +69,7 @@ public class MediaContainerDetection {
   }
 
   private MediaContainerDetectionResult detectContainer(SeekableInputStream innerStream, boolean matchHints)
-      throws IOException {
+    throws IOException {
 
     for (MediaContainerProbe probe : containerRegistry.getAll()) {
       if (matchHints == probe.matchesHints(hints)) {
@@ -100,7 +101,7 @@ public class MediaContainerDetection {
    * a wildcard, which means the value of this byte does not matter. The position of the stream is restored on return.
    *
    * @param stream Input stream to read the bytes from
-   * @param match Bytes that the next bytes from input stream should match (-1 as wildcard
+   * @param match  Bytes that the next bytes from input stream should match (-1 as wildcard
    * @return True if the bytes matched
    * @throws IOException On IO error
    */
@@ -113,7 +114,7 @@ public class MediaContainerDetection {
    * a wildcard, which means the value of this byte does not matter.
    *
    * @param stream Input stream to read the bytes from
-   * @param match Bytes that the next bytes from input stream should match (-1 as wildcard
+   * @param match  Bytes that the next bytes from input stream should match (-1 as wildcard
    * @param rewind If set to true, restores the original position of the stream after checking
    * @return True if the bytes matched
    * @throws IOException On IO error
@@ -141,10 +142,10 @@ public class MediaContainerDetection {
   /**
    * Check if the next bytes in the stream match the specified regex pattern.
    *
-   * @param stream Input stream to read the bytes from
+   * @param stream   Input stream to read the bytes from
    * @param distance Maximum number of bytes to read for matching
-   * @param pattern Pattern to match against
-   * @param charset Charset to use to decode the bytes
+   * @param pattern  Pattern to match against
+   * @param charset  Charset to use to decode the bytes
    * @return True if the next bytes in the stream are a match
    * @throws IOException On read error
    */

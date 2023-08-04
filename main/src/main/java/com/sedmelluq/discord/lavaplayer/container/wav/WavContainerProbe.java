@@ -7,9 +7,10 @@ import com.sedmelluq.discord.lavaplayer.tools.io.SeekableInputStream;
 import com.sedmelluq.discord.lavaplayer.track.AudioReference;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
-import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
 
 import static com.sedmelluq.discord.lavaplayer.container.MediaContainerDetection.UNKNOWN_ARTIST;
 import static com.sedmelluq.discord.lavaplayer.container.MediaContainerDetection.UNKNOWN_TITLE;
@@ -45,12 +46,12 @@ public class WavContainerProbe implements MediaContainerProbe {
     WavFileInfo fileInfo = new WavFileLoader(inputStream).parseHeaders();
 
     return supportedFormat(this, null, new AudioTrackInfo(
-        defaultOnNull(reference.title, UNKNOWN_TITLE),
-        UNKNOWN_ARTIST,
-        fileInfo.getDuration(),
-        reference.identifier,
-        false,
-        reference.identifier
+      defaultOnNull(reference.title, UNKNOWN_TITLE),
+      UNKNOWN_ARTIST,
+      fileInfo.getDuration(),
+      reference.identifier,
+      false,
+      reference.identifier
     ));
   }
 

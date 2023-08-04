@@ -1,10 +1,6 @@
 package com.sedmelluq.discord.lavaplayer.container.mpeg;
 
-import com.sedmelluq.discord.lavaplayer.container.mpeg.reader.MpegFileTrackProvider;
-import com.sedmelluq.discord.lavaplayer.container.mpeg.reader.MpegParseStopChecker;
-import com.sedmelluq.discord.lavaplayer.container.mpeg.reader.MpegReader;
-import com.sedmelluq.discord.lavaplayer.container.mpeg.reader.MpegSectionInfo;
-import com.sedmelluq.discord.lavaplayer.container.mpeg.reader.MpegVersionedSectionInfo;
+import com.sedmelluq.discord.lavaplayer.container.mpeg.reader.*;
 import com.sedmelluq.discord.lavaplayer.container.mpeg.reader.fragmented.MpegFragmentedFileTrackProvider;
 import com.sedmelluq.discord.lavaplayer.container.mpeg.reader.standard.MpegStandardFileTrackProvider;
 import com.sedmelluq.discord.lavaplayer.tools.io.SeekableInputStream;
@@ -59,16 +55,16 @@ public class MpegFileLoader {
         movieBoxSeen.set(true);
 
         reader.in(moov).handle("trak",
-            this::parseTrackInfo
+          this::parseTrackInfo
         ).handle("mvex",
-            fragmentedFileReader::parseMovieExtended
+          fragmentedFileReader::parseMovieExtended
         ).handle("udta",
-            this::parseMetadata
+          this::parseMetadata
         ).run();
       }).handleVersioned("emsg",
-          this::parseEventMessage
+        this::parseEventMessage
       ).handleVersioned("sidx", true,
-          fragmentedFileReader::parseSegmentIndex
+        fragmentedFileReader::parseSegmentIndex
       ).stopChecker(getRootStopChecker(movieBoxSeen)).run();
     } catch (IOException e) {
       throw new RuntimeException(e);
@@ -130,9 +126,12 @@ public class MpegFileLoader {
 
   private static String getMetadataName(String code) {
     switch (code.toLowerCase()) {
-      case "\u00a9art": return "Artist";
-      case "\u00a9nam": return "Title";
-      default: return null;
+      case "\u00a9art":
+        return "Artist";
+      case "\u00a9nam":
+        return "Title";
+      default:
+        return null;
     }
   }
 
@@ -177,7 +176,7 @@ public class MpegFileLoader {
 
         trackInfo.setHandler(reader.readFourCC());
       }).handleVersioned("mdhd", mdhd ->
-          standardFileReader.readMediaHeaders(mdhd, trackInfo.getTrackId())
+        standardFileReader.readMediaHeaders(mdhd, trackInfo.getTrackId())
       ).handle("minf", minf -> {
         reader.in(minf).handle("stbl", stbl -> {
           MpegReader.Chain chain = reader.in(stbl);

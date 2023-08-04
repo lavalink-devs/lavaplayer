@@ -4,11 +4,8 @@ import com.sedmelluq.discord.lavaplayer.player.event.AudioEvent;
 import com.sedmelluq.discord.lavaplayer.player.event.AudioEventListener;
 import com.sedmelluq.discord.lavaplayer.player.event.TrackEndEvent;
 import com.sedmelluq.discord.lavaplayer.player.event.TrackStartEvent;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
+
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -24,7 +21,7 @@ public class AudioPlayerLifecycleManager implements Runnable, AudioEventListener
   private final AtomicReference<ScheduledFuture<?>> scheduledTask;
 
   /**
-   * @param scheduler Scheduler to use for the cleanup check task
+   * @param scheduler        Scheduler to use for the cleanup check task
    * @param cleanupThreshold Threshold for player cleanup
    */
   public AudioPlayerLifecycleManager(ScheduledExecutorService scheduler, AtomicLong cleanupThreshold) {

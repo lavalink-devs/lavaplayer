@@ -1,6 +1,7 @@
 package com.sedmelluq.lava.common.natives.architecture;
 
 import com.sedmelluq.lava.common.natives.NativeLibraryProperties;
+
 import java.util.Optional;
 
 public class SystemType {
@@ -33,11 +34,11 @@ public class SystemType {
 
     if (systemName != null) {
       return new SystemType(
-          () -> systemName,
-          new UnknownOperatingSystem(
-              Optional.ofNullable(properties.getLibraryFileNamePrefix()).orElse("lib"),
-              Optional.ofNullable(properties.getLibraryFileNameSuffix()).orElse(".so")
-          )
+        () -> systemName,
+        new UnknownOperatingSystem(
+          Optional.ofNullable(properties.getLibraryFileNamePrefix()).orElse("lib"),
+          Optional.ofNullable(properties.getLibraryFileNameSuffix()).orElse(".so")
+        )
       );
     }
 
@@ -45,7 +46,7 @@ public class SystemType {
 
     String explicitArchitecture = properties.getArchitectureName();
     ArchitectureType architectureType = explicitArchitecture != null ? () -> explicitArchitecture :
-        DefaultArchitectureTypes.detect();
+      DefaultArchitectureTypes.detect();
 
     return new SystemType(architectureType, osType);
   }

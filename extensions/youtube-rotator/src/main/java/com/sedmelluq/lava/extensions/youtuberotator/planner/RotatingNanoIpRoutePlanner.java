@@ -45,6 +45,7 @@ public final class RotatingNanoIpRoutePlanner extends AbstractRoutePlanner {
 
   /**
    * Returns the current block index
+   *
    * @return block index which is currently used
    */
   public BigInteger getCurrentBlock() {
@@ -53,6 +54,7 @@ public final class RotatingNanoIpRoutePlanner extends AbstractRoutePlanner {
 
   /**
    * Returns the address offset for the current nano time
+   *
    * @return address offset as long
    */
   public long getAddressIndexInBlock() {

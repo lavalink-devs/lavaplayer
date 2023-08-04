@@ -11,13 +11,13 @@ public class SampleRateConverter extends NativeResourceHolder {
   private final long instance;
 
   /**
-   * @param type Resampling type
-   * @param channels Number of channels
+   * @param type       Resampling type
+   * @param channels   Number of channels
    * @param sourceRate Source sample rate
    * @param targetRate Target sample rate
    */
   public SampleRateConverter(ResamplingType type, int channels, int sourceRate, int targetRate) {
-    ratio = (double)targetRate / (double)sourceRate;
+    ratio = (double) targetRate / (double) sourceRate;
     library = SampleRateLibrary.getInstance();
     instance = library.create(type.ordinal(), channels);
 
@@ -36,14 +36,14 @@ public class SampleRateConverter extends NativeResourceHolder {
   }
 
   /**
-   * @param input Input buffer
-   * @param inputOffset Offset for input buffer
-   * @param inputLength Length for input buffer
-   * @param output Output buffer
+   * @param input        Input buffer
+   * @param inputOffset  Offset for input buffer
+   * @param inputLength  Length for input buffer
+   * @param output       Output buffer
    * @param outputOffset Offset for output buffer
    * @param outputLength Length for output buffer
-   * @param endOfInput If this is the last piece of input
-   * @param progress Instance that is filled with the progress
+   * @param endOfInput   If this is the last piece of input
+   * @param progress     Instance that is filled with the progress
    */
   public void process(float[] input, int inputOffset, int inputLength, float[] output, int outputOffset, int outputLength, boolean endOfInput, Progress progress) {
     checkNotReleased();

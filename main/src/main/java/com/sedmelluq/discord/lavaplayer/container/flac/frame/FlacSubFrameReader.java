@@ -2,24 +2,25 @@ package com.sedmelluq.discord.lavaplayer.container.flac.frame;
 
 import com.sedmelluq.discord.lavaplayer.container.flac.FlacStreamInfo;
 import com.sedmelluq.discord.lavaplayer.tools.io.BitStreamReader;
+
 import java.io.IOException;
 
 /**
  * Contains methods for reading a FLAC subframe
  */
 public class FlacSubFrameReader {
-  private static final Encoding[] encodingMapping = new Encoding[] {
-      Encoding.LPC, null, Encoding.FIXED, null, null, Encoding.VERBATIM, Encoding.CONSTANT
+  private static final Encoding[] encodingMapping = new Encoding[]{
+    Encoding.LPC, null, Encoding.FIXED, null, null, Encoding.VERBATIM, Encoding.CONSTANT
   };
 
   /**
    * Reads and decodes one subframe (a channel of a frame)
    *
-   * @param reader Bit stream reader
-   * @param streamInfo Stream global info
-   * @param frameInfo Current frame info
-   * @param sampleBuffer Output buffer for the (possibly delta) decoded samples of this subframe
-   * @param channel The index of the current channel
+   * @param reader          Bit stream reader
+   * @param streamInfo      Stream global info
+   * @param frameInfo       Current frame info
+   * @param sampleBuffer    Output buffer for the (possibly delta) decoded samples of this subframe
+   * @param channel         The index of the current channel
    * @param temporaryBuffer Temporary working buffer of size at least 32
    * @throws IOException On read error
    */
@@ -140,7 +141,7 @@ public class FlacSubFrameReader {
       long sum = 0;
 
       for (int j = 0; j < order; j++) {
-        sum += (long) coefficients[j] * buffer[i  - j - 1];
+        sum += (long) coefficients[j] * buffer[i - j - 1];
       }
 
       buffer[i] += (int) (sum >> shift);
@@ -173,7 +174,7 @@ public class FlacSubFrameReader {
       } else {
         parameter = reader.asInteger(5);
 
-        for (int i = value ; i < partitionSamples; i++, sample++) {
+        for (int i = value; i < partitionSamples; i++, sample++) {
           buffer[sample] = reader.asSignedInteger(parameter);
         }
       }

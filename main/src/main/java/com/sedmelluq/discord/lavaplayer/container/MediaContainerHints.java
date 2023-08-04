@@ -28,7 +28,7 @@ public class MediaContainerHints {
   }
 
   /**
-   * @param mimeType Mime type
+   * @param mimeType      Mime type
    * @param fileExtension File extension
    * @return Instance of hints object with the specified parameters
    */

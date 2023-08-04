@@ -18,8 +18,8 @@ public class MpegSegmentEntry {
   public final int duration;
 
   /**
-   * @param type Type of the segment
-   * @param size Size in bytes
+   * @param type     Type of the segment
+   * @param size     Size in bytes
    * @param duration Duration using the timescale of the file
    */
   public MpegSegmentEntry(int type, int size, int duration) {

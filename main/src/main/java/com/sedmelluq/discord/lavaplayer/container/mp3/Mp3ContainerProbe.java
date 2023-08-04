@@ -8,9 +8,10 @@ import com.sedmelluq.discord.lavaplayer.track.AudioReference;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
 import com.sedmelluq.discord.lavaplayer.track.info.AudioTrackInfoBuilder;
-import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
 
 import static com.sedmelluq.discord.lavaplayer.container.MediaContainerDetection.STREAM_SCAN_DISTANCE;
 import static com.sedmelluq.discord.lavaplayer.container.MediaContainerDetection.checkNextBytes;
@@ -22,7 +23,7 @@ import static com.sedmelluq.discord.lavaplayer.container.MediaContainerDetection
 public class Mp3ContainerProbe implements MediaContainerProbe {
   private static final Logger log = LoggerFactory.getLogger(Mp3ContainerProbe.class);
 
-  private static final int[] ID3_TAG = new int[] { 0x49, 0x44, 0x33 };
+  private static final int[] ID3_TAG = new int[]{0x49, 0x44, 0x33};
 
   @Override
   public String getName() {
@@ -56,7 +57,7 @@ public class Mp3ContainerProbe implements MediaContainerProbe {
       file.parseHeaders();
 
       return supportedFormat(this, null, AudioTrackInfoBuilder.create(reference, inputStream)
-          .apply(file).setIsStream(!file.isSeekable()).build());
+        .apply(file).setIsStream(!file.isSeekable()).build());
     } finally {
       file.close();
     }

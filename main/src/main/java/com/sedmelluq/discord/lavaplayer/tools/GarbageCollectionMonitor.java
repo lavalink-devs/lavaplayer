@@ -2,6 +2,14 @@ package com.sedmelluq.discord.lavaplayer.tools;
 
 import com.sun.management.GarbageCollectionNotificationInfo;
 import com.sun.management.GcInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.management.ListenerNotFoundException;
+import javax.management.Notification;
+import javax.management.NotificationEmitter;
+import javax.management.NotificationListener;
+import javax.management.openmbean.CompositeData;
 import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
 import java.util.concurrent.ScheduledExecutorService;
@@ -9,13 +17,6 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
-import javax.management.ListenerNotFoundException;
-import javax.management.Notification;
-import javax.management.NotificationEmitter;
-import javax.management.NotificationListener;
-import javax.management.openmbean.CompositeData;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static com.sun.management.GarbageCollectionNotificationInfo.GARBAGE_COLLECTION_NOTIFICATION;
 import static com.sun.management.GarbageCollectionNotificationInfo.from;
@@ -28,7 +29,7 @@ public class GarbageCollectionMonitor implements NotificationListener, Runnable 
   private static final Logger log = LoggerFactory.getLogger(GarbageCollectionMonitor.class);
 
   private static final long REPORTING_FREQUENCY = TimeUnit.MINUTES.toMillis(2);
-  private static final long[] BUCKETS = new long[] { 2000, 500, 200, 50, 20, 0 };
+  private static final long[] BUCKETS = new long[]{2000, 500, 200, 50, 20, 0};
 
   private final ScheduledExecutorService reportingExecutor;
   private final int[] bucketCounters;
@@ -37,6 +38,7 @@ public class GarbageCollectionMonitor implements NotificationListener, Runnable 
 
   /**
    * Create an instance of GC monitor. Does nothing until enabled.
+   *
    * @param reportingExecutor Executor to use for scheduling reporting task
    */
   public GarbageCollectionMonitor(ScheduledExecutorService reportingExecutor) {

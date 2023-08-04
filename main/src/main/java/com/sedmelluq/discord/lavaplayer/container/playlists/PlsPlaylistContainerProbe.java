@@ -8,14 +8,15 @@ import com.sedmelluq.discord.lavaplayer.tools.io.SeekableInputStream;
 import com.sedmelluq.discord.lavaplayer.track.AudioReference;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static com.sedmelluq.discord.lavaplayer.container.MediaContainerDetection.UNKNOWN_TITLE;
 import static com.sedmelluq.discord.lavaplayer.container.MediaContainerDetection.checkNextBytes;
@@ -28,7 +29,7 @@ import static com.sedmelluq.discord.lavaplayer.container.MediaContainerDetection
 public class PlsPlaylistContainerProbe implements MediaContainerProbe {
   private static final Logger log = LoggerFactory.getLogger(PlsPlaylistContainerProbe.class);
 
-  private static final int[] PLS_HEADER = new int[] { '[', -1, 'l', 'a', 'y', 'l', 'i', 's', 't', ']' };
+  private static final int[] PLS_HEADER = new int[]{'[', -1, 'l', 'a', 'y', 'l', 'i', 's', 't', ']'};
 
   private static Pattern filePattern = Pattern.compile("\\s*File([0-9]+)=((?:https?|icy)://.*)\\s*");
   private static Pattern titlePattern = Pattern.compile("\\s*Title([0-9]+)=(.*)\\s*");

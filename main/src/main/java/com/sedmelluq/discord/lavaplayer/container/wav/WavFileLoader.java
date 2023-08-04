@@ -2,6 +2,7 @@ package com.sedmelluq.discord.lavaplayer.container.wav;
 
 import com.sedmelluq.discord.lavaplayer.tools.io.SeekableInputStream;
 import com.sedmelluq.discord.lavaplayer.track.playback.AudioProcessingContext;
+
 import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -13,7 +14,7 @@ import static com.sedmelluq.discord.lavaplayer.container.MediaContainerDetection
  * Loads either WAV header information or a WAV track provider from a stream.
  */
 public class WavFileLoader {
-  static final int[] WAV_RIFF_HEADER = new int[] { 0x52, 0x49, 0x46, 0x46, -1, -1, -1, -1, 0x57, 0x41, 0x56, 0x45 };
+  static final int[] WAV_RIFF_HEADER = new int[]{0x52, 0x49, 0x46, 0x46, -1, -1, -1, -1, 0x57, 0x41, 0x56, 0x45};
 
   private final SeekableInputStream inputStream;
 
@@ -26,6 +27,7 @@ public class WavFileLoader {
 
   /**
    * Parses the headers of the file.
+   *
    * @return Format description of the WAV file
    * @throws IOException On read error
    */
@@ -77,6 +79,7 @@ public class WavFileLoader {
 
   /**
    * Initialise a WAV track stream.
+   *
    * @param context Configuration and output information for processing
    * @return The WAV track stream which can produce frames.
    * @throws IOException On read error

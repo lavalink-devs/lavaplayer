@@ -9,9 +9,10 @@ import com.sedmelluq.discord.lavaplayer.track.AudioReference;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
 import ibxm.Module;
-import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
 
 import static com.sedmelluq.discord.lavaplayer.container.MediaContainerDetection.UNKNOWN_ARTIST;
 import static com.sedmelluq.discord.lavaplayer.container.MediaContainerDetectionResult.supportedFormat;
@@ -43,12 +44,12 @@ public class XmContainerProbe implements MediaContainerProbe {
     inputStream.seek(0);
 
     return supportedFormat(this, null, new AudioTrackInfo(
-        module.songName,
-        UNKNOWN_ARTIST,
-        Units.DURATION_MS_UNKNOWN,
-        reference.identifier,
-        true,
-        reference.identifier
+      module.songName,
+      UNKNOWN_ARTIST,
+      Units.DURATION_MS_UNKNOWN,
+      reference.identifier,
+      true,
+      reference.identifier
     ));
   }
 

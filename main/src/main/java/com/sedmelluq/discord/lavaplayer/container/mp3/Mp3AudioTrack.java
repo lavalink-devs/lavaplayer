@@ -16,7 +16,7 @@ public class Mp3AudioTrack extends BaseAudioTrack {
   private final SeekableInputStream inputStream;
 
   /**
-   * @param trackInfo Track info
+   * @param trackInfo   Track info
    * @param inputStream Input stream for the MP3 file
    */
   public Mp3AudioTrack(AudioTrackInfo trackInfo, SeekableInputStream inputStream) {

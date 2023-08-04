@@ -15,8 +15,8 @@ public class MpegVersionedSectionInfo extends MpegSectionInfo {
 
   /**
    * @param sectionInfo Basic info for the section
-   * @param version Version of the section
-   * @param flags Flags of the section
+   * @param version     Version of the section
+   * @param flags       Flags of the section
    */
   public MpegVersionedSectionInfo(MpegSectionInfo sectionInfo, int version, int flags) {
     super(sectionInfo.offset, sectionInfo.length, sectionInfo.type);

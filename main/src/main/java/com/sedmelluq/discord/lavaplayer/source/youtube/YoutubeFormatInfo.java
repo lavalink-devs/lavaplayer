@@ -2,13 +2,7 @@ package com.sedmelluq.discord.lavaplayer.source.youtube;
 
 import org.apache.http.entity.ContentType;
 
-import static com.sedmelluq.discord.lavaplayer.container.Formats.CODEC_AAC_LC;
-import static com.sedmelluq.discord.lavaplayer.container.Formats.CODEC_OPUS;
-import static com.sedmelluq.discord.lavaplayer.container.Formats.CODEC_VORBIS;
-import static com.sedmelluq.discord.lavaplayer.container.Formats.MIME_AUDIO_MP4;
-import static com.sedmelluq.discord.lavaplayer.container.Formats.MIME_AUDIO_WEBM;
-import static com.sedmelluq.discord.lavaplayer.container.Formats.MIME_VIDEO_MP4;
-import static com.sedmelluq.discord.lavaplayer.container.Formats.MIME_VIDEO_WEBM;
+import static com.sedmelluq.discord.lavaplayer.container.Formats.*;
 
 /**
  * The mime type and codec info of a Youtube track format.
@@ -36,6 +30,7 @@ public enum YoutubeFormatInfo {
 
   /**
    * Find a matching format info instance from a content type.
+   *
    * @param contentType The content type to use for matching against known formats
    * @return The format info entry that matches the content type
    */

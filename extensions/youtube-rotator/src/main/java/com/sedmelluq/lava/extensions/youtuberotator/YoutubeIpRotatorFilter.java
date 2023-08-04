@@ -3,12 +3,13 @@ package com.sedmelluq.lava.extensions.youtuberotator;
 import com.sedmelluq.discord.lavaplayer.tools.http.HttpContextFilter;
 import com.sedmelluq.lava.extensions.youtuberotator.planner.AbstractRoutePlanner;
 import com.sedmelluq.lava.extensions.youtuberotator.tools.RateLimitException;
-import java.net.BindException;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.net.BindException;
 
 public class YoutubeIpRotatorFilter implements HttpContextFilter {
   private static final Logger log = LoggerFactory.getLogger(YoutubeIpRotatorFilter.class);
@@ -21,10 +22,10 @@ public class YoutubeIpRotatorFilter implements HttpContextFilter {
   private final int retryLimit;
 
   public YoutubeIpRotatorFilter(
-      HttpContextFilter delegate,
-      boolean isSearch,
-      AbstractRoutePlanner routePlanner,
-      int retryLimit
+    HttpContextFilter delegate,
+    boolean isSearch,
+    AbstractRoutePlanner routePlanner,
+    int retryLimit
   ) {
     this.delegate = delegate;
     this.isSearch = isSearch;
@@ -74,7 +75,7 @@ public class YoutubeIpRotatorFilter implements HttpContextFilter {
       }
     } else if (isRateLimited(response)) {
       log.warn("YouTube rate limit reached, marking address {} as failing and retry",
-          routePlanner.getLastAddress(context));
+        routePlanner.getLastAddress(context));
       routePlanner.markAddressFailing(context);
 
       return limitedRetry(context);
@@ -96,7 +97,7 @@ public class YoutubeIpRotatorFilter implements HttpContextFilter {
   public boolean onRequestException(HttpClientContext context, HttpUriRequest request, Throwable error) {
     if (error instanceof BindException) {
       log.warn("Cannot assign requested address {}, marking address as failing and retry!",
-          routePlanner.getLastAddress(context));
+        routePlanner.getLastAddress(context));
 
       routePlanner.markAddressFailing(context);
       return limitedRetry(context);

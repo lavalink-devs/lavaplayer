@@ -1,6 +1,7 @@
 package com.sedmelluq.discord.lavaplayer.filter;
 
 import com.sedmelluq.discord.lavaplayer.track.playback.AudioProcessingContext;
+
 import java.nio.ShortBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -17,7 +18,7 @@ public class UserProvidedAudioFilters extends CompositeAudioFilter {
   private AudioFilterChain chain;
 
   /**
-   * @param context Configuration and output information for processing
+   * @param context    Configuration and output information for processing
    * @param nextFilter The next filter that should be processed after this one.
    */
   public UserProvidedAudioFilters(AudioProcessingContext context, UniversalPcmAudioFilter nextFilter) {

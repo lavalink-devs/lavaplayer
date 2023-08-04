@@ -8,11 +8,17 @@ import com.sedmelluq.discord.lavaplayer.tools.io.HttpClientTools;
 import com.sedmelluq.discord.lavaplayer.tools.io.HttpConfigurable;
 import com.sedmelluq.discord.lavaplayer.tools.io.HttpInterface;
 import com.sedmelluq.discord.lavaplayer.tools.io.HttpInterfaceManager;
-import com.sedmelluq.discord.lavaplayer.track.AudioItem;
-import com.sedmelluq.discord.lavaplayer.track.AudioReference;
-import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
-import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
-import com.sedmelluq.discord.lavaplayer.track.BasicAudioPlaylist;
+import com.sedmelluq.discord.lavaplayer.track.*;
+import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.util.EntityUtils;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -25,15 +31,6 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.commons.io.IOUtils;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.util.EntityUtils;
 
 import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.COMMON;
 import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.SUSPICIOUS;
@@ -77,7 +74,7 @@ public class SoundCloudAudioSourceManager implements AudioSourceManager, HttpCon
     SoundCloudFormatHandler formatHandler = new DefaultSoundCloudFormatHandler();
 
     return new SoundCloudAudioSourceManager(true, dataReader, dataLoader, formatHandler,
-        new DefaultSoundCloudPlaylistLoader(dataLoader, dataReader, formatHandler));
+      new DefaultSoundCloudPlaylistLoader(dataLoader, dataReader, formatHandler));
   }
 
   public static Builder builder() {
@@ -86,14 +83,15 @@ public class SoundCloudAudioSourceManager implements AudioSourceManager, HttpCon
 
   /**
    * Create an instance.
+   *
    * @param allowSearch Whether to allow search queries as identifiers
    */
   public SoundCloudAudioSourceManager(
-      boolean allowSearch,
-      SoundCloudDataReader dataReader,
-      SoundCloudDataLoader dataLoader,
-      SoundCloudFormatHandler formatHandler,
-      SoundCloudPlaylistLoader playlistLoader
+    boolean allowSearch,
+    SoundCloudDataReader dataReader,
+    SoundCloudDataLoader dataLoader,
+    SoundCloudFormatHandler formatHandler,
+    SoundCloudPlaylistLoader playlistLoader
   ) {
     this.allowSearch = allowSearch;
     this.dataReader = dataReader;
@@ -316,8 +314,8 @@ public class SoundCloudAudioSourceManager implements AudioSourceManager, HttpCon
     int limit = Math.min(rawLimit, MAXIMUM_SEARCH_RESULTS);
 
     try (
-        HttpInterface httpInterface = getHttpInterface();
-        CloseableHttpResponse response = httpInterface.execute(new HttpGet(buildSearchUri(query, offset, limit)))
+      HttpInterface httpInterface = getHttpInterface();
+      CloseableHttpResponse response = httpInterface.execute(new HttpGet(buildSearchUri(query, offset, limit)))
     ) {
       return loadSearchResultsFromResponse(response, query);
     } catch (IOException e) {
@@ -337,10 +335,10 @@ public class SoundCloudAudioSourceManager implements AudioSourceManager, HttpCon
   private URI buildSearchUri(String query, int offset, int limit) {
     try {
       return new URIBuilder("https://api-v2.soundcloud.com/search/tracks")
-          .addParameter("q", query)
-          .addParameter("offset", String.valueOf(offset))
-          .addParameter("limit", String.valueOf(limit))
-          .build();
+        .addParameter("q", query)
+        .addParameter("offset", String.valueOf(offset))
+        .addParameter("limit", String.valueOf(limit))
+        .build();
     } catch (URISyntaxException e) {
       throw new RuntimeException(e);
     }
@@ -430,20 +428,20 @@ public class SoundCloudAudioSourceManager implements AudioSourceManager, HttpCon
       }
 
       return new SoundCloudAudioSourceManager(
-          allowSearch,
-          usedDataReader,
-          usedDataLoader,
-          usedFormatHandler,
-          usedPlaylistLoader
+        allowSearch,
+        usedDataReader,
+        usedDataLoader,
+        usedFormatHandler,
+        usedPlaylistLoader
       );
     }
 
     @FunctionalInterface
     interface PlaylistLoaderFactory {
       SoundCloudPlaylistLoader create(
-          SoundCloudDataReader dataReader,
-          SoundCloudDataLoader dataLoader,
-          SoundCloudFormatHandler formatHandler
+        SoundCloudDataReader dataReader,
+        SoundCloudDataLoader dataLoader,
+        SoundCloudFormatHandler formatHandler
       );
     }
   }

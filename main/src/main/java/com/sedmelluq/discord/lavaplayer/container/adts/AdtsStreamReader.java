@@ -1,6 +1,7 @@
 package com.sedmelluq.discord.lavaplayer.container.adts;
 
 import com.sedmelluq.discord.lavaplayer.tools.io.BitBufferReader;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -14,9 +15,9 @@ public class AdtsStreamReader {
   private static final int HEADER_BASE_SIZE = 7;
   private static final int INVALID_VALUE = -1;
 
-  private static final int[] sampleRateMapping = new int[] {
-      96000, 88200, 64000, 48000, 44100, 32000, 24000, 22050,
-      16000, 12000, 11025, 8000, 7350, INVALID_VALUE, INVALID_VALUE, INVALID_VALUE
+  private static final int[] sampleRateMapping = new int[]{
+    96000, 88200, 64000, 48000, 44100, 32000, 24000, 22050,
+    16000, 12000, 11025, 8000, 7350, INVALID_VALUE, INVALID_VALUE, INVALID_VALUE
   };
 
   private final InputStream inputStream;

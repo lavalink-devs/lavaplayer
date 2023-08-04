@@ -1,6 +1,7 @@
 package com.sedmelluq.discord.lavaplayer.container.mp3;
 
 import com.sedmelluq.discord.lavaplayer.tools.io.SeekableInputStream;
+
 import java.io.IOException;
 
 /**
@@ -18,7 +19,7 @@ public interface Mp3Seeker {
   boolean isSeekable();
 
   /**
-   * @param timecode The timecode that the seek is requested to
+   * @param timecode    The timecode that the seek is requested to
    * @param inputStream The input stream to perform the seek on
    * @return The index of the frame that the seek was performed to
    * @throws IOException On IO error

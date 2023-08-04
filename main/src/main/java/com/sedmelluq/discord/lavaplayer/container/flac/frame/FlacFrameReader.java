@@ -3,6 +3,7 @@ package com.sedmelluq.discord.lavaplayer.container.flac.frame;
 import com.sedmelluq.discord.lavaplayer.container.flac.FlacStreamInfo;
 import com.sedmelluq.discord.lavaplayer.container.flac.frame.FlacFrameInfo.ChannelDelta;
 import com.sedmelluq.discord.lavaplayer.tools.io.BitStreamReader;
+
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -16,15 +17,15 @@ public class FlacFrameReader {
    * Reads one frame, returning the number of samples written to sampleBuffers. A return value of 0 indicates that EOF
    * was reached in the frame, which happens when the track ends.
    *
-   * @param inputStream Input stream for reading the track
-   * @param reader Bit stream reader for the same underlying stream as inputStream
-   * @param streamInfo Global stream information
+   * @param inputStream      Input stream for reading the track
+   * @param reader           Bit stream reader for the same underlying stream as inputStream
+   * @param streamInfo       Global stream information
    * @param rawSampleBuffers Intermediate sample decoding buffers. FlacStreamInfo#channelCount integer buffers of size
    *                         at least FlacStreamInfo#maximumBlockSize.
-   * @param sampleBuffers The sample buffers where the final decoding result is written to. FlacStreamInfo#channelCount
-   *                      short buffers of size at least FlacStreamInfo#maximumBlockSize.
-   * @param temporaryBuffer Temporary working buffer of size at least TEMPORARY_BUFFER_SIZE. No state is held in this
-   *                        between separate calls.
+   * @param sampleBuffers    The sample buffers where the final decoding result is written to. FlacStreamInfo#channelCount
+   *                         short buffers of size at least FlacStreamInfo#maximumBlockSize.
+   * @param temporaryBuffer  Temporary working buffer of size at least TEMPORARY_BUFFER_SIZE. No state is held in this
+   *                         between separate calls.
    * @return The number of samples read, zero on EOF
    * @throws IOException On read error
    */

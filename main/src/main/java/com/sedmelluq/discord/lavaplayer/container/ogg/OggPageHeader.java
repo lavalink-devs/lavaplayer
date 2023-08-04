@@ -46,12 +46,12 @@ public class OggPageHeader {
   public final long byteStreamPosition;
 
   /**
-   * @param flags Page flags.
-   * @param absolutePosition The absolute position in the number of samples of this packet relative to the track start.
-   * @param streamIdentifier Unique identifier of this track in the stream.
-   * @param pageSequence The index of the page within a track.
-   * @param checksum The checksum of the page.
-   * @param segmentCount Number of segments in the page.
+   * @param flags              Page flags.
+   * @param absolutePosition   The absolute position in the number of samples of this packet relative to the track start.
+   * @param streamIdentifier   Unique identifier of this track in the stream.
+   * @param pageSequence       The index of the page within a track.
+   * @param checksum           The checksum of the page.
+   * @param segmentCount       Number of segments in the page.
    * @param byteStreamPosition The absolute position in bytes of this page in the stream.
    */
   public OggPageHeader(int flags, long absolutePosition, int streamIdentifier, int pageSequence, int checksum,

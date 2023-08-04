@@ -4,6 +4,7 @@ import com.sedmelluq.discord.lavaplayer.container.ogg.flac.OggFlacCodecHandler;
 import com.sedmelluq.discord.lavaplayer.container.ogg.opus.OggOpusCodecHandler;
 import com.sedmelluq.discord.lavaplayer.container.ogg.vorbis.OggVorbisCodecHandler;
 import com.sedmelluq.discord.lavaplayer.tools.io.DirectBufferStreamBroker;
+
 import java.io.IOException;
 import java.util.stream.Stream;
 
@@ -11,19 +12,19 @@ import java.util.stream.Stream;
  * Track loader for an OGG packet stream. Automatically detects the track codec and loads the specific track handler.
  */
 public class OggTrackLoader {
-  private static final OggCodecHandler[] TRACK_PROVIDERS = new OggCodecHandler[] {
-      new OggOpusCodecHandler(),
-      new OggFlacCodecHandler(),
-      new OggVorbisCodecHandler()
+  private static final OggCodecHandler[] TRACK_PROVIDERS = new OggCodecHandler[]{
+    new OggOpusCodecHandler(),
+    new OggFlacCodecHandler(),
+    new OggVorbisCodecHandler()
   };
 
   private static final int MAXIMUM_FIRST_PACKET_LENGTH = Stream.of(TRACK_PROVIDERS)
-      .mapToInt(OggCodecHandler::getMaximumFirstPacketLength).max().getAsInt();
+    .mapToInt(OggCodecHandler::getMaximumFirstPacketLength).max().getAsInt();
 
   /**
    * @param packetInputStream OGG packet input stream
    * @return The track handler detected from this packet input stream. Returns null if the stream ended.
-   * @throws IOException On read error
+   * @throws IOException           On read error
    * @throws IllegalStateException If the track uses an unknown codec.
    */
   public static OggTrackBlueprint loadTrackBlueprint(OggPacketInputStream packetInputStream) throws IOException {

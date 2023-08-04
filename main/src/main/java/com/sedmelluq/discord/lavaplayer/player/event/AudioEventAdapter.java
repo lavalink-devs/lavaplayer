@@ -25,15 +25,15 @@ public abstract class AudioEventAdapter implements AudioEventListener {
 
   /**
    * @param player Audio player
-   * @param track Audio track that started
+   * @param track  Audio track that started
    */
   public void onTrackStart(AudioPlayer player, AudioTrack track) {
     // Adapter dummy method
   }
 
   /**
-   * @param player Audio player
-   * @param track Audio track that ended
+   * @param player    Audio player
+   * @param track     Audio track that ended
    * @param endReason The reason why the track stopped playing
    */
   public void onTrackEnd(AudioPlayer player, AudioTrack track, AudioTrackEndReason endReason) {
@@ -41,8 +41,8 @@ public abstract class AudioEventAdapter implements AudioEventListener {
   }
 
   /**
-   * @param player Audio player
-   * @param track Audio track where the exception occurred
+   * @param player    Audio player
+   * @param track     Audio track where the exception occurred
    * @param exception The exception that occurred
    */
   public void onTrackException(AudioPlayer player, AudioTrack track, FriendlyException exception) {
@@ -50,8 +50,8 @@ public abstract class AudioEventAdapter implements AudioEventListener {
   }
 
   /**
-   * @param player Audio player
-   * @param track Audio track where the exception occurred
+   * @param player      Audio player
+   * @param track       Audio track where the exception occurred
    * @param thresholdMs The wait threshold that was exceeded for this event to trigger
    */
   public void onTrackStuck(AudioPlayer player, AudioTrack track, long thresholdMs) {

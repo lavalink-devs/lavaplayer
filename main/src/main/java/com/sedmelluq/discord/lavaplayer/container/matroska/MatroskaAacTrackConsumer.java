@@ -25,7 +25,7 @@ public class MatroskaAacTrackConsumer implements MatroskaTrackConsumer {
 
   /**
    * @param context Configuration and output information for processing
-   * @param track The MP4 audio track descriptor
+   * @param track   The MP4 audio track descriptor
    */
   public MatroskaAacTrackConsumer(AudioProcessingContext context, MatroskaFileTrack track) {
     this.track = track;
@@ -35,7 +35,7 @@ public class MatroskaAacTrackConsumer implements MatroskaTrackConsumer {
   @Override
   public void initialise() {
     log.debug("Initialising AAC track with expected frequency {} and channel count {}.",
-        track.audio.samplingFrequency, track.audio.channels);
+      track.audio.samplingFrequency, track.audio.channels);
   }
 
   @Override

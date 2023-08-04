@@ -49,7 +49,7 @@ public class SoundCloudHelper {
         return new AudioReference(redirects.get(0).toString(), null);
       } else {
         throw new FriendlyException("Unable to process soundcloud mobile link", SUSPICIOUS,
-            new IllegalStateException("Expected soundcloud to redirect soundcloud.app.goo.gl link to a valid track/playlist link, but it did not redirect at all"));
+          new IllegalStateException("Expected soundcloud to redirect soundcloud.app.goo.gl link to a valid track/playlist link, but it did not redirect at all"));
       }
     } catch (Exception e) {
       throw ExceptionTools.wrapUnfriendlyExceptions(e);
@@ -63,7 +63,7 @@ public class SoundCloudHelper {
       Header header = response.getLastHeader("Location");
       if (header == null) {
         throw new FriendlyException("Unable to resolve Soundcloud short URL", SUSPICIOUS,
-            new IllegalStateException("Unable to locate canonical URL"));
+          new IllegalStateException("Unable to locate canonical URL"));
       }
       return new AudioReference(header.getValue(), null);
     } catch (Exception e) {

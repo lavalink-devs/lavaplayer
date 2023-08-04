@@ -2,11 +2,7 @@ package com.sedmelluq.discord.lavaplayer.track;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-import static com.sedmelluq.discord.lavaplayer.track.TrackMarkerHandler.MarkerState.BYPASSED;
-import static com.sedmelluq.discord.lavaplayer.track.TrackMarkerHandler.MarkerState.LATE;
-import static com.sedmelluq.discord.lavaplayer.track.TrackMarkerHandler.MarkerState.OVERWRITTEN;
-import static com.sedmelluq.discord.lavaplayer.track.TrackMarkerHandler.MarkerState.REACHED;
-import static com.sedmelluq.discord.lavaplayer.track.TrackMarkerHandler.MarkerState.REMOVED;
+import static com.sedmelluq.discord.lavaplayer.track.TrackMarkerHandler.MarkerState.*;
 
 /**
  * Tracks the state of a track position marker.
@@ -16,7 +12,8 @@ public class TrackMarkerTracker {
 
   /**
    * Set a new track position marker.
-   * @param marker Marker
+   *
+   * @param marker          Marker
    * @param currentTimecode Current timecode of the track when this marker is set
    */
   public void set(TrackMarker marker, long currentTimecode) {
@@ -33,6 +30,7 @@ public class TrackMarkerTracker {
 
   /**
    * Remove the current marker.
+   *
    * @return The removed marker.
    */
   public TrackMarker remove() {
@@ -41,6 +39,7 @@ public class TrackMarkerTracker {
 
   /**
    * Trigger and remove the marker with the specified state.
+   *
    * @param state The state of the marker to pass to the handler.
    */
   public void trigger(TrackMarkerHandler.MarkerState state) {
@@ -53,6 +52,7 @@ public class TrackMarkerTracker {
 
   /**
    * Check a timecode which was reached by normal playback, trigger REACHED if necessary.
+   *
    * @param timecode Timecode which was reached by normal playback.
    */
   public void checkPlaybackTimecode(long timecode) {
@@ -65,6 +65,7 @@ public class TrackMarkerTracker {
 
   /**
    * Check a timecode which was reached by seeking, trigger BYPASSED if necessary.
+   *
    * @param timecode Timecode which was reached by seeking.
    */
   public void checkSeekTimecode(long timecode) {

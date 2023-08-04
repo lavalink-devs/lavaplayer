@@ -40,10 +40,10 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
   }
 
   private YoutubeTrackDetails load(
-      HttpInterface httpInterface,
-      String videoId,
-      boolean requireFormats,
-      YoutubeAudioSourceManager sourceManager
+    HttpInterface httpInterface,
+    String videoId,
+    boolean requireFormats,
+    YoutubeAudioSourceManager sourceManager
   ) throws IOException {
     JsonBrowser mainInfo = loadTrackInfoFromInnertube(httpInterface, videoId, sourceManager, null);
 
@@ -56,7 +56,7 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
 
       if (!videoId.equals(initialData.playerResponse.get("videoDetails").get("videoId").text())) {
         throw new FriendlyException("Video returned by YouTube isn't what was requested", COMMON,
-            new IllegalStateException(initialData.playerResponse.format()));
+          new IllegalStateException(initialData.playerResponse.format()));
       }
 
       YoutubeTrackJsonData finalData = augmentWithPlayerScript(initialData, httpInterface, videoId, requireFormats);
@@ -69,10 +69,10 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
   }
 
   protected YoutubeTrackJsonData loadBaseResponse(
-      JsonBrowser mainInfo,
-      HttpInterface httpInterface,
-      String videoId,
-      YoutubeAudioSourceManager sourceManager
+    JsonBrowser mainInfo,
+    HttpInterface httpInterface,
+    String videoId,
+    YoutubeAudioSourceManager sourceManager
   ) throws IOException {
     YoutubeTrackJsonData data = YoutubeTrackJsonData.fromMainResult(mainInfo);
     InfoStatus status = checkPlayabilityStatus(data.playerResponse, false);
@@ -84,10 +84,10 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
     if (status == InfoStatus.PREMIERE_TRAILER) {
       JsonBrowser trackInfo = loadTrackInfoFromInnertube(httpInterface, videoId, sourceManager, status);
       data = YoutubeTrackJsonData.fromMainResult(trackInfo
-          .get("playabilityStatus")
-          .get("errorScreen")
-          .get("ypcTrailerRenderer")
-          .get("unserializedPlayerResponse")
+        .get("playabilityStatus")
+        .get("errorScreen")
+        .get("ypcTrailerRenderer")
+        .get("unserializedPlayerResponse")
       );
       status = checkPlayabilityStatus(data.playerResponse, true);
     }
@@ -145,7 +145,7 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
 
       if (loginReason.contains("This video may be inappropriate for some users") && secondCheck) {
         throw new FriendlyException("This video requires age verification.", SUSPICIOUS,
-            new IllegalStateException("You did not set email and password in YoutubeAudioSourceManager."));
+          new IllegalStateException("You did not set email and password in YoutubeAudioSourceManager."));
       }
 
       return InfoStatus.REQUIRES_LOGIN;
@@ -184,7 +184,7 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
       } else if (!subreason.get("runs").isNull() && subreason.get("runs").isList()) {
         StringBuilder reasonBuilder = new StringBuilder();
         subreason.get("runs").values().forEach(
-            item -> reasonBuilder.append(item.get("text").text()).append('\n')
+          item -> reasonBuilder.append(item.get("text").text()).append('\n')
         );
         unplayableReason = reasonBuilder.toString();
       }
@@ -194,16 +194,16 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
   }
 
   protected JsonBrowser loadTrackInfoFromInnertube(
-      HttpInterface httpInterface,
-      String videoId,
-      YoutubeAudioSourceManager sourceManager,
-      InfoStatus infoStatus
+    HttpInterface httpInterface,
+    String videoId,
+    YoutubeAudioSourceManager sourceManager,
+    InfoStatus infoStatus
   ) throws IOException {
     if (cachedPlayerScript == null) fetchScript(videoId, httpInterface);
 
     YoutubeSignatureCipher playerScriptTimestamp = sourceManager.getSignatureResolver().getExtractedScript(
-        httpInterface,
-        cachedPlayerScript.playerScriptUrl
+      httpInterface,
+      cachedPlayerScript.playerScriptUrl
     );
     HttpPost post = new HttpPost(PLAYER_URL);
     YoutubeClientConfig clientConfig;
@@ -214,24 +214,24 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
     } else if (infoStatus == InfoStatus.NON_EMBEDDABLE) {
       // Used when age restriction bypass failed, if we have valid auth then most likely this request will be successful
       clientConfig = YoutubeClientConfig.ANDROID.copy()
-          .withRootField("params", PLAYER_PARAMS);
+        .withRootField("params", PLAYER_PARAMS);
     } else if (infoStatus == InfoStatus.REQUIRES_LOGIN) {
       // Age restriction bypass
       clientConfig = YoutubeClientConfig.TV_EMBEDDED.copy();
     } else {
       // Default payload from what we start trying to get required data
       clientConfig = YoutubeClientConfig.ANDROID.copy()
-          .withClientField("clientScreen", CLIENT_SCREEN_EMBED)
-          .withThirdPartyEmbedUrl(CLIENT_THIRD_PARTY_EMBED)
-          .withRootField("params", PLAYER_PARAMS);
+        .withClientField("clientScreen", CLIENT_SCREEN_EMBED)
+        .withThirdPartyEmbedUrl(CLIENT_THIRD_PARTY_EMBED)
+        .withRootField("params", PLAYER_PARAMS);
     }
 
     clientConfig
-        .withRootField("racyCheckOk", true)
-        .withRootField("contentCheckOk", true)
-        .withRootField("videoId", videoId)
-        .withPlaybackSignatureTimestamp(playerScriptTimestamp.scriptTimestamp)
-        .setAttribute(httpInterface);
+      .withRootField("racyCheckOk", true)
+      .withRootField("contentCheckOk", true)
+      .withRootField("videoId", videoId)
+      .withPlaybackSignatureTimestamp(playerScriptTimestamp.scriptTimestamp)
+      .setAttribute(httpInterface);
 
     log.debug("Loading track info with payload: {}", clientConfig.toJsonString());
 
@@ -247,16 +247,16 @@ public class DefaultYoutubeTrackDetailsLoader implements YoutubeTrackDetailsLoad
         throw e;
       } catch (Exception e) {
         throw new FriendlyException("Received unexpected response from YouTube.", SUSPICIOUS,
-            new RuntimeException("Failed to parse: " + responseText, e));
+          new RuntimeException("Failed to parse: " + responseText, e));
       }
     }
   }
 
   protected YoutubeTrackJsonData augmentWithPlayerScript(
-      YoutubeTrackJsonData data,
-      HttpInterface httpInterface,
-      String videoId,
-      boolean requireFormats
+    YoutubeTrackJsonData data,
+    HttpInterface httpInterface,
+    String videoId,
+    boolean requireFormats
   ) throws IOException {
     long now = System.currentTimeMillis();
 

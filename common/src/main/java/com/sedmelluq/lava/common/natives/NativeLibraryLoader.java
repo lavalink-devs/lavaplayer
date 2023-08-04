@@ -1,18 +1,15 @@
 package com.sedmelluq.lava.common.natives;
 
 import com.sedmelluq.lava.common.natives.architecture.SystemType;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.FileAlreadyExistsException;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.function.Predicate;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.*;
+import java.util.function.Predicate;
 
 import static java.nio.file.attribute.PosixFilePermissions.asFileAttribute;
 import static java.nio.file.attribute.PosixFilePermissions.fromString;
@@ -51,10 +48,10 @@ public class NativeLibraryLoader {
                                                    Predicate<SystemType> systemFilter) {
 
     return new NativeLibraryLoader(
-        libraryName,
-        systemFilter,
-        new SystemNativeLibraryProperties(libraryName, DEFAULT_PROPERTY_PREFIX),
-        new ResourceNativeLibraryBinaryProvider(classLoaderSample, DEFAULT_RESOURCE_ROOT)
+      libraryName,
+      systemFilter,
+      new SystemNativeLibraryProperties(libraryName, DEFAULT_PROPERTY_PREFIX),
+      new ResourceNativeLibraryBinaryProvider(classLoaderSample, DEFAULT_RESOURCE_ROOT)
     );
   }
 
@@ -142,7 +139,7 @@ public class NativeLibraryLoader {
 
     if (!Files.isDirectory(extractionDirectory)) {
       log.debug("Native library {}: extraction directory {} does not exist, creating.", libraryName,
-          extractionDirectory);
+        extractionDirectory);
 
       try {
         createDirectoriesWithFullPermissions(extractionDirectory);
@@ -167,7 +164,7 @@ public class NativeLibraryLoader {
     }
 
     Path path = Paths.get(System.getProperty("java.io.tmpdir", "/tmp"), "lava-jni-natives")
-        .toAbsolutePath();
+      .toAbsolutePath();
 
     log.debug("Native library {}: detected {} as base directory for extraction.", libraryName, path);
     return path;
@@ -181,7 +178,7 @@ public class NativeLibraryLoader {
     } catch (IllegalArgumentException e) {
       if (systemFilter != null) {
         log.info("Native library {}: could not detect sytem type, but system filter is {} - assuming it does " +
-            "not match and skipping library.", libraryName, systemFilter);
+          "not match and skipping library.", libraryName, systemFilter);
 
         return null;
       } else {
@@ -191,7 +188,7 @@ public class NativeLibraryLoader {
 
     if (systemFilter != null && !systemFilter.test(systemType)) {
       log.debug("Native library {}: system filter does not match detected system {}, skipping", libraryName,
-          systemType.formatSystemName());
+        systemType.formatSystemName());
       return null;
     }
 

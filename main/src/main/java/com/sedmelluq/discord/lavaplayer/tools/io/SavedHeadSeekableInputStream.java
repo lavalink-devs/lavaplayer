@@ -1,6 +1,7 @@
 package com.sedmelluq.discord.lavaplayer.tools.io;
 
 import com.sedmelluq.discord.lavaplayer.track.info.AudioTrackInfoProvider;
+
 import java.io.IOException;
 import java.util.List;
 
@@ -17,7 +18,7 @@ public class SavedHeadSeekableInputStream extends SeekableInputStream {
   private long savedUntilPosition;
 
   /**
-   * @param delegate The seekable stream to delegate reading to
+   * @param delegate  The seekable stream to delegate reading to
    * @param savedSize Number of bytes to buffer
    */
   public SavedHeadSeekableInputStream(SeekableInputStream delegate, int savedSize) {
@@ -33,6 +34,7 @@ public class SavedHeadSeekableInputStream extends SeekableInputStream {
 
   /**
    * Load the number of bytes specified in the constructor into the saved buffer.
+   *
    * @throws IOException On IO error
    */
   public void loadHead() throws IOException {

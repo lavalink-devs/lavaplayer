@@ -38,8 +38,8 @@ public class AacDecoder extends NativeResourceHolder {
    * Configure the decoder. Must be called before the first decoding.
    *
    * @param objectType Audio object type as defined for Audio Specific Config: https://wiki.multimedia.cx/index.php?title=MPEG-4_Audio
-   * @param frequency Frequency of samples in Hz
-   * @param channels Number of channels.
+   * @param frequency  Frequency of samples in Hz
+   * @param channels   Number of channels.
    * @throws IllegalStateException If the decoder has already been closed.
    */
   public int configure(int objectType, int frequency, int channels) {
@@ -105,20 +105,34 @@ public class AacDecoder extends NativeResourceHolder {
 
   private static int getFrequencyIndex(int frequency) {
     switch (frequency) {
-      case 96000: return 0;
-      case 88200: return 1;
-      case 64000: return 2;
-      case 48000: return 3;
-      case 44100: return 4;
-      case 32000: return 5;
-      case 24000: return 6;
-      case 22050: return 7;
-      case 16000: return 8;
-      case 12000: return 9;
-      case 11025: return 10;
-      case 8000: return 11;
-      case 7350: return 12;
-      default: return 15;
+      case 96000:
+        return 0;
+      case 88200:
+        return 1;
+      case 64000:
+        return 2;
+      case 48000:
+        return 3;
+      case 44100:
+        return 4;
+      case 32000:
+        return 5;
+      case 24000:
+        return 6;
+      case 22050:
+        return 7;
+      case 16000:
+        return 8;
+      case 12000:
+        return 9;
+      case 11025:
+        return 10;
+      case 8000:
+        return 11;
+      case 7350:
+        return 12;
+      default:
+        return 15;
     }
   }
 
@@ -128,9 +142,8 @@ public class AacDecoder extends NativeResourceHolder {
    * @param buffer DirectBuffer which contains the bytes to be added. Position and limit are respected and position is
    *               updated as a result of this operation.
    * @return The number of bytes consumed from the provided buffer.
-   *
    * @throws IllegalArgumentException If the buffer is not a DirectBuffer.
-   * @throws IllegalStateException If the decoder has already been closed.
+   * @throws IllegalStateException    If the decoder has already been closed.
    */
   public synchronized int fill(ByteBuffer buffer) {
     checkNotReleased();
@@ -154,12 +167,11 @@ public class AacDecoder extends NativeResourceHolder {
    * @param buffer DirectBuffer of signed PCM samples where the decoded frame will be stored. The buffer size must be at
    *               least of size <code>frameSize * channels * 2</code>. Buffer position and limit are ignored and not
    *               updated.
-   * @param flush Whether all the buffered data should be flushed, set to true if no more input is expected.
+   * @param flush  Whether all the buffered data should be flushed, set to true if no more input is expected.
    * @return True if the frame buffer was filled, false if there was not enough input for decoding a full frame.
-   *
    * @throws IllegalArgumentException If the buffer is not a DirectBuffer.
-   * @throws IllegalStateException If the decoding library returns an error other than running out of input data.
-   * @throws IllegalStateException If the decoder has already been closed.
+   * @throws IllegalStateException    If the decoding library returns an error other than running out of input data.
+   * @throws IllegalStateException    If the decoder has already been closed.
    */
   public synchronized boolean decode(ShortBuffer buffer, boolean flush) {
     checkNotReleased();
@@ -178,8 +190,8 @@ public class AacDecoder extends NativeResourceHolder {
 
   /**
    * @return Correct stream info. The values passed to configure method do not account for SBR and PS and detecting
-   *         these is a part of the decoding process. If there was not enough input for decoding a full frame, null is
-   *         returned.
+   * these is a part of the decoding process. If there was not enough input for decoding a full frame, null is
+   * returned.
    * @throws IllegalStateException If the decoder result produced an unexpected error.
    */
   public synchronized StreamInfo resolveStreamInfo() {
@@ -199,9 +211,9 @@ public class AacDecoder extends NativeResourceHolder {
     }
 
     return new StreamInfo(
-        (int) (combinedValue >>> 32L),
-        (int) (combinedValue & 0xFFFF),
-        (int) ((combinedValue >>> 16L) & 0xFFFF)
+      (int) (combinedValue >>> 32L),
+      (int) (combinedValue & 0xFFFF),
+      (int) ((combinedValue >>> 16L) & 0xFFFF)
     );
   }
 
@@ -229,8 +241,8 @@ public class AacDecoder extends NativeResourceHolder {
 
     /**
      * @param sampleRate Sample rate (adjusted to SBR) of the current stream.
-     * @param channels Channel count (adjusted to PS) of the current stream.
-     * @param frameSize Number of samples per channel per frame.
+     * @param channels   Channel count (adjusted to PS) of the current stream.
+     * @param frameSize  Number of samples per channel per frame.
      */
     public StreamInfo(int sampleRate, int channels, int frameSize) {
       this.sampleRate = sampleRate;

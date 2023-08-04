@@ -12,7 +12,7 @@ import com.sedmelluq.discord.lavaplayer.player.AudioConfiguration;
 public class OpusAudioDataFormat extends AudioDataFormat {
   public static final String CODEC_NAME = "OPUS";
 
-  private static final byte[] SILENT_OPUS_FRAME = new byte[] {(byte) 0xFC, (byte) 0xFF, (byte) 0xFE};
+  private static final byte[] SILENT_OPUS_FRAME = new byte[]{(byte) 0xFC, (byte) 0xFF, (byte) 0xFE};
 
   private final int maximumChunkSize;
   private final int expectedChunkSize;

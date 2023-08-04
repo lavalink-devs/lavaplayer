@@ -1,14 +1,15 @@
 package com.sedmelluq.discord.lavaplayer.track.playback;
 
 import com.sedmelluq.discord.lavaplayer.format.AudioDataFormat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * A frame buffer. Stores the specified duration worth of frames in the internal buffer.
@@ -23,8 +24,8 @@ public class AllocatingAudioFrameBuffer extends AbstractAudioFrameBuffer {
 
   /**
    * @param bufferDuration The length of the internal buffer in milliseconds
-   * @param format The format of the frames held in this buffer
-   * @param stopping Atomic boolean which has true value when the track is in a state of pending stop.
+   * @param format         The format of the frames held in this buffer
+   * @param stopping       Atomic boolean which has true value when the track is in a state of pending stop.
    */
   public AllocatingAudioFrameBuffer(int bufferDuration, AudioDataFormat format, AtomicBoolean stopping) {
     super(format);
@@ -96,7 +97,7 @@ public class AllocatingAudioFrameBuffer extends AbstractAudioFrameBuffer {
 
   @Override
   public boolean provide(MutableAudioFrame targetFrame, long timeout, TimeUnit unit)
-      throws TimeoutException, InterruptedException {
+    throws TimeoutException, InterruptedException {
 
     return passToMutable(provide(timeout, unit), targetFrame);
   }
@@ -137,7 +138,7 @@ public class AllocatingAudioFrameBuffer extends AbstractAudioFrameBuffer {
 
   /**
    * @return The timecode of the last frame in the buffer, null if the buffer is empty or is marked to be cleared upon
-   *         receiving the next frame.
+   * receiving the next frame.
    */
   @Override
   public Long getLastInputTimecode() {

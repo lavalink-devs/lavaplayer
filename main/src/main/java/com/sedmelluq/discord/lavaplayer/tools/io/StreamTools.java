@@ -11,7 +11,7 @@ public class StreamTools {
    * Reads from the stream until either the length number of bytes is read, or the stream ends. Note that neither case
    * throws an exception.
    *
-   * @param in The stream to read from.
+   * @param in     The stream to read from.
    * @param buffer Buffer to write the data that is read from the stream.
    * @param offset Offset in the buffer to start writing from.
    * @param length Maximum number of bytes to read from the stream.

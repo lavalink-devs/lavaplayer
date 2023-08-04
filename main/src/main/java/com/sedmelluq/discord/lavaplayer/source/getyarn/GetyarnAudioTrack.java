@@ -8,9 +8,10 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
 import com.sedmelluq.discord.lavaplayer.track.DelegatedAudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.playback.LocalAudioTrackExecutor;
-import java.net.URI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.net.URI;
 
 public class GetyarnAudioTrack extends DelegatedAudioTrack {
   private static final Logger log = LoggerFactory.getLogger(DelegatedAudioTrack.class);
@@ -28,9 +29,9 @@ public class GetyarnAudioTrack extends DelegatedAudioTrack {
       log.debug("Starting getyarn.io track from URL: {}", trackInfo.identifier);
 
       try (PersistentHttpStream inputStream = new PersistentHttpStream(
-          httpInterface,
-          new URI(trackInfo.identifier),
-          Units.CONTENT_LENGTH_UNKNOWN
+        httpInterface,
+        new URI(trackInfo.identifier),
+        Units.CONTENT_LENGTH_UNKNOWN
       )) {
         processDelegate(new MpegAudioTrack(trackInfo, inputStream), localExecutor);
       }

@@ -2,6 +2,7 @@ package com.sedmelluq.discord.lavaplayer.filter.volume;
 
 import com.sedmelluq.discord.lavaplayer.filter.AudioPostProcessor;
 import com.sedmelluq.discord.lavaplayer.track.playback.AudioProcessingContext;
+
 import java.nio.ShortBuffer;
 
 /**

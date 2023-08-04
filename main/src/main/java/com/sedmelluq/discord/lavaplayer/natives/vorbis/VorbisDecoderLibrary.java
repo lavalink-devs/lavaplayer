@@ -1,6 +1,7 @@
 package com.sedmelluq.discord.lavaplayer.natives.vorbis;
 
 import com.sedmelluq.discord.lavaplayer.natives.ConnectorNativeLibLoader;
+
 import java.nio.ByteBuffer;
 
 class VorbisDecoderLibrary {

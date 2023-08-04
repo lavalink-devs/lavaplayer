@@ -1,6 +1,7 @@
 package com.sedmelluq.discord.lavaplayer.container.matroska.format;
 
 import com.sedmelluq.discord.lavaplayer.tools.io.SeekableInputStream;
+
 import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -28,8 +29,8 @@ public class MatroskaFileReader {
   /**
    * @param parent The parent element to use for bounds checking, null is valid.
    * @return The element whose header was read. Null if the parent/file has ended. The contents of this element are only
-   *         valid until the next element at the same level is read, use {@link MatroskaElement#frozen()} to get a
-   *         permanent instance.
+   * valid until the next element at the same level is read, use {@link MatroskaElement#frozen()} to get a
+   * permanent instance.
    * @throws IOException On read error
    */
   public MatroskaElement readNextElement(MatroskaElement parent) throws IOException {
@@ -65,7 +66,7 @@ public class MatroskaFileReader {
    * Reads one Matroska block header. The data is of the block is not read, but can be read frame by frame using
    * {@link MatroskaBlock#getNextFrameBuffer(MatroskaFileReader, int)}.
    *
-   * @param parent The block parent element.
+   * @param parent      The block parent element.
    * @param trackFilter The ID of the track to read data for from the block.
    * @return An instance of a block if it contains data for the requested track, <code>null</code> otherwise.
    * @throws IOException On read error.
@@ -201,6 +202,7 @@ public class MatroskaFileReader {
 
   /**
    * Seeks to the specified position.
+   *
    * @param position The position in bytes.
    * @throws IOException On read error
    */

@@ -30,7 +30,7 @@ public class BalancingIpRoutePlanner extends AbstractRoutePlanner {
   }
 
   /**
-   * @param ipBlocks  the block to perform balancing over.
+   * @param ipBlocks the block to perform balancing over.
    * @param ipFilter function to filter out certain IP addresses picked from the IP block, causing another random to be chosen.
    */
   public BalancingIpRoutePlanner(List<IpBlock> ipBlocks, Predicate<InetAddress> ipFilter) {
@@ -38,7 +38,7 @@ public class BalancingIpRoutePlanner extends AbstractRoutePlanner {
   }
 
   /**
-   * @param ipBlocks             the block to perform balancing over.
+   * @param ipBlocks            the block to perform balancing over.
    * @param ipFilter            function to filter out certain IP addresses picked from the IP block, causing another random to be chosen.
    * @param handleSearchFailure whether a search 429 should trigger the ip as failing
    */

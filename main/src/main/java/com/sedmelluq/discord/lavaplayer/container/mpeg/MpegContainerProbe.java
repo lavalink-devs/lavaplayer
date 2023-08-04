@@ -9,9 +9,10 @@ import com.sedmelluq.discord.lavaplayer.track.AudioReference;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
 import com.sedmelluq.discord.lavaplayer.track.info.AudioTrackInfoBuilder;
-import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
 
 import static com.sedmelluq.discord.lavaplayer.container.MediaContainerDetection.checkNextBytes;
 import static com.sedmelluq.discord.lavaplayer.container.MediaContainerDetectionResult.supportedFormat;
@@ -23,7 +24,7 @@ import static com.sedmelluq.discord.lavaplayer.container.MediaContainerDetection
 public class MpegContainerProbe implements MediaContainerProbe {
   private static final Logger log = LoggerFactory.getLogger(MpegContainerProbe.class);
 
-  private static final int[] ISO_TAG = new int[] { 0x00, 0x00, 0x00, -1, 0x66, 0x74, 0x79, 0x70 };
+  private static final int[] ISO_TAG = new int[]{0x00, 0x00, 0x00, -1, 0x66, 0x74, 0x79, 0x70};
 
   @Override
   public String getName() {
@@ -60,10 +61,10 @@ public class MpegContainerProbe implements MediaContainerProbe {
     }
 
     AudioTrackInfo trackInfo = AudioTrackInfoBuilder.create(reference, inputStream)
-        .setTitle(file.getTextMetadata("Title"))
-        .setAuthor(file.getTextMetadata("Artist"))
-        .setLength(fileReader.getDuration())
-        .build();
+      .setTitle(file.getTextMetadata("Title"))
+      .setAuthor(file.getTextMetadata("Artist"))
+      .setLength(fileReader.getDuration())
+      .build();
 
     return supportedFormat(this, null, trackInfo);
   }

@@ -24,7 +24,7 @@ public class YoutubePersistentHttpStream extends PersistentHttpStream {
 
   /**
    * @param httpInterface The HTTP interface to use for requests
-   * @param contentUrl The URL of the resource
+   * @param contentUrl    The URL of the resource
    * @param contentLength The length of the resource in bytes
    */
   public YoutubePersistentHttpStream(HttpInterface httpInterface, URI contentUrl, long contentLength) {

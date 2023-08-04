@@ -21,6 +21,7 @@ public class BitStreamReader {
 
   /**
    * Get the specified number of bits as a long value
+   *
    * @param bitsNeeded Number of bits to retrieve
    * @return The value of those bits as a long
    * @throws IOException On read error
@@ -46,6 +47,7 @@ public class BitStreamReader {
 
   /**
    * Get the specific number of bits as a signed long value (highest order bit is sign)
+   *
    * @param bitsNeeded Number of bits needed
    * @return The signed value
    * @throws IOException On read error
@@ -62,6 +64,7 @@ public class BitStreamReader {
 
   /**
    * Get the specified number of bits as an integer value
+   *
    * @param bitsNeeded Number of bits to retrieve
    * @return The value of those bits as an integer
    * @throws IOException On read error
@@ -72,6 +75,7 @@ public class BitStreamReader {
 
   /**
    * Get the specific number of bits as a signed integer value (highest order bit is sign)
+   *
    * @param bitsNeeded Number of bits needed
    * @return The signed value
    * @throws IOException On read error
@@ -82,6 +86,7 @@ public class BitStreamReader {
 
   /**
    * Reads bits from the stream until a set bit is reached.
+   *
    * @return The number of zeroes read
    * @throws IOException On read error
    */
@@ -99,6 +104,7 @@ public class BitStreamReader {
 
   /**
    * Reads the number of bits it requires to make the reader align on a byte.
+   *
    * @return The read bits as an unsigned value
    */
   public int readRemainingBits() {

@@ -8,7 +8,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
  */
 public class MediaContainerDetectionResult {
   private static final MediaContainerDetectionResult UNKNOWN_FORMAT =
-      new MediaContainerDetectionResult(null, null, null, null, null);
+    new MediaContainerDetectionResult(null, null, null, null, null);
 
   private final AudioTrackInfo trackInfo;
   private final MediaContainerProbe containerProbe;
@@ -17,7 +17,7 @@ public class MediaContainerDetectionResult {
   private final String unsupportedReason;
 
   private MediaContainerDetectionResult(AudioTrackInfo trackInfo, MediaContainerProbe containerProbe,
-                                       String probeSettings, AudioReference reference, String unsupportedReason) {
+                                        String probeSettings, AudioReference reference, String unsupportedReason) {
 
     this.trackInfo = trackInfo;
     this.containerProbe = containerProbe;
@@ -36,7 +36,7 @@ public class MediaContainerDetectionResult {
   /**
    * Creates a result ofr an unsupported file of a known container.
    *
-   * @param probe Probe of the container
+   * @param probe  Probe of the container
    * @param reason The reason why this track is not supported
    */
   public static MediaContainerDetectionResult unsupportedFormat(MediaContainerProbe probe, String reason) {
@@ -46,7 +46,7 @@ public class MediaContainerDetectionResult {
   /**
    * Creates a load result referring to another item.
    *
-   * @param probe Probe of the container
+   * @param probe     Probe of the container
    * @param reference Reference to another item
    */
   public static MediaContainerDetectionResult refer(MediaContainerProbe probe, AudioReference reference) {
@@ -57,11 +57,11 @@ public class MediaContainerDetectionResult {
   /**
    * Creates a load result for supported file.
    *
-   * @param probe Probe of the container
+   * @param probe     Probe of the container
    * @param trackInfo Track info for the file
    */
   public static MediaContainerDetectionResult supportedFormat(MediaContainerProbe probe, String settings,
-                                                        AudioTrackInfo trackInfo) {
+                                                              AudioTrackInfo trackInfo) {
 
     return new MediaContainerDetectionResult(trackInfo, probe, settings, null, null);
   }
@@ -82,7 +82,7 @@ public class MediaContainerDetectionResult {
 
   /**
    * @return Whether this specific file is supported. If this returns true, the track info is non-null. Otherwise
-   *         the reason why this file is not supported can be retrieved via getUnsupportedReason().
+   * the reason why this file is not supported can be retrieved via getUnsupportedReason().
    */
   public boolean isSupportedFile() {
     return isContainerDetected() && unsupportedReason == null;

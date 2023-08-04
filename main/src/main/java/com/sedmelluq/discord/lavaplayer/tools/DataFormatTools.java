@@ -1,5 +1,9 @@
 package com.sedmelluq.discord.lavaplayer.tools;
 
+import org.apache.commons.io.IOUtils;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.utils.URLEncodedUtils;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -11,9 +15,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
-import org.apache.commons.io.IOUtils;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.utils.URLEncodedUtils;
 
 /**
  * Helper methods related to strings and maps.
@@ -23,9 +24,10 @@ public class DataFormatTools {
 
   /**
    * Extract text between the first subsequent occurrences of start and end in haystack
+   *
    * @param haystack The text to search from
-   * @param start The text after which to start extracting
-   * @param end The text before which to stop extracting
+   * @param start    The text after which to start extracting
+   * @param end      The text before which to stop extracting
    * @return The extracted string
    */
   public static String extractBetween(String haystack, String start, String end) {
@@ -83,6 +85,7 @@ public class DataFormatTools {
 
   /**
    * Converts name value pairs to a map, with the last entry for each name being present.
+   *
    * @param pairs Name value pairs to convert
    * @return The resulting map
    */
@@ -117,9 +120,9 @@ public class DataFormatTools {
   /**
    * Returns the specified default value if the value itself is null.
    *
-   * @param value Value to check
+   * @param value        Value to check
    * @param defaultValue Default value to return if value is null
-   * @param <T> The type of the value
+   * @param <T>          The type of the value
    * @return Value or default value
    */
   public static <T> T defaultOnNull(T value, T defaultValue) {
@@ -130,7 +133,7 @@ public class DataFormatTools {
    * Consumes a stream and returns it as lines.
    *
    * @param inputStream Input stream to consume.
-   * @param charset Character set of the stream
+   * @param charset     Character set of the stream
    * @return Lines from the stream
    * @throws IOException On read error
    */
@@ -160,7 +163,7 @@ public class DataFormatTools {
    * {@link #readNullableText(DataInput)}.
    *
    * @param output Output to write to.
-   * @param text Text to write.
+   * @param text   Text to write.
    * @throws IOException On write error.
    */
   public static void writeNullableText(DataOutput output, String text) throws IOException {

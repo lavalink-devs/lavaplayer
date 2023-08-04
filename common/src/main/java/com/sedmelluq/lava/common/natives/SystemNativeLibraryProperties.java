@@ -46,8 +46,8 @@ public class SystemNativeLibraryProperties implements NativeLibraryProperties {
 
   private String get(String property) {
     return System.getProperty(
-        propertyPrefix + libraryName + "." + property,
-        System.getProperty(propertyPrefix + property)
+      propertyPrefix + libraryName + "." + property,
+      System.getProperty(propertyPrefix + property)
     );
   }
 }

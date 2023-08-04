@@ -8,6 +8,7 @@ import com.sedmelluq.discord.lavaplayer.tools.http.ExtendedHttpConfigurable;
 import com.sedmelluq.discord.lavaplayer.tools.http.HttpContextFilter;
 import com.sedmelluq.discord.lavaplayer.tools.http.SimpleHttpClientConnectionManager;
 import com.sedmelluq.lava.extensions.youtuberotator.planner.AbstractRoutePlanner;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -80,7 +81,7 @@ public class YoutubeIpRotatorSetup {
   protected void apply(List<ExtendedHttpConfigurable> configurables, YoutubeIpRotatorFilter filter) {
     for (ExtendedHttpConfigurable configurable : configurables) {
       configurable.configureBuilder(builder ->
-          ((ExtendedHttpClientBuilder) builder).setConnectionManagerFactory(SimpleHttpClientConnectionManager::new)
+        ((ExtendedHttpClientBuilder) builder).setConnectionManagerFactory(SimpleHttpClientConnectionManager::new)
       );
 
       configurable.configureBuilder(it -> {

@@ -15,6 +15,7 @@ public interface AudioTrackExecutor extends AudioFrameProvider {
 
   /**
    * Execute the track, which means that this thread will fill the frame buffer until the track finishes or is stopped.
+   *
    * @param listener Listener for track state events
    */
   void execute(TrackStateListener listener);
@@ -31,6 +32,7 @@ public interface AudioTrackExecutor extends AudioFrameProvider {
 
   /**
    * Perform seek to the specified timecode.
+   *
    * @param timecode The timecode in milliseconds
    */
   void setPosition(long timecode);
@@ -42,6 +44,7 @@ public interface AudioTrackExecutor extends AudioFrameProvider {
 
   /**
    * Set track position marker.
+   *
    * @param marker Track position marker to set.
    */
   void setMarker(TrackMarker marker);

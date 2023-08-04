@@ -41,7 +41,7 @@ public class AacPacketRouter {
         if (streamInfo != null) {
           downstream = AudioPipelineFactory.create(context, new PcmFormat(streamInfo.channels, streamInfo.sampleRate));
           outputBuffer = ByteBuffer.allocateDirect(2 * streamInfo.frameSize * streamInfo.channels)
-              .order(ByteOrder.nativeOrder()).asShortBuffer();
+            .order(ByteOrder.nativeOrder()).asShortBuffer();
 
           if (initialRequestedTimecode != null) {
             downstream.seekPerformed(initialRequestedTimecode, initialProvidedTimecode);
@@ -59,8 +59,8 @@ public class AacPacketRouter {
       if (downstream == null) {
         log.debug("Using embedded decoder");
         downstream = AudioPipelineFactory.create(context, new PcmFormat(
-            embeddedDecoder.getAudioFormat().getChannels(),
-            (int) embeddedDecoder.getAudioFormat().getSampleRate()
+          embeddedDecoder.getAudioFormat().getChannels(),
+          (int) embeddedDecoder.getAudioFormat().getSampleRate()
         ));
 
         if (initialRequestedTimecode != null) {

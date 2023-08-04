@@ -7,7 +7,7 @@ import java.nio.ShortBuffer;
  */
 public interface ShortPcmAudioFilter extends AudioFilter {
   /**
-   * @param input Array of samples
+   * @param input  Array of samples
    * @param offset Offset in the array
    * @param length Length of the sequence in the array
    * @throws InterruptedException When interrupted externally (or for seek/stop).

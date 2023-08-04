@@ -90,10 +90,10 @@ public class AudioTrackInfoBuilder implements AudioTrackInfoProvider {
     }
 
     return setTitle(provider.getTitle())
-        .setAuthor(provider.getAuthor())
-        .setLength(provider.getLength())
-        .setIdentifier(provider.getIdentifier())
-        .setUri(provider.getUri());
+      .setAuthor(provider.getAuthor())
+      .setLength(provider.getLength())
+      .setIdentifier(provider.getIdentifier())
+      .setUri(provider.getUri());
   }
 
   /**
@@ -103,12 +103,12 @@ public class AudioTrackInfoBuilder implements AudioTrackInfoProvider {
     long finalLength = DataFormatTools.defaultOnNull(length, DURATION_MS_UNKNOWN);
 
     return new AudioTrackInfo(
-        title,
-        author,
-        finalLength,
-        identifier,
-        DataFormatTools.defaultOnNull(isStream, finalLength == DURATION_MS_UNKNOWN),
-        uri
+      title,
+      author,
+      finalLength,
+      identifier,
+      DataFormatTools.defaultOnNull(isStream, finalLength == DURATION_MS_UNKNOWN),
+      uri
     );
   }
 
@@ -116,14 +116,14 @@ public class AudioTrackInfoBuilder implements AudioTrackInfoProvider {
    * Creates an instance of an audio track builder based on an audio reference and a stream.
    *
    * @param reference Audio reference to use as the starting point for the builder.
-   * @param stream Stream to get additional data from.
+   * @param stream    Stream to get additional data from.
    * @return An instance of the builder with the reference and track info providers from the stream preapplied.
    */
   public static AudioTrackInfoBuilder create(AudioReference reference, SeekableInputStream stream) {
     AudioTrackInfoBuilder builder = new AudioTrackInfoBuilder()
-        .setAuthor(UNKNOWN_ARTIST)
-        .setTitle(UNKNOWN_TITLE)
-        .setLength(DURATION_MS_UNKNOWN);
+      .setAuthor(UNKNOWN_ARTIST)
+      .setTitle(UNKNOWN_TITLE)
+      .setLength(DURATION_MS_UNKNOWN);
 
     builder.apply(reference);
 

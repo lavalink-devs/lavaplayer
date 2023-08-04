@@ -17,10 +17,10 @@ public class PlayerManagerTestTools {
     CompletableFuture<AudioTrack> result = new CompletableFuture<>();
 
     manager.loadItem(identifier, new FunctionalResultHandler(
-        result::complete,
-        (playlist) -> result.completeExceptionally(new IllegalArgumentException()),
-        () -> result.completeExceptionally(new NoSuchElementException()),
-        result::completeExceptionally
+      result::complete,
+      (playlist) -> result.completeExceptionally(new IllegalArgumentException()),
+      () -> result.completeExceptionally(new NoSuchElementException()),
+      result::completeExceptionally
     ));
 
     return result.get(10, TimeUnit.SECONDS);

@@ -9,7 +9,7 @@ public interface AudioFilter {
    * next incoming sample.
    *
    * @param requestedTime Timecode in milliseconds to which the seek was requested to
-   * @param providedTime Timecode in milliseconds to which the seek was actually performed to
+   * @param providedTime  Timecode in milliseconds to which the seek was actually performed to
    */
   void seekPerformed(long requestedTime, long providedTime);
 

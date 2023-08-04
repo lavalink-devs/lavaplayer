@@ -25,6 +25,7 @@ public class ResettableBoundedInputStream extends InputStream {
 
   /**
    * Make this input stream return EOF after the specified number of bytes.
+   *
    * @param limit Maximum number of bytes that can be read.
    */
   public void resetLimit(long limit) {

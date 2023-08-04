@@ -2,10 +2,11 @@ package com.sedmelluq.discord.lavaplayer.container.mp3;
 
 import com.sedmelluq.discord.lavaplayer.natives.mp3.Mp3Decoder;
 import com.sedmelluq.discord.lavaplayer.tools.io.SeekableInputStream;
-import java.io.IOException;
-import java.nio.ByteBuffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.nio.ByteBuffer;
 
 import static com.sedmelluq.discord.lavaplayer.natives.mp3.Mp3Decoder.MPEG1_SAMPLES_PER_FRAME;
 
@@ -17,7 +18,7 @@ public class Mp3XingSeeker implements Mp3Seeker {
 
   private static final int XING_OFFSET = 36;
   private static final int ALL_FLAGS = 0x7;
-  private static final ByteBuffer xingTagBuffer = ByteBuffer.wrap(new byte[] { 0x58, 0x69, 0x6E, 0x67 });
+  private static final ByteBuffer xingTagBuffer = ByteBuffer.wrap(new byte[]{0x58, 0x69, 0x6E, 0x67});
 
   private final long firstFramePosition;
   private final long contentLength;
@@ -37,8 +38,8 @@ public class Mp3XingSeeker implements Mp3Seeker {
 
   /**
    * @param firstFramePosition Position of the first frame in the file
-   * @param contentLength Total length of the file
-   * @param frameBuffer Buffer of the first frame
+   * @param contentLength      Total length of the file
+   * @param frameBuffer        Buffer of the first frame
    * @return Xing seeker, if its header is found in the first frame and has all the necessary fields
    */
   public static Mp3XingSeeker createFromFrame(long firstFramePosition, long contentLength, byte[] frameBuffer) {

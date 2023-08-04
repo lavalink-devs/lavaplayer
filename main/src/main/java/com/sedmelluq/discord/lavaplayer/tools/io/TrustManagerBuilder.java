@@ -1,6 +1,13 @@
 package com.sedmelluq.discord.lavaplayer.tools.io;
 
 import com.sedmelluq.discord.lavaplayer.tools.ExceptionTools;
+import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.X509TrustManager;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
@@ -8,12 +15,6 @@ import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
-import javax.net.ssl.X509TrustManager;
-import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Builder for a trust manager with custom certificates.
@@ -25,6 +26,7 @@ public class TrustManagerBuilder {
 
   /**
    * Add certificates from the default trust store
+   *
    * @return this
    * @throws Exception In case anything explodes.
    */
@@ -42,6 +44,7 @@ public class TrustManagerBuilder {
   /**
    * Add certificates from the specified resource directory, using {path}/bundled.txt and {path}/extended.txt as the
    * list of JKS file names to laoad from that directory.
+   *
    * @param path Path to the resource directory.
    * @return this
    * @throws Exception In case anything explodes.

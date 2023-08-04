@@ -8,6 +8,7 @@ import com.sedmelluq.discord.lavaplayer.filter.PcmFormat;
 import com.sedmelluq.discord.lavaplayer.natives.vorbis.VorbisDecoder;
 import com.sedmelluq.discord.lavaplayer.tools.io.DirectBufferStreamBroker;
 import com.sedmelluq.discord.lavaplayer.track.playback.AudioProcessingContext;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
@@ -27,8 +28,8 @@ public class OggVorbisTrackHandler implements OggTrackHandler {
 
   /**
    * @param packetInputStream OGG packet input stream
-   * @param broker Broker for loading stream data into direct byte buffer, it has already loaded the first two packets
-   *               (info and comments) and should be in the state where we should request the next - the setup packet.
+   * @param broker            Broker for loading stream data into direct byte buffer, it has already loaded the first two packets
+   *                          (info and comments) and should be in the state where we should request the next - the setup packet.
    */
   public OggVorbisTrackHandler(byte[] infoPacket, OggPacketInputStream packetInputStream,
                                DirectBufferStreamBroker broker) {
@@ -39,7 +40,7 @@ public class OggVorbisTrackHandler implements OggTrackHandler {
     this.decoder = new VorbisDecoder();
 
     ByteBuffer infoBuffer = ByteBuffer.wrap(infoPacket);
-    this.sampleRate =  Integer.reverseBytes(infoBuffer.getInt(12));
+    this.sampleRate = Integer.reverseBytes(infoBuffer.getInt(12));
 
     int channelCount = infoBuffer.get(11) & 0xFF;
     channelPcmBuffers = new float[channelCount][];

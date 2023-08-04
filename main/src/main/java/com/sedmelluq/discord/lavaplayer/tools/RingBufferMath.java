@@ -14,8 +14,8 @@ public class RingBufferMath {
   private int size;
 
   /**
-   * @param size Maximum number of values to remember.
-   * @param inputProcessor Input transformer.
+   * @param size            Maximum number of values to remember.
+   * @param inputProcessor  Input transformer.
    * @param outputProcessor Output transformer.
    */
   public RingBufferMath(int size, Function<Double, Double> inputProcessor, Function<Double, Double> outputProcessor) {

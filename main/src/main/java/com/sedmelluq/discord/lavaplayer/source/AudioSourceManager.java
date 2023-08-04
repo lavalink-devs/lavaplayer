@@ -5,6 +5,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioItem;
 import com.sedmelluq.discord.lavaplayer.track.AudioReference;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -26,7 +27,7 @@ public interface AudioSourceManager {
    * track for this identifier for this source. If checking that requires more expensive operations, then it should
    * return a track instance and check that in InternalAudioTrack#loadTrackInfo.
    *
-   * @param manager The audio manager to attach to the loaded tracks
+   * @param manager   The audio manager to attach to the loaded tracks
    * @param reference The reference with the identifier which the source manager should find the track with
    * @return The loaded item or null on unrecognized identifier
    */
@@ -47,7 +48,7 @@ public interface AudioSourceManager {
    * they are written to the output already before this call. This will only be called for tracks which were loaded by
    * this source manager and for which isEncodable() returns true.
    *
-   * @param track The track to encode
+   * @param track  The track to encode
    * @param output Output where to write the decoded format to
    * @throws IOException On write error.
    */
@@ -57,7 +58,7 @@ public interface AudioSourceManager {
    * Decodes an audio track from the encoded format encoded with encodeTrack().
    *
    * @param trackInfo The track info
-   * @param input The input where to read the bytes of the encoded format
+   * @param input     The input where to read the bytes of the encoded format
    * @return The decoded track
    * @throws IOException On read error.
    */

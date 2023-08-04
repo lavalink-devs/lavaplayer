@@ -12,9 +12,9 @@ public class BasicAudioPlaylist implements AudioPlaylist {
   private final boolean isSearchResult;
 
   /**
-   * @param name Name of the playlist
-   * @param tracks List of tracks in the playlist
-   * @param selectedTrack Track that is explicitly selected
+   * @param name           Name of the playlist
+   * @param tracks         List of tracks in the playlist
+   * @param selectedTrack  Track that is explicitly selected
    * @param isSearchResult True if the playlist was created from search results
    */
   public BasicAudioPlaylist(String name, List<AudioTrack> tracks, AudioTrack selectedTrack, boolean isSearchResult) {

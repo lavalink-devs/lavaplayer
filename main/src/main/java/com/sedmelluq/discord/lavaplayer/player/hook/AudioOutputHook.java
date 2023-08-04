@@ -9,7 +9,7 @@ import com.sedmelluq.discord.lavaplayer.track.playback.AudioFrame;
 public interface AudioOutputHook {
   /**
    * @param player Audio player where the frame is coming from
-   * @param frame Audio frame
+   * @param frame  Audio frame
    * @return The frame to pass onto the actual caller
    */
   AudioFrame outgoingFrame(AudioPlayer player, AudioFrame frame);

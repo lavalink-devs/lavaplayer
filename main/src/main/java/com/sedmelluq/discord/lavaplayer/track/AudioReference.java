@@ -25,7 +25,7 @@ public class AudioReference implements AudioItem, AudioTrackInfoProvider {
 
   /**
    * @param identifier The identifier of the other item.
-   * @param title The title of the other item, if known.
+   * @param title      The title of the other item, if known.
    */
   public AudioReference(String identifier, String title) {
     this(identifier, title, null);
@@ -33,7 +33,7 @@ public class AudioReference implements AudioItem, AudioTrackInfoProvider {
 
   /**
    * @param identifier The identifier of the other item.
-   * @param title The title of the other item, if known.
+   * @param title      The title of the other item, if known.
    */
   public AudioReference(String identifier, String title, MediaContainerDescriptor containerDescriptor) {
     this.identifier = identifier;

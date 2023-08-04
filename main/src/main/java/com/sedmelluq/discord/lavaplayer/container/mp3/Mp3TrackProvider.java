@@ -8,6 +8,7 @@ import com.sedmelluq.discord.lavaplayer.tools.Units;
 import com.sedmelluq.discord.lavaplayer.tools.io.SeekableInputStream;
 import com.sedmelluq.discord.lavaplayer.track.info.AudioTrackInfoProvider;
 import com.sedmelluq.discord.lavaplayer.track.playback.AudioProcessingContext;
+
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -25,7 +26,7 @@ import static com.sedmelluq.discord.lavaplayer.natives.mp3.Mp3Decoder.MPEG1_SAMP
  * Handles parsing MP3 files, seeking and sending the decoded frames to the specified frame consumer.
  */
 public class Mp3TrackProvider implements AudioTrackInfoProvider {
-  private static final byte[] IDV3_TAG = new byte[] { 0x49, 0x44, 0x33 };
+  private static final byte[] IDV3_TAG = new byte[]{0x49, 0x44, 0x33};
   private static final int IDV3_FLAG_EXTENDED = 0x40;
 
   private static final String TITLE_TAG = "TIT2";
@@ -50,8 +51,8 @@ public class Mp3TrackProvider implements AudioTrackInfoProvider {
   private Mp3Seeker seeker;
 
   /**
-   * @param context Configuration and output information for processing. May be null in case no frames are read and this
-   *                instance is only used to retrieve information about the track.
+   * @param context     Configuration and output information for processing. May be null in case no frames are read and this
+   *                    instance is only used to retrieve information about the track.
    * @param inputStream Stream to read the file from
    */
   public Mp3TrackProvider(AudioProcessingContext context, SeekableInputStream inputStream) {
@@ -69,6 +70,7 @@ public class Mp3TrackProvider implements AudioTrackInfoProvider {
 
   /**
    * Parses file headers to find the first MP3 frame and to get the settings for initialising the filter chain.
+   *
    * @throws IOException On read error
    */
   public void parseHeaders() throws IOException {
@@ -110,6 +112,7 @@ public class Mp3TrackProvider implements AudioTrackInfoProvider {
 
   /**
    * Decodes audio frames and sends them to frame consumer
+   *
    * @throws InterruptedException When interrupted externally (or for seek/stop).
    */
   public void provideFrames() throws InterruptedException {
@@ -141,6 +144,7 @@ public class Mp3TrackProvider implements AudioTrackInfoProvider {
 
   /**
    * Seeks to the specified timecode.
+   *
    * @param timecode The timecode in milliseconds
    */
   public void seekToTimecode(long timecode) {
@@ -224,15 +228,15 @@ public class Mp3TrackProvider implements AudioTrackInfoProvider {
 
   private int readSyncProofInteger() throws IOException {
     return (dataInput.readByte() & 0xFF) << 21
-        | (dataInput.readByte() & 0xFF) << 14
-        | (dataInput.readByte() & 0xFF) << 7
-        | (dataInput.readByte() & 0xFF);
+      | (dataInput.readByte() & 0xFF) << 14
+      | (dataInput.readByte() & 0xFF) << 7
+      | (dataInput.readByte() & 0xFF);
   }
 
   private int readSyncProof3ByteInteger() throws IOException {
     return (dataInput.readByte() & 0xFF) << 14
-        | (dataInput.readByte() & 0xFF) << 7
-        | (dataInput.readByte() & 0xFF);
+      | (dataInput.readByte() & 0xFF) << 7
+      | (dataInput.readByte() & 0xFF);
   }
 
   private void skipExtendedHeader(int flags) throws IOException {

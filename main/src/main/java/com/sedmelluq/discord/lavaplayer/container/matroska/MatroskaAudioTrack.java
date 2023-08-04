@@ -7,9 +7,10 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
 import com.sedmelluq.discord.lavaplayer.track.BaseAudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.playback.AudioProcessingContext;
 import com.sedmelluq.discord.lavaplayer.track.playback.LocalAudioTrackExecutor;
-import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
 
 /**
  * Audio track that handles the processing of MKV and WEBM formats
@@ -20,7 +21,7 @@ public class MatroskaAudioTrack extends BaseAudioTrack {
   private final SeekableInputStream inputStream;
 
   /**
-   * @param trackInfo Track info
+   * @param trackInfo   Track info
    * @param inputStream Input stream for the file
    */
   public MatroskaAudioTrack(AudioTrackInfo trackInfo, SeekableInputStream inputStream) {

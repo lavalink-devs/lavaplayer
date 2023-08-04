@@ -27,7 +27,7 @@ public class AudioSourceManagers {
    * Registers all built-in remote audio sources to the specified player manager. Local file audio source must be
    * registered separately.
    *
-   * @param playerManager Player manager to register the source managers to
+   * @param playerManager     Player manager to register the source managers to
    * @param containerRegistry Media container registry to be used by any probing sources.
    */
   public static void registerRemoteSources(AudioPlayerManager playerManager, MediaContainerRegistry containerRegistry) {
@@ -53,7 +53,7 @@ public class AudioSourceManagers {
   /**
    * Registers the local file source manager to the specified player manager.
    *
-   * @param playerManager Player manager to register the source manager to
+   * @param playerManager     Player manager to register the source manager to
    * @param containerRegistry Media container registry to be used by the local source.
    */
   public static void registerLocalSource(AudioPlayerManager playerManager, MediaContainerRegistry containerRegistry) {

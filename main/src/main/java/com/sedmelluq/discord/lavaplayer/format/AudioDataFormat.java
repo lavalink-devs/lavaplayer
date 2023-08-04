@@ -3,6 +3,7 @@ package com.sedmelluq.discord.lavaplayer.format;
 import com.sedmelluq.discord.lavaplayer.format.transcoder.AudioChunkDecoder;
 import com.sedmelluq.discord.lavaplayer.format.transcoder.AudioChunkEncoder;
 import com.sedmelluq.discord.lavaplayer.player.AudioConfiguration;
+
 import java.util.Objects;
 
 /**
@@ -23,8 +24,8 @@ public abstract class AudioDataFormat {
   public final int chunkSampleCount;
 
   /**
-   * @param channelCount Number of channels.
-   * @param sampleRate Sample rate (frequency).
+   * @param channelCount     Number of channels.
+   * @param sampleRate       Sample rate (frequency).
    * @param chunkSampleCount Number of samples in one chunk.
    */
   public AudioDataFormat(int channelCount, int sampleRate, int chunkSampleCount) {
