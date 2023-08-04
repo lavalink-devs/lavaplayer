@@ -11,3 +11,9 @@ insert_final_newline = true
 [*.java]
 ij_java_names_count_to_use_import_on_demand = 5
 ij_java_class_count_to_use_import_on_demand = 5
+ij_java_space_before_if_parentheses = true
+ij_java_space_before_for_parentheses = true
+ij_java_space_before_try_parentheses = true
+ij_java_space_before_catch_parentheses = true
+ij_java_space_before_while_parentheses = true
+ij_java_space_before_switch_parentheses = true
