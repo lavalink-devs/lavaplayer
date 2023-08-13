@@ -2,6 +2,8 @@ package com.sedmelluq.discord.lavaplayer.natives.mp3;
 
 import com.sedmelluq.lava.common.natives.NativeResourceHolder;
 
+import java.util.Arrays;
+
 import java.nio.ByteBuffer;
 import java.nio.ShortBuffer;
 
@@ -69,81 +71,7 @@ public class Mp3Decoder extends NativeResourceHolder {
     }
 
     private static int getFrameBitRate(byte[] buffer, int offset) {
-        return isMpegVersionOne(buffer, offset) ? getFrameBitRateV1(buffer, offset) : getFrameBitRateV2(buffer, offset);
-    }
-
-    private static int getFrameBitRateV1(byte[] buffer, int offset) {
-        switch ((buffer[offset + 2] & 0xF0) >>> 4) {
-            case 1:
-                return 32000;
-            case 2:
-                return 40000;
-            case 3:
-                return 48000;
-            case 4:
-                return 56000;
-            case 5:
-                return 64000;
-            case 6:
-                return 80000;
-            case 7:
-                return 96000;
-            case 8:
-                return 112000;
-            case 9:
-                return 128000;
-            case 10:
-                return 160000;
-            case 11:
-                return 192000;
-            case 12:
-                return 224000;
-            case 13:
-                return 256000;
-            case 14:
-                return 320000;
-            default:
-                throw new IllegalArgumentException("Not valid bitrate");
-        }
-    }
-
-    private static int getFrameBitRateV2(byte[] buffer, int offset) {
-        switch ((buffer[offset + 2] & 0xF0) >>> 4) {
-            case 1:
-                return 8000;
-            case 2:
-                return 16000;
-            case 3:
-                return 24000;
-            case 4:
-                return 32000;
-            case 5:
-                return 40000;
-            case 6:
-                return 48000;
-            case 7:
-                return 56000;
-            case 8:
-                return 64000;
-            case 9:
-                return 80000;
-            case 10:
-                return 96000;
-            case 11:
-                return 112000;
-            case 12:
-                return 128000;
-            case 13:
-                return 144000;
-            case 14:
-                return 160000;
-            default:
-                throw new IllegalArgumentException("Not valid bitrate");
-        }
-    }
-
-    private static int calculateFrameSize(boolean isVersionOne, int bitRate, int sampleRate, boolean hasPadding) {
-        return (isVersionOne ? 144 : 72) * bitRate / sampleRate + (hasPadding ? 1 : 0);
+        return MpegVersion.getVersion(buffer, offset).getBitRate(buffer, offset);
     }
 
     /**
@@ -154,7 +82,7 @@ public class Mp3Decoder extends NativeResourceHolder {
      * @return Sample rate
      */
     public static int getFrameSampleRate(byte[] buffer, int offset) {
-        return isMpegVersionOne(buffer, offset) ? getFrameSampleRateV1(buffer, offset) : getFrameSampleRateV2(buffer, offset);
+        return MpegVersion.getVersion(buffer, offset).getSampleRate(buffer, offset);
     }
 
     /**
@@ -168,30 +96,22 @@ public class Mp3Decoder extends NativeResourceHolder {
         return (buffer[offset + 3] & 0xC0) == 0xC0 ? 1 : 2;
     }
 
-    private static int getFrameSampleRateV1(byte[] buffer, int offset) {
-        switch ((buffer[offset + 2] & 0x0C) >>> 2) {
-            case 0:
-                return 44100;
-            case 1:
-                return 48000;
-            case 2:
-                return 32000;
-            default:
-                throw new IllegalArgumentException("Not valid sample rate");
-        }
+    public static boolean hasFrameSync(byte[] buffer, int offset) {
+        // must start with 11 high bits
+        return (buffer[offset] & 0xFF) == 0xFF && (buffer[offset + 1] & 0xE0) == 0xE0;
     }
 
-    private static int getFrameSampleRateV2(byte[] buffer, int offset) {
-        switch ((buffer[offset + 2] & 0x0C) >>> 2) {
-            case 0:
-                return 22050;
-            case 1:
-                return 24000;
-            case 2:
-                return 16000;
-            default:
-                throw new IllegalArgumentException("Not valid sample rate");
-        }
+    public static boolean isUnsupportedVersion(byte[] buffer, int offset) {
+        return (buffer[offset + 1] & 0x18) >> 3 == 0x01;
+    }
+
+    public static boolean isValidFrame(byte[] buffer, int offset) {
+        int second = buffer[offset + 1] & 0xFF;
+        int third = buffer[offset + 2] & 0xFF;
+        return (second & 0x06) == 0x02 // Is Layer III
+            && (third & 0xF0) != 0x00 // Has defined bitrate
+            && (third & 0xF0) != 0xF0 // Valid bitrate
+            && (third & 0x0C) != 0x0C; // Valid sampling rate
     }
 
     /**
@@ -202,26 +122,7 @@ public class Mp3Decoder extends NativeResourceHolder {
      * @return Frame size, or zero if not a valid frame header
      */
     public static int getFrameSize(byte[] buffer, int offset) {
-        int first = buffer[offset] & 0xFF;
-        int second = buffer[offset + 1] & 0xFF;
-        int third = buffer[offset + 2] & 0xFF;
-
-        boolean invalid = (first != 0xFF || (second & 0xE0) != 0xE0) // Frame sync does not match
-            || (second & 0x10) != 0x10 // Not MPEG-1 nor MPEG-2, not dealing with this stuff
-            || (second & 0x06) != 0x02 // Not Layer III, not dealing with this stuff
-            || (third & 0xF0) == 0x00 // No defined bitrate
-            || (third & 0xF0) == 0xF0 // Invalid bitrate
-            || (third & 0x0C) == 0x0C; // Invalid sampling rate
-
-        if (invalid) {
-            return 0;
-        }
-
-        int bitRate = getFrameBitRate(buffer, offset);
-        int sampleRate = getFrameSampleRate(buffer, offset);
-        boolean hasPadding = (third & 0x02) != 0;
-
-        return calculateFrameSize(isMpegVersionOne(buffer, offset), bitRate, sampleRate, hasPadding);
+        return MpegVersion.getVersion(buffer, offset).getFrameSize(buffer, offset);
     }
 
     /**
@@ -232,10 +133,7 @@ public class Mp3Decoder extends NativeResourceHolder {
      * @return Average frame size, assuming CBR
      */
     public static double getAverageFrameSize(byte[] buffer, int offset) {
-        int bitRate = getFrameBitRate(buffer, offset);
-        int sampleRate = getFrameSampleRate(buffer, offset);
-
-        return (isMpegVersionOne(buffer, offset) ? 144.0 : 72.0) * bitRate / sampleRate;
+        return MpegVersion.getVersion(buffer, offset).getAverageFrameSize(buffer, offset);
     }
 
     /**
@@ -244,14 +142,99 @@ public class Mp3Decoder extends NativeResourceHolder {
      * @return Number of samples per frame.
      */
     public static long getSamplesPerFrame(byte[] buffer, int offset) {
-        return isMpegVersionOne(buffer, offset) ? MPEG1_SAMPLES_PER_FRAME : MPEG2_SAMPLES_PER_FRAME;
-    }
-
-    private static boolean isMpegVersionOne(byte[] buffer, int offset) {
-        return (buffer[offset + 1] & 0x08) == 0x08;
+        return MpegVersion.getVersion(buffer, offset).getSamplesPerFrame();
     }
 
     public static int getMaximumFrameSize() {
-        return calculateFrameSize(true, 320000, 32000, true);
+        return MpegVersion.MAX_FRAME_SIZE;
+    }
+
+    private static final int[] SAMPLE_RATE_BASE = { 11025, 12000, 8000 };
+
+    public static enum MpegVersion {
+
+        MPEG_1(4, 1152, new int[] { 32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320 }),
+        MPEG_2(2, 576, new int[] { 8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160 }),
+        MPEG_2_5(1, MPEG_2.samplesPerFrame, MPEG_2.bitrateIndex);
+
+        public static final int MAX_FRAME_SIZE = getMaxFrameSize();
+
+        public static MpegVersion getVersion(byte[] buffer, int offset) {
+            // 0 - MPEG 2.5
+            // 1 - reserved (unsupported)
+            // 2 - MPEG 2
+            // 3 - MPEG 1
+            int index = (buffer[offset + 1] & 0x18) >> 3;
+            switch (index) {
+                case 0:
+                    return MPEG_2_5;
+                case 2:
+                    return MPEG_2;
+                case 3:
+                    return MPEG_1;
+                default:
+                    throw new IllegalArgumentException("Invalid version");
+            }
+        }
+
+        private static int getMaxFrameSize() {
+            int bitRate = MPEG_1.bitrateIndex[MPEG_1.bitrateIndex.length - 1] * 1000;
+            int sampleRate = MPEG_1.samplerateIndex[1];
+            return MPEG_1.calculateFrameSize(bitRate, sampleRate, true);
+        }
+
+        private final int samplesPerFrame;
+        private final int frameLengthMultiplier;
+        private final int[] bitrateIndex;
+        private final int[] samplerateIndex;
+
+        MpegVersion(int samplerateMultiplier, int samplesPerFrame, int[] bitrateIndex) {
+            this.samplesPerFrame = samplesPerFrame;
+            this.frameLengthMultiplier = samplesPerFrame / 8;
+            this.bitrateIndex = bitrateIndex;
+            this.samplerateIndex = Arrays.stream(SAMPLE_RATE_BASE).map(r -> r * samplerateMultiplier).toArray();
+        }
+
+        public int getSamplesPerFrame() {
+            return this.samplesPerFrame;
+        }
+
+        public int getFrameLengthMultiplier() {
+            return this.frameLengthMultiplier;
+        }
+
+        public int getBitRate(byte[] buffer, int offset) {
+            int index = (buffer[offset + 2] & 0xF0) >> 4;
+            if (index == 0 || index == 15)
+                throw new IllegalArgumentException("Invalid bitrate");
+
+            return this.bitrateIndex[index - 1] * 1000;
+        }
+
+        public int getSampleRate(byte[] buffer, int offset) {
+            int index = (buffer[offset + 2] & 0x0C) >> 2;
+            if (index == 3)
+                throw new IllegalArgumentException("Invalid samplerate");
+
+            return this.samplerateIndex[index];
+        }
+
+        public int getFrameSize(byte[] buffer, int offset) {
+            return calculateFrameSize(getBitRate(buffer, offset), getSampleRate(buffer, offset),
+                                      hasPadding(buffer, offset));
+        }
+
+        public double getAverageFrameSize(byte[] buffer, int offset) {
+            return (double) getFrameLengthMultiplier() * getBitRate(buffer, offset) / getSampleRate(buffer, offset);
+        }
+
+        private int calculateFrameSize(int bitRate, int sampleRate, boolean hasPadding) {
+            return getFrameLengthMultiplier() * bitRate / sampleRate + (hasPadding ? 1 : 0);
+        }
+        
+        private static boolean hasPadding(byte[] buffer, int offset) {
+            return (buffer[offset + 2] & 0x02) != 0;
+        }
+
     }
 }

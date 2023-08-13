@@ -88,16 +88,22 @@ public class Mp3FrameReader {
     }
 
     private boolean parseFrameAt(int scanOffset) {
-        if (scanOffset >= HEADER_SIZE && (frameSize = Mp3Decoder.getFrameSize(scanBuffer, scanOffset - HEADER_SIZE)) > 0) {
-            for (int i = 0; i < HEADER_SIZE; i++) {
-                frameBuffer[i] = scanBuffer[scanOffset - HEADER_SIZE + i];
-            }
+        int offset = scanOffset - HEADER_SIZE;
+        boolean invalid = offset < 0
+            || !Mp3Decoder.hasFrameSync(scanBuffer, offset)
+            || Mp3Decoder.isUnsupportedVersion(scanBuffer, offset)
+            || !Mp3Decoder.isValidFrame(scanBuffer, offset);
 
-            frameBufferPosition = HEADER_SIZE;
-            return true;
+        if (invalid)
+            return false;
+
+        frameSize = Mp3Decoder.getFrameSize(scanBuffer, offset);
+        for (int i = 0; i < HEADER_SIZE; i++) {
+            frameBuffer[i] = scanBuffer[offset + i];
         }
 
-        return false;
+        frameBufferPosition = HEADER_SIZE;
+        return true;
     }
 
     /**
