@@ -1,5 +1,11 @@
 # Change Log
 
+## [2.0.1] -- 2023-14-08
+
+### Added
+
+- Support MPEG 2.5 by [@markozajc](https://github.com/markozajc) in https://github.com/lavalink-devs/lavaplayer/pull/30
+
 ## [2.0.0] -- 2023-03-08
 
 ### Fixed
