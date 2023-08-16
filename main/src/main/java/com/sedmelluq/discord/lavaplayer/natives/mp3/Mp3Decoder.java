@@ -179,7 +179,7 @@ public class Mp3Decoder extends NativeResourceHolder {
 
         private static int getMaxFrameSize() {
             int bitRate = MPEG_1.bitrateIndex[MPEG_1.bitrateIndex.length - 1] * 1000;
-            int sampleRate = MPEG_1.samplerateIndex[1];
+            int sampleRate = MPEG_1.samplerateIndex[2];
             return MPEG_1.calculateFrameSize(bitRate, sampleRate, true);
         }
 
