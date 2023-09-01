@@ -39,11 +39,15 @@ public class HttpClientTools {
 
   public static final RequestConfig DEFAULT_REQUEST_CONFIG = RequestConfig.custom()
     .setConnectTimeout(3000)
+    .setConnectionRequestTimeout(3000)
+    .setSocketTimeout(3000)
     .setCookieSpec(CookieSpecs.STANDARD)
     .build();
 
   private static final RequestConfig NO_COOKIES_REQUEST_CONFIG = RequestConfig.custom()
     .setConnectTimeout(3000)
+    .setConnectionRequestTimeout(3000)
+    .setSocketTimeout(3000)
     .setCookieSpec(CookieSpecs.IGNORE_COOKIES)
     .build();
 
