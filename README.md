@@ -25,6 +25,7 @@ Using in Gradle:
 ```gradle
 repositories {
   mavenCentral()
+  maven { url "https://jitpack.io" } // For com.github.walkyst.JAADec-fork:jaadec-ext-aac & ibxm-fork:com.github.walkyst:ibxm-fork
 }
 
 dependencies {
@@ -35,6 +36,13 @@ dependencies {
 Using in Maven:
 
 ```xml
+<repositories>
+    <repository>
+        <id>jitpack</id>
+        <url>https://jitpack.io</url>
+    </repository>
+</repositories>
+
 <dependencies>
   <dependency>
     <groupId>dev.arbjerg</groupId>
