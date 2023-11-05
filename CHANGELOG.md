@@ -1,5 +1,10 @@
 # Change Log
 
+## [1.5.1] -- 2023-05-11
+
+* Updated all request timeouts in https://github.com/lavalink-devs/lavaplayer/pull/34
+* Updated `IDENTITY_REGEX` in https://github.com/lavalink-devs/lavaplayer/pull/44
+
 ## [1.5.0] -- 2023-03-08
 
 ### Fixed
