@@ -1,5 +1,14 @@
 # Change Log
 
+## [2.0.3] -- 2023-05-11
+
+- Updated `IDENTITY_REGEX` in https://github.com/lavalink-devs/lavaplayer/pull/44
+
+## [2.0.2] -- 2023-27-09
+
+- Fix a bug with MPEG parsing that would lead to range exceptions in https://github.com/lavalink-devs/lavaplayer/pull/31
+- Specify all request timeouts in https://github.com/lavalink-devs/lavaplayer/pull/33
+
 ## [2.0.1] -- 2023-14-08
 
 ### Added
