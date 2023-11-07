@@ -148,6 +148,11 @@ public class JsonBrowser {
     return null;
   }
 
+  public String textOrDefault(String defaultValue) {
+    String value = text();
+    return value != null ? value : defaultValue;
+  }
+
   public boolean asBoolean(boolean defaultValue) {
     if (node != null) {
       if (node.isBoolean()) {
