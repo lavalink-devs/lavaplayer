@@ -25,6 +25,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.net.URI;
+import java.util.Locale;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -81,7 +82,11 @@ public class TwitchStreamAudioSourceManager implements AudioSourceManager, HttpC
         } else {
             String title = channelInfo.get("lastBroadcast").get("title").text();
 
-            final String thumbnail = channelInfo.get("profileImageURL").text().replaceFirst("-70x70", "-300x300");
+            final String thumbnail = String.format(
+                "https://static-cdn.jtvnw.net/previews-ttv/live_user_%s-440x248.jpg",
+                // Using root because the turkish lowercase "i" does not have the little dot above the letter when defaulted
+                streamName.toLowerCase(Locale.ROOT)
+            );
 
             return new TwitchStreamAudioTrack(new AudioTrackInfo(
                 title,
