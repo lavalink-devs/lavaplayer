@@ -33,6 +33,10 @@ public abstract class M3uStreamSegmentUrlProvider {
     protected String baseUrl;
     protected SegmentInfo lastSegment;
 
+    protected M3uStreamSegmentUrlProvider() {
+        this(null);
+    }
+
     protected M3uStreamSegmentUrlProvider(String originUrl) {
         if (originUrl != null) {
             if (originUrl.endsWith("/")) {
