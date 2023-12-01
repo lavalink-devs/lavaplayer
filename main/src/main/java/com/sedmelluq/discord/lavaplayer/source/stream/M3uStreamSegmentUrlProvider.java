@@ -138,9 +138,9 @@ public abstract class M3uStreamSegmentUrlProvider {
 
   protected boolean isAbsoluteUrl(String url) {
     try {
-      // We only want to return false here if we have a baseUrl (for converting relative URLs)
-      // and the provided url is incomplete (relative).
-      return this.baseUrl != null || new URI(url).isAbsolute();
+      // A URL is considered absolute if we don't have a baseUrl (so cannot convert a relative URL)
+      // or if URI#isAbsolute returns true.
+      return this.baseUrl == null || new URI(url).isAbsolute();
     } catch (URISyntaxException e) {
       return false;
     }
