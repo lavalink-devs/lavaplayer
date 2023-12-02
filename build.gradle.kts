@@ -39,8 +39,8 @@ subprojects {
     configure<PublishingExtension> {
         if (findProperty("MAVEN_PASSWORD") != null && findProperty("MAVEN_USERNAME") != null) {
             repositories {
-                val snapshots = "https://maven.arbjerg.dev/snapshots"
-                val releases = "https://maven.arbjerg.dev/releases"
+                val snapshots = "https://maven.lavalink.dev/snapshots"
+                val releases = "https://maven.lavalink.dev/releases"
 
                 maven(if (release) releases else snapshots) {
                     credentials {
@@ -50,7 +50,7 @@ subprojects {
                 }
             }
         } else {
-            logger.lifecycle("Not publishing to maven.arbjerg.dev because credentials are not set")
+            logger.lifecycle("Not publishing to maven.lavalink.dev because credentials are not set")
         }
     }
 
