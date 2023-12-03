@@ -52,8 +52,10 @@ endif()
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 	add_library(connector SHARED samplerate.c fdk-aac.c vorbis.c opus.c mpg123.c)
+elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+	add_library(connector SHARED samplerate.c fdk-aac.c vorbis.c opus.c mpg123.c ${SYSNAME}/statistics.c math_hacks.c)
 else()
-        add_library(connector SHARED samplerate.c fdk-aac.c vorbis.c opus.c mpg123.c ${SYSNAME}/statistics.c)
+	add_library(connector SHARED samplerate.c fdk-aac.c vorbis.c opus.c mpg123.c ${SYSNAME}/statistics.c)
 endif()
 
 target_link_libraries(connector samplerate fdk-aac vorbis opus mpg123)
