@@ -1,0 +1,12 @@
+linux      x86-64    
+linux      x86         
+linux      arm        
+linux      armhf      
+linux      aarch32     
+linux      aarch64    
+linux-musl x86-64      
+linux-musl aarch64     
+windows    x86-64     
+Windows    x86          
+darwin     x86-64     
+darwin     aarch64e
