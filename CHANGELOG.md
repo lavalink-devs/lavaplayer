@@ -1,5 +1,9 @@
 # Change Log
 
+## [1.5.2] -- 2023-03-12
+
+* Fix NPE on missing author in playlist tracks in https://github.com/lavalink-devs/lavaplayer/pull/46
+
 ## [1.5.1] -- 2023-05-11
 
 * Updated all request timeouts in https://github.com/lavalink-devs/lavaplayer/pull/34
