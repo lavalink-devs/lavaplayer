@@ -1,5 +1,11 @@
 # Change Log
 
+## [2.0.4] -- 2023-03-12
+
+* Fix NPE on missing author in playlist tracks in https://github.com/lavalink-devs/lavaplayer/pull/45
+* Add ISRC to soundcloud in https://github.com/lavalink-devs/lavaplayer/pull/35
+* Use Twitch stream preview thumbnail instead of channel icon in https://github.com/lavalink-devs/lavaplayer/pull/47
+
 ## [2.0.3] -- 2023-05-11
 
 - Updated `IDENTITY_REGEX` in https://github.com/lavalink-devs/lavaplayer/pull/44
