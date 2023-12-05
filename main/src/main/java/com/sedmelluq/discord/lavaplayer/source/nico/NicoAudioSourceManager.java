@@ -47,8 +47,6 @@ public class NicoAudioSourceManager implements AudioSourceManager, HttpConfigura
 
     private static final Pattern trackUrlPattern = Pattern.compile(TRACK_URL_REGEX);
 
-    private final String email;
-    private final String password;
     private final HttpInterfaceManager httpInterfaceManager;
     private final AtomicBoolean loggedIn;
 
@@ -57,10 +55,12 @@ public class NicoAudioSourceManager implements AudioSourceManager, HttpConfigura
      * @param password Site account password
      */
     public NicoAudioSourceManager(String email, String password) {
-        this.email = email;
-        this.password = password;
         httpInterfaceManager = HttpClientTools.createDefaultThreadLocalManager();
         loggedIn = new AtomicBoolean();
+        // Log in at the start
+        if (!DataFormatTools.isNullOrEmpty(email) && !DataFormatTools.isNullOrEmpty(password)) {
+            logIn(email,password);
+        }
     }
 
     @Override
@@ -80,8 +80,6 @@ public class NicoAudioSourceManager implements AudioSourceManager, HttpConfigura
     }
 
     private AudioTrack loadTrack(String videoId) {
-        checkLoggedIn();
-
         try (HttpInterface httpInterface = getHttpInterface()) {
             try (CloseableHttpResponse response = httpInterface.execute(new HttpGet("http://ext.nicovideo.jp/api/getthumbinfo/" + videoId))) {
                 int statusCode = response.getStatusLine().getStatusCode();
@@ -155,7 +153,7 @@ public class NicoAudioSourceManager implements AudioSourceManager, HttpConfigura
         httpInterfaceManager.configureBuilder(configurator);
     }
 
-    void checkLoggedIn() {
+    void logIn(String email, String password) {
         synchronized (loggedIn) {
             if (loggedIn.get()) {
                 return;
