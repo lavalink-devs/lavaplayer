@@ -25,6 +25,7 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -61,16 +62,16 @@ public class NicoAudioTrack extends DelegatedAudioTrack {
 
             try (PersistentHttpStream stream = new PersistentHttpStream(httpInterface, new URI(playbackUrl), null)) {
                 long heartbeat = info.get("session").get("keep_method").get("heartbeat").get("lifetime").asLong(120000) - 60000;
-                executorService.scheduleAtFixedRate(() -> {
+                ScheduledFuture<?> heartbeatFuture = executorService.scheduleAtFixedRate(() -> {
                     try {
                         sendHeartbeat(httpInterface);
                     } catch (Exception ex) {
-                        log.error("Heartbeat error!",ex);
+                        log.error("Heartbeat error!", ex);
                         localExecutor.stop();
                     }
                 },heartbeat,heartbeat, TimeUnit.MILLISECONDS);
                 processDelegate(new MpegAudioTrack(trackInfo, stream), localExecutor);
-                executorService.shutdown();
+                heartbeatFuture.cancel(false);
             }
         }
     }
