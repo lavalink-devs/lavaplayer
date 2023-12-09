@@ -34,7 +34,7 @@ import java.util.concurrent.TimeUnit;
 public class NicoAudioTrack extends DelegatedAudioTrack {
     private static final Logger log = LoggerFactory.getLogger(NicoAudioTrack.class);
 
-    private static final ScheduledExecutorService executorService = Executors.newScheduledThreadPool(1);
+    private static final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
 
     private final NicoAudioSourceManager sourceManager;
 
@@ -61,7 +61,7 @@ public class NicoAudioTrack extends DelegatedAudioTrack {
             log.debug("Starting NicoNico track from URL: {}", playbackUrl);
 
             try (PersistentHttpStream stream = new PersistentHttpStream(httpInterface, new URI(playbackUrl), null)) {
-                long heartbeat = info.get("session").get("keep_method").get("heartbeat").get("lifetime").asLong(120000) - 60000;
+                long heartbeat = info.get("session").get("keep_method").get("heartbeat").get("lifetime").asLong(120000) - 1000;
                 ScheduledFuture<?> heartbeatFuture = executorService.scheduleAtFixedRate(() -> {
                     try {
                         sendHeartbeat(httpInterface);
@@ -86,7 +86,7 @@ public class NicoAudioTrack extends DelegatedAudioTrack {
             }
 
             Document mainPage = Jsoup.parse(response.getEntity().getContent(), StandardCharsets.UTF_8.name(), "");
-            String watchdata = mainPage.getElementById("js-initial-watch-data").attributes().get("data-api-data");
+            String watchdata = mainPage.getElementById("js-initial-watch-data").attr("data-api-data");
 
             return JsonBrowser.parse(watchdata).get("media").get("delivery").get("movie").get("session");
         }
