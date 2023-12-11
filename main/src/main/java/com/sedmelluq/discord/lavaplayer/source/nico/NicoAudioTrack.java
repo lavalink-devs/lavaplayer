@@ -15,6 +15,8 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.slf4j.Logger;
@@ -61,7 +63,7 @@ public class NicoAudioTrack extends DelegatedAudioTrack {
             log.debug("Starting NicoNico track from URL: {}", playbackUrl);
 
             try (PersistentHttpStream stream = new PersistentHttpStream(httpInterface, new URI(playbackUrl), null)) {
-                long heartbeat = info.get("session").get("keep_method").get("heartbeat").get("lifetime").asLong(120000) - 1000;
+                long heartbeat = info.get("session").get("keep_method").get("heartbeat").get("lifetime").asLong(120000) - 5000;
                 ScheduledFuture<?> heartbeatFuture = executorService.scheduleAtFixedRate(() -> {
                     try {
                         sendHeartbeat(httpInterface);
@@ -93,13 +95,14 @@ public class NicoAudioTrack extends DelegatedAudioTrack {
     }
 
     private String loadPlaybackUrl(HttpInterface httpInterface) throws IOException {
-        JsonBrowser watchdata = processJSON(loadVideoMainPage(httpInterface));
+        JSONObject watchdata = processJSON(loadVideoMainPage(httpInterface));
+
         HttpPost request = new HttpPost("https://api.dmc.nico/api/sessions?_format=json");
         request.addHeader("Host", "api.dmc.nico");
         request.addHeader("Connection","keep-alive");
         request.addHeader("Content-Type","application/json");
         request.addHeader("Origin","https://www.nicovideo.jp");
-        request.setEntity(new StringEntity(watchdata.text()));
+        request.setEntity(new StringEntity(watchdata.toString()));
 
         try (CloseableHttpResponse response = httpInterface.execute(request)) {
             int statusCode = response.getStatusLine().getStatusCode();
@@ -132,45 +135,45 @@ public class NicoAudioTrack extends DelegatedAudioTrack {
         }
     }
 
-    private static JsonBrowser processJSON(JsonBrowser input) throws IOException {
-        JsonBrowser session = JsonBrowser.newMap();
-        session.put("content_type","movie");
-        session.put("timing_constraint","unlimited");
-        session.put("recipe_id",input.get("recipeId"));
-        session.put("priority",input.get("priority"));
-        session.put("content_uri","");
-        session.put("content_id",input.get("contentId"));
+    private JSONObject processJSON(JsonBrowser input) {
+        JSONObject session = new JSONObject()
+            .put("content_type","movie")
+            .put("timing_constraint","unlimited")
+            .put("recipe_id",input.get("recipeId").text())
+            .put("content_id",input.get("contentId").text());
 
 
-        JsonBrowser lifetime = JsonBrowser.newMap();
-        lifetime.put("lifetime",input.get("heartbeatLifetime"));
+        JSONObject lifetime = new JSONObject()
+            .put("lifetime",input.get("heartbeatLifetime").asLong(120000));
 
-        JsonBrowser heartbeat = JsonBrowser.newMap();
-        heartbeat.put("heartbeat",lifetime);
+        JSONObject heartbeat = new JSONObject()
+            .put("heartbeat",lifetime);
 
         session.put("keep_method",heartbeat);
 
+        JSONArray videos = new JSONArray(input.get("videos").format());
+        JSONArray audios = new JSONArray(input.get("audios").format());
 
-        JsonBrowser srcids = JsonBrowser.newMap();
-        srcids.put("video_src_ids",input.get("videos"));
-        srcids.put("audio_src_ids",input.get("audios"));
+        JSONObject src_ids = new JSONObject()
+            .put("video_src_ids",videos)
+            .put("audio_src_ids",audios);
 
-        JsonBrowser srcidtomux = JsonBrowser.newMap();
-        srcidtomux.put("src_id_to_mux",srcids);
+        JSONObject src_id_to_mux = new JSONObject()
+            .put("src_id_to_mux",src_ids);
 
-        JsonBrowser array = JsonBrowser.newList();
-        array.add(srcidtomux);
+        JSONArray array = new JSONArray()
+            .put(src_id_to_mux);
 
-        JsonBrowser contentsrcids = JsonBrowser.newMap();
-        contentsrcids.put("content_src_ids",array);
+        JSONObject content_src_ids = new JSONObject()
+            .put("content_src_ids",array);
 
-        JsonBrowser contentsrcidsets = JsonBrowser.newList();
-        contentsrcidsets.add(contentsrcids);
+        JSONArray content_src_id_sets = new JSONArray()
+            .put(content_src_ids);
 
-        session.put("content_src_id_sets", contentsrcidsets);
+        session.put("content_src_id_sets", content_src_id_sets);
 
 
-        JsonBrowser http_download_parameters = JsonBrowser.newMap();
+        JSONObject http_download_parameters = new JSONObject();
 
         if(input.get("urls").index(0).get("isWellKnownPort").asBoolean(false))
             http_download_parameters.put("use_well_known_port","yes");
@@ -182,53 +185,47 @@ public class NicoAudioTrack extends DelegatedAudioTrack {
         else
             http_download_parameters.put("use_ssl","no");
 
-        http_download_parameters.put("transfer_preset","");
+        JSONObject inner_parameters = new JSONObject()
+            .put("http_output_download_parameters", http_download_parameters);
 
-        JsonBrowser innerparameters = JsonBrowser.newMap();
-        innerparameters.put("http_output_download_parameters", http_download_parameters);
+        JSONObject http_parameters = new JSONObject()
+            .put("parameters", inner_parameters);
 
-        JsonBrowser httpparameters = JsonBrowser.newMap();
-        httpparameters.put("parameters", innerparameters);
+        JSONObject outer_parameters = new JSONObject()
+            .put("http_parameters", http_parameters);
 
-        JsonBrowser outerparameters = JsonBrowser.newMap();
-        outerparameters.put("http_parameters", httpparameters);
-
-        JsonBrowser protocol = JsonBrowser.newMap();
-        protocol.put("name","http");
-        protocol.put("parameters", outerparameters);
+        JSONObject protocol = new JSONObject()
+            .put("name","http")
+            .put("parameters", outer_parameters);
 
         session.put("protocol",protocol);
 
+        JSONObject session_operation_auth_by_signature = new JSONObject()
+            .put("token",input.get("token").text())
+            .put("signature",input.get("signature").text());
 
-        JsonBrowser session_operation_auth_by_signature = JsonBrowser.newMap();
-        session_operation_auth_by_signature.put("token",input.get("token"));
-        session_operation_auth_by_signature.put("signature",input.get("signature"));
-
-        JsonBrowser session_operation_auth = JsonBrowser.newMap();
-        session_operation_auth.put("session_operation_auth_by_signature",session_operation_auth_by_signature);
+        JSONObject session_operation_auth = new JSONObject()
+            .put("session_operation_auth_by_signature",session_operation_auth_by_signature);
 
         session.put("session_operation_auth",session_operation_auth);
 
 
-        JsonBrowser contentauth = JsonBrowser.newMap();
-        contentauth.put("auth_type",input.get("authTypes").get("http"));
-        contentauth.put("content_key_timeout",input.get("contentKeyTimeout"));
-        contentauth.put("service_id","nicovideo");
-        contentauth.put("service_user_id",input.get("serviceUserId"));
+        JSONObject content_auth = new JSONObject()
+            .put("auth_type",input.get("authTypes").get("http").text())
+            .put("content_key_timeout",input.get("contentKeyTimeout").asLong(120000))
+            .put("service_id","nicovideo")
+            .put("service_user_id",input.get("serviceUserId").text());
 
-        session.put("content_auth", contentauth);
-
-
-        JsonBrowser clientinfo = JsonBrowser.newMap();
-        clientinfo.put("player_id",input.get("playerId"));
-
-        session.put("client_info",clientinfo);
+        session.put("content_auth", content_auth);
 
 
-        JsonBrowser out = JsonBrowser.newMap();
-        out.put("session",session);
+        JSONObject client_info = new JSONObject()
+            .put("player_id",input.get("playerId").text());
 
-        return out;
+        session.put("client_info",client_info);
+
+        return new JSONObject()
+            .put("session",session);
     }
 
     @Override
