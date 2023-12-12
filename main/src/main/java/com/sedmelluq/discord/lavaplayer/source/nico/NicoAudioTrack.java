@@ -38,8 +38,6 @@ import java.util.stream.Collectors;
 public class NicoAudioTrack extends DelegatedAudioTrack {
     private static final Logger log = LoggerFactory.getLogger(NicoAudioTrack.class);
 
-    private static final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
-
     private final NicoAudioSourceManager sourceManager;
 
     private String heartbeatUrl;
