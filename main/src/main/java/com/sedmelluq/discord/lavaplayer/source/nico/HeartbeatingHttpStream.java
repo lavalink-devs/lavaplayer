@@ -26,7 +26,6 @@ public class HeartbeatingHttpStream extends PersistentHttpStream implements Clos
     private static final Logger log = LoggerFactory.getLogger(HeartbeatingHttpStream.class);
     private static final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
 
-
     private String heartbeatUrl;
     private int heartbeatInterval;
     private String heartbeatPayload;
