@@ -60,7 +60,6 @@ public class HeartbeatingHttpStream extends PersistentHttpStream implements Clos
     }
 
     protected void setupHeartbeat() {
-        System.out.println("heartbeat.");
         log.debug("Heartbeat every {} milliseconds to URL: {}", heartbeatInterval, heartbeatUrl);
 
         heartbeatFuture = executor.scheduleAtFixedRate(() -> {
