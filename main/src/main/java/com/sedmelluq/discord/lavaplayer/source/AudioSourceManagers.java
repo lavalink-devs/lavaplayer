@@ -41,7 +41,7 @@ public class AudioSourceManagers {
         playerManager.registerSourceManager(new TwitchStreamAudioSourceManager());
         playerManager.registerSourceManager(new BeamAudioSourceManager());
         playerManager.registerSourceManager(new GetyarnAudioSourceManager());
-        playerManager.registerSourceManager(new NicoAudioSourceManager(null, null));
+        playerManager.registerSourceManager(new NicoAudioSourceManager());
         playerManager.registerSourceManager(new HttpAudioSourceManager(containerRegistry));
     }
 

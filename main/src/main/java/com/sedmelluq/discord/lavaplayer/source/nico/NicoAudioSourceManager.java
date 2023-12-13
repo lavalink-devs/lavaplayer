@@ -50,6 +50,10 @@ public class NicoAudioSourceManager implements AudioSourceManager, HttpConfigura
     private final HttpInterfaceManager httpInterfaceManager;
     private final AtomicBoolean loggedIn;
 
+    public NicoAudioSourceManager() {
+        this(null, null);
+    }
+
     /**
      * @param email    Site account email
      * @param password Site account password
