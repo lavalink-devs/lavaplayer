@@ -33,6 +33,8 @@ import java.util.stream.Collectors;
 public class NicoAudioTrack extends DelegatedAudioTrack {
     private static final Logger log = LoggerFactory.getLogger(NicoAudioTrack.class);
 
+    private static String actionTrackId = "S1G2fKdzOl_1702504390263";
+
     private final NicoAudioSourceManager sourceManager;
 
     private String heartbeatUrl;
@@ -70,7 +72,7 @@ public class NicoAudioTrack extends DelegatedAudioTrack {
     }
 
     private JsonBrowser loadVideoApi(HttpInterface httpInterface) throws IOException {
-        String apiUrl = "https://www.nicovideo.jp/api/watch/v3_guest/" + getIdentifier() + "?_frontendId=6&_frontendVersion=0&actionTrackId=S1G2fKdzOl_1702504390263&i18nLanguage=en-us";
+        String apiUrl = "https://www.nicovideo.jp/api/watch/v3_guest/" + getIdentifier() + "?_frontendId=6&_frontendVersion=0&actionTrackId=" + actionTrackId + "&i18nLanguage=en-us";
 
         try (CloseableHttpResponse response = httpInterface.execute(new HttpGet(apiUrl))) {
             HttpClientTools.assertSuccessWithContent(response, "api response");
@@ -93,9 +95,19 @@ public class NicoAudioTrack extends DelegatedAudioTrack {
     private String loadPlaybackUrl(HttpInterface httpInterface) throws IOException {
         JsonBrowser videoJson = loadVideoApi(httpInterface);
 
-        if (videoJson == null) {
+        if (videoJson.isNull()) {
             log.warn("Couldn't retrieve NicoNico video details from API, falling back to HTML page...");
             videoJson = loadVideoMainPage(httpInterface);
+        }
+
+        if (!videoJson.isNull()) {
+            // an "actionTrackId" is necessary to receive an API response.
+            // We make sure this is kept up to date to prevent any issues with tracking IDs becoming invalid.
+            String trackingId = videoJson.get("client").get("watchTrackId").text();
+
+            if (trackingId != null) {
+                actionTrackId = trackingId;
+            }
         }
 
         JSONObject watchData = processJSON(videoJson.get("media").get("delivery").get("movie").get("session"));
