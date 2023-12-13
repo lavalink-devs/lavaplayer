@@ -126,6 +126,10 @@ public class NicoAudioTrack extends DelegatedAudioTrack {
     }
 
     private JSONObject processJSON(JsonBrowser input) {
+        if (input.isNull()) {
+            throw new IllegalStateException("Invalid response received from NicoNico when loading video details");
+        }
+
         JSONObject lifetime = new JSONObject().put("lifetime", input.get("heartbeatLifetime").asLong(120000));
         JSONObject heartbeat = new JSONObject().put("heartbeat", lifetime);
 
