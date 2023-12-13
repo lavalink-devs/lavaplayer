@@ -61,7 +61,7 @@ public class NicoAudioTrack extends DelegatedAudioTrack {
 
             log.debug("Starting NicoNico track from URL: {}", playbackUrl);
 
-            try (PersistentHttpStream stream = new HeartbeatingHttpStream(
+            try (HeartbeatingHttpStream stream = new HeartbeatingHttpStream(
                 httpInterface,
                 new URI(playbackUrl),
                 null,
