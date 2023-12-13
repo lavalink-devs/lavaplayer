@@ -69,6 +69,16 @@ public class NicoAudioTrack extends DelegatedAudioTrack {
         }
     }
 
+    private JsonBrowser loadVideoApi(HttpInterface httpInterface) throws IOException {
+        String apiUrl = "https://www.nicovideo.jp/api/watch/v3_guest/" + getIdentifier() + "?_frontendId=6&_frontendVersion=0&actionTrackId=S1G2fKdzOl_1702504390263&i18nLanguage=en-us";
+
+        try (CloseableHttpResponse response = httpInterface.execute(new HttpGet(apiUrl))) {
+            HttpClientTools.assertSuccessWithContent(response, "api response");
+
+            return JsonBrowser.parse(response.getEntity().getContent()).get("data");
+        }
+    }
+
     private JsonBrowser loadVideoMainPage(HttpInterface httpInterface) throws IOException {
         try (CloseableHttpResponse response = httpInterface.execute(new HttpGet(trackInfo.uri))) {
             HttpClientTools.assertSuccessWithContent(response, "video main page");
@@ -76,12 +86,19 @@ public class NicoAudioTrack extends DelegatedAudioTrack {
             String urlEncodedData = DataFormatTools.extractBetween(EntityUtils.toString(response.getEntity()), "data-api-data=\"", "\"");
             String watchData = Parser.unescapeEntities(urlEncodedData, false);
 
-            return JsonBrowser.parse(watchData).get("media").get("delivery").get("movie").get("session");
+            return JsonBrowser.parse(watchData);
         }
     }
 
     private String loadPlaybackUrl(HttpInterface httpInterface) throws IOException {
-        JSONObject watchData = processJSON(loadVideoMainPage(httpInterface));
+        JsonBrowser videoJson = loadVideoApi(httpInterface);
+
+        if (videoJson == null) {
+            log.warn("Couldn't retrieve NicoNico video details from API, falling back to HTML page...");
+            videoJson = loadVideoMainPage(httpInterface);
+        }
+
+        JSONObject watchData = processJSON(videoJson.get("media").get("delivery").get("movie").get("session"));
 
         HttpPost request = new HttpPost("https://api.dmc.nico/api/sessions?_format=json");
         request.addHeader("Host", "api.dmc.nico");
