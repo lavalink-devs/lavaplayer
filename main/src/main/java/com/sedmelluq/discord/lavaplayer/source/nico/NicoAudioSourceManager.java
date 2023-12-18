@@ -193,6 +193,6 @@ public class NicoAudioSourceManager implements AudioSourceManager, HttpConfigura
     }
 
     private static String getWatchUrl(String videoId) {
-        return "http://www.nicovideo.jp/watch/" + videoId;
+        return "https://www.nicovideo.jp/watch/" + videoId;
     }
 }
