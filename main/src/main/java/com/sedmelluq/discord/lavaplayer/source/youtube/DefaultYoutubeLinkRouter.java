@@ -119,7 +119,7 @@ public class DefaultYoutubeLinkRouter implements YoutubeLinkRouter {
         return routeFromUrlWithVideoId(routes, urlInfo.path.substring(8), urlInfo);
     }
 
-    protected <T> T routeFromLivePath(Routes<T> routes, String url) {
+    protected <T> T routeFromLive(Routes<T> routes, String url) {
         UrlInfo urlInfo = getUrlInfo(url, true);
         return routeFromUrlWithVideoId(routes, urlInfo.path.substring(6), urlInfo);
     }
