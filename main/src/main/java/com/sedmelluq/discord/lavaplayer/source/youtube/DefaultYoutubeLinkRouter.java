@@ -30,7 +30,7 @@ public class DefaultYoutubeLinkRouter implements YoutubeLinkRouter {
         new Extractor(Pattern.compile("^" + PROTOCOL_REGEX + SHORT_DOMAIN_REGEX + "/.*"), this::routeFromShortDomain),
         new Extractor(Pattern.compile("^" + PROTOCOL_REGEX + DOMAIN_REGEX + "/embed/.*"), this::routeFromEmbed),
         new Extractor(Pattern.compile("^" + PROTOCOL_REGEX + DOMAIN_REGEX + "/shorts/.*"), this::routeFromShorts),
-        new Extractor(Pattern.compile("^" + PROTOCOL_REGEX + DOMAIN_REGEX + "/live/.*"), this::routeFromLivePath)
+        new Extractor(Pattern.compile("^" + PROTOCOL_REGEX + DOMAIN_REGEX + "/live/.*"), this::routeFromLive)
     };
 
     @Override
