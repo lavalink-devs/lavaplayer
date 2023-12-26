@@ -13,6 +13,7 @@ import org.apache.http.client.methods.HttpUriRequest;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,7 +30,24 @@ public abstract class M3uStreamSegmentUrlProvider {
   private static final long SEGMENT_WAIT_STEP_MS = 200;
   private static final RequestConfig streamingRequestConfig = RequestConfig.custom().setSocketTimeout(5000).setConnectionRequestTimeout(5000).setConnectTimeout(5000).build();
 
+  protected String baseUrl;
   protected SegmentInfo lastSegment;
+
+  protected M3uStreamSegmentUrlProvider() {
+    this(null);
+  }
+
+  protected M3uStreamSegmentUrlProvider(String originUrl) {
+    if (originUrl != null) {
+      if (originUrl.endsWith("/")) {
+        originUrl = originUrl.substring(0, originUrl.length() - 1);
+      }
+
+      this.baseUrl = originUrl.substring(0, originUrl.lastIndexOf("/"));
+    } else {
+      this.baseUrl = null;
+    }
+  }
 
   protected static String createSegmentUrl(String playlistUrl, String segmentName) {
     return URI.create(playlistUrl).resolve(segmentName).toString();
@@ -118,6 +136,20 @@ public abstract class M3uStreamSegmentUrlProvider {
 
   protected abstract HttpUriRequest createSegmentGetRequest(String url);
 
+  protected boolean isAbsoluteUrl(String url) {
+    try {
+      // A URL is considered absolute if we don't have a baseUrl (so cannot convert a relative URL)
+      // or if URI#isAbsolute returns true.
+      return this.baseUrl == null || new URI(url).isAbsolute();
+    } catch (URISyntaxException e) {
+      return false;
+    }
+  }
+
+  protected String getAbsoluteUrl(String url) {
+    return baseUrl + ((url.startsWith("/")) ? url : "/" + url);
+  }
+
   protected List<ChannelStreamInfo> loadChannelStreamsList(String[] lines) {
     ExtendedM3uParser.Line streamInfoLine = null;
 
@@ -129,7 +161,8 @@ public abstract class M3uStreamSegmentUrlProvider {
       if (line.isData() && streamInfoLine != null) {
         String quality = getQualityFromM3uDirective(streamInfoLine);
         if (quality != null) {
-          streams.add(new ChannelStreamInfo(quality, line.lineData));
+          String lineData = line.lineData;
+          streams.add(new ChannelStreamInfo(quality, isAbsoluteUrl(lineData) ? lineData : getAbsoluteUrl(lineData)));
         }
 
         streamInfoLine = null;
