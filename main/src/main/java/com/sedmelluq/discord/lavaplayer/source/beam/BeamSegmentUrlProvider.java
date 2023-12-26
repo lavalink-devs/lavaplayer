@@ -28,6 +28,7 @@ public class BeamSegmentUrlProvider extends M3uStreamSegmentUrlProvider {
      * @param channelId Channel ID number.
      */
     public BeamSegmentUrlProvider(String channelId) {
+        super(null);
         this.channelId = channelId;
     }
 
