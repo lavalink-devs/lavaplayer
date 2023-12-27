@@ -246,6 +246,22 @@ public class JsonBrowser {
         return defaultValue;
     }
 
+    public int asInt(int defaultValue) {
+        if (node != null) {
+            if (node.isNumber()) {
+                return node.numberValue().intValue();
+            } else if (node.isTextual()) {
+                try {
+                    return Integer.parseInt(node.textValue());
+                } catch (NumberFormatException ignored) {
+                    // Fall through to default value.
+                }
+            }
+        }
+
+        return defaultValue;
+    }
+
     public String safeText() {
         String text = text();
         return text != null ? text : "";
