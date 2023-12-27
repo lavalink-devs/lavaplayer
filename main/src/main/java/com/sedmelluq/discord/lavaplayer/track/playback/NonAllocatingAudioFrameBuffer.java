@@ -182,6 +182,7 @@ public class NonAllocatingAudioFrameBuffer extends AbstractAudioFrameBuffer {
         targetFrame.setVolume(frame.getVolume());
         targetFrame.setTerminator(false);
         targetFrame.store(frame.getFrameBuffer(), frame.getFrameOffset(), frame.getDataLength());
+        targetFrame.setFormat(frame.getFormat());
 
         firstFrame = wrappedFrameIndex(firstFrame + 1);
         frameCount--;
