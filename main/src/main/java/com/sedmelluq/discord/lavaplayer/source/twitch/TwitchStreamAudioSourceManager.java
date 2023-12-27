@@ -70,7 +70,8 @@ public class TwitchStreamAudioSourceManager implements AudioSourceManager, HttpC
 
     @Override
     public AudioItem loadItem(AudioPlayerManager manager, AudioReference reference) {
-        String streamName = getChannelIdentifierFromUrl(reference.identifier);
+	    // Using root because the turkish lowercase "i" does not have the little dot above the letter when defaulted
+        String streamName = getChannelIdentifierFromUrl(reference.identifier).toLowerCase(Locale.ROOT);
         if (streamName == null) {
             return null;
         }
@@ -84,8 +85,7 @@ public class TwitchStreamAudioSourceManager implements AudioSourceManager, HttpC
 
 		final String thumbnail = String.format(
 		    TwitchConstants.TWITCH_IMAGE_PREVIEW_URL,
-		    // Using root because the turkish lowercase "i" does not have the little dot above the letter when defaulted
-		    streamName.toLowerCase(Locale.ROOT)
+		    streamName
 		);
 
 		return new TwitchStreamAudioTrack(new AudioTrackInfo(
