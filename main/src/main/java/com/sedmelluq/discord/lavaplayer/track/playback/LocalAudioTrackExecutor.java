@@ -239,13 +239,13 @@ public class LocalAudioTrackExecutor implements AudioTrackExecutor {
     }
 
     @Override
-    public void addMaker(TrackMarker marker) {
-        //
+    public void addMarker(TrackMarker marker) {
+        markerTracker.add(marker, getPosition());
     }
 
     @Override
-    public void removeMaker(TrackMarker marker) {
-        //
+    public void removeMarker(TrackMarker marker) {
+        markerTracker.remove(marker);
     }
 
     @Override

@@ -44,9 +44,26 @@ public interface AudioTrack extends AudioItem {
     void setPosition(long position);
 
     /**
+     * Override all the current markers on this track.
+     *
      * @param marker Track position marker to place
      */
     void setMarker(TrackMarker marker);
+
+    /**
+     * Adds a marker to the track.
+     * Markers can be used to execute code when the track reaches a certain position.
+     *
+     * @param marker The marker to add.
+     */
+    void addMarker(TrackMarker marker);
+
+    /**
+     * Removes a marker from the track.
+     *
+     * @param marker The marker to remove.
+     */
+    void removeMarker(TrackMarker marker);
 
     /**
      * @return Duration of the track in milliseconds

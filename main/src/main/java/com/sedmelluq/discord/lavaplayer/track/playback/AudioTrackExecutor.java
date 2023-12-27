@@ -43,15 +43,26 @@ public interface AudioTrackExecutor extends AudioFrameProvider {
     AudioTrackState getState();
 
     /**
-     * Set track position marker.
+     * Set track position marker. Overrides all current markers.
      *
      * @param marker Track position marker to set.
      */
     void setMarker(TrackMarker marker);
 
-    void addMaker(TrackMarker marker);
+    /**
+     * Adds a marker to the track.
+     * Markers can be used to execute code when the track reaches a certain position.
+     *
+     * @param marker The marker to add.
+     */
+    void addMarker(TrackMarker marker);
 
-    void removeMaker(TrackMarker marker);
+    /**
+     * Removes a marker from the track.
+     *
+     * @param marker The marker to remove.
+     */
+    void removeMarker(TrackMarker marker);
 
     /**
      * @return True if this track threw an exception before it provided any audio.
