@@ -1,16 +1,18 @@
 package com.sedmelluq.discord.lavaplayer.track;
 
 import java.util.List;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.stream.Collectors;
+import java.util.concurrent.CopyOnWriteArrayList;
 
-import static com.sedmelluq.discord.lavaplayer.track.TrackMarkerHandler.MarkerState.*;
+import static com.sedmelluq.discord.lavaplayer.track.TrackMarkerHandler.MarkerState.BYPASSED;
+import static com.sedmelluq.discord.lavaplayer.track.TrackMarkerHandler.MarkerState.LATE;
+import static com.sedmelluq.discord.lavaplayer.track.TrackMarkerHandler.MarkerState.REACHED;
+import static com.sedmelluq.discord.lavaplayer.track.TrackMarkerHandler.MarkerState.REMOVED;
 
 /**
  * Tracks the state of a track position marker.
  */
 public class TrackMarkerTracker {
-    private final ConcurrentLinkedQueue<TrackMarker> markerQueue = new ConcurrentLinkedQueue<>();
+    private final List<TrackMarker> markerList = new CopyOnWriteArrayList<>();
 
     /**
      * Set a new track position marker. This removes all previously set markers.
@@ -19,23 +21,14 @@ public class TrackMarkerTracker {
      * @param currentTimecode Current timecode of the track when this marker is set
      */
     public void set(TrackMarker marker, long currentTimecode) {
-        markerQueue.forEach(this::remove);
+        markerList.forEach(this::remove);
 
         add(marker, currentTimecode);
     }
 
     public void add(TrackMarker marker, long currentTimecode) {
-        final List<TrackMarker> previousMarkers = markerQueue.stream()
-            .filter(marker1 -> marker1.timecode == currentTimecode)
-            .collect(Collectors.toList());
-        final TrackMarkerHandler.MarkerState handleState = marker != null ? OVERWRITTEN : REMOVED;
-
-        for (TrackMarker previous : previousMarkers) {
-            trigger(previous, handleState);
-        }
-
         if (marker != null) {
-            markerQueue.offer(marker);
+            markerList.add(marker);
 
             if (currentTimecode >= marker.timecode) {
                 trigger(marker, LATE);
@@ -48,13 +41,25 @@ public class TrackMarkerTracker {
     }
 
     /**
-     * Removes the first marker in the queue.
+     * Removes the first marker in the list.
      *
-     * @return The removed marker.
+     * @return The removed marker. Null if there are no markers.
      */
     @Deprecated
     public TrackMarker remove() {
-        return markerQueue.poll();
+        if (markerList.isEmpty()) {
+            return null;
+        }
+
+        return markerList.remove(0);
+    }
+
+    public List<TrackMarker> getMarkers() {
+        return markerList;
+    }
+
+    public void clear() {
+        markerList.clear();
     }
 
     /**
@@ -63,7 +68,7 @@ public class TrackMarkerTracker {
      * @param state The state of the marker to pass to the handler.
      */
     public void trigger(TrackMarkerHandler.MarkerState state) {
-        for (TrackMarker marker : markerQueue) {
+        for (TrackMarker marker : markerList) {
             marker.handler.handle(state);
         }
     }
@@ -74,7 +79,7 @@ public class TrackMarkerTracker {
      * @param timecode Timecode which was reached by normal playback.
      */
     public void checkPlaybackTimecode(long timecode) {
-        for (TrackMarker marker : markerQueue) {
+        for (TrackMarker marker : markerList) {
             if (marker != null && timecode >= marker.timecode) {
                 trigger(marker, REACHED);
             }
@@ -87,7 +92,7 @@ public class TrackMarkerTracker {
      * @param timecode Timecode which was reached by seeking.
      */
     public void checkSeekTimecode(long timecode) {
-        for (TrackMarker marker : markerQueue) {
+        for (TrackMarker marker : markerList) {
             if (marker != null && timecode >= marker.timecode) {
                 trigger(marker, BYPASSED);
             }
@@ -95,7 +100,7 @@ public class TrackMarkerTracker {
     }
 
     private void trigger(TrackMarker marker, TrackMarkerHandler.MarkerState state) {
-        if (markerQueue.remove(marker)) {
+        if (markerList.remove(marker)) {
             marker.handler.handle(state);
         }
     }

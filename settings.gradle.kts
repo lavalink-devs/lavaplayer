@@ -8,7 +8,8 @@ include(
     ":extensions:youtube-rotator",
     ":extensions:format-xm",
     ":natives",
-    ":natives-publish"
+    ":natives-publish",
+    ":testbot"
 )
 
 // https://github.com/gradle/gradle/issues/19254

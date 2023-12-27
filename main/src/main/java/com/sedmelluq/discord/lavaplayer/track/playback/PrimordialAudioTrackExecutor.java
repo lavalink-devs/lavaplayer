@@ -110,6 +110,10 @@ public class PrimordialAudioTrackExecutor implements AudioTrackExecutor {
             executor.setPosition(position);
         }
 
-        executor.setMarker(markerTracker.remove());
+        for (TrackMarker marker : markerTracker.getMarkers()) {
+            executor.addMarker(marker);
+        }
+
+        markerTracker.clear();
     }
 }
