@@ -239,6 +239,16 @@ public class LocalAudioTrackExecutor implements AudioTrackExecutor {
     }
 
     @Override
+    public void addMaker(TrackMarker marker) {
+        //
+    }
+
+    @Override
+    public void removeMaker(TrackMarker marker) {
+        //
+    }
+
+    @Override
     public boolean failedBeforeLoad() {
         return trackException != null && !frameBuffer.hasReceivedFrames();
     }
