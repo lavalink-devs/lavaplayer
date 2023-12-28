@@ -1,6 +1,8 @@
 package com.sedmelluq.discord.lavaplayer.track;
 
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import static com.sedmelluq.discord.lavaplayer.track.TrackMarkerHandler.MarkerState.*;
 
@@ -8,46 +10,79 @@ import static com.sedmelluq.discord.lavaplayer.track.TrackMarkerHandler.MarkerSt
  * Tracks the state of a track position marker.
  */
 public class TrackMarkerTracker {
-    private final AtomicReference<TrackMarker> current = new AtomicReference<>();
+    private final List<TrackMarker> markerList = new CopyOnWriteArrayList<>();
 
     /**
-     * Set a new track position marker.
+     * Set a new track position marker. This removes all previously set markers.
      *
      * @param marker          Marker
      * @param currentTimecode Current timecode of the track when this marker is set
      */
     public void set(TrackMarker marker, long currentTimecode) {
-        TrackMarker previous = current.getAndSet(marker);
+        if (marker == null) {
+            trigger(REMOVED);
+        } else {
+            trigger(OVERWRITTEN);
 
-        if (previous != null) {
-            previous.handler.handle(marker != null ? OVERWRITTEN : REMOVED);
-        }
-
-        if (marker != null && currentTimecode >= marker.timecode) {
-            trigger(marker, LATE);
+            add(marker, currentTimecode);
         }
     }
 
+    public void add(TrackMarker marker, long currentTimecode) {
+        if (marker != null) {
+            if (currentTimecode >= marker.timecode) {
+                marker.handler.handle(LATE);
+            } else {
+                markerList.add(marker);
+            }
+        }
+    }
+
+    public void remove(TrackMarker marker) {
+        trigger(marker, REMOVED);
+    }
+
     /**
-     * Remove the current marker.
+     * Removes the first marker in the list.
      *
-     * @return The removed marker.
+     * @return The removed marker. Null if there are no markers.
+     *
+     * @deprecated Use {@link #getMarkers()} and {@link #clear()} instead.
      */
+    @Deprecated
     public TrackMarker remove() {
-        return current.getAndSet(null);
+        if (markerList.isEmpty()) {
+            return null;
+        }
+
+        return markerList.remove(0);
     }
 
     /**
-     * Trigger and remove the marker with the specified state.
+     * @return The current unmodifiable list of timecode markers stored in this tracker.
+     * @see #add(TrackMarker, long)
+     * @see #remove(TrackMarker)
+     * @see #clear()
+     */
+    public List<TrackMarker> getMarkers() {
+        return Collections.unmodifiableList(markerList);
+    }
+
+    public void clear() {
+        markerList.clear();
+    }
+
+    /**
+     * Triggers and removes all markers with the specified state.
      *
      * @param state The state of the marker to pass to the handler.
      */
     public void trigger(TrackMarkerHandler.MarkerState state) {
-        TrackMarker marker = current.getAndSet(null);
-
-        if (marker != null) {
+        for (TrackMarker marker : markerList) {
             marker.handler.handle(state);
         }
+
+        this.clear();
     }
 
     /**
@@ -56,10 +91,10 @@ public class TrackMarkerTracker {
      * @param timecode Timecode which was reached by normal playback.
      */
     public void checkPlaybackTimecode(long timecode) {
-        TrackMarker marker = current.get();
-
-        if (marker != null && timecode >= marker.timecode) {
-            trigger(marker, REACHED);
+        for (TrackMarker marker : markerList) {
+            if (marker != null && timecode >= marker.timecode) {
+                trigger(marker, REACHED);
+            }
         }
     }
 
@@ -69,15 +104,15 @@ public class TrackMarkerTracker {
      * @param timecode Timecode which was reached by seeking.
      */
     public void checkSeekTimecode(long timecode) {
-        TrackMarker marker = current.get();
-
-        if (marker != null && timecode >= marker.timecode) {
-            trigger(marker, BYPASSED);
+        for (TrackMarker marker : markerList) {
+            if (marker != null && timecode >= marker.timecode) {
+                trigger(marker, BYPASSED);
+            }
         }
     }
 
     private void trigger(TrackMarker marker, TrackMarkerHandler.MarkerState state) {
-        if (current.compareAndSet(marker, null)) {
+        if (markerList.remove(marker)) {
             marker.handler.handle(state);
         }
     }
