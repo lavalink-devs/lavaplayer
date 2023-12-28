@@ -44,7 +44,7 @@ public interface AudioTrack extends AudioItem {
     void setPosition(long position);
 
     /**
-     * Override all the current markers on this track.
+     * Set the track position marker. This will clear all existing markers.
      *
      * @param marker Track position marker to place
      */

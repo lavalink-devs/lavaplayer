@@ -43,7 +43,7 @@ public interface AudioTrackExecutor extends AudioFrameProvider {
     AudioTrackState getState();
 
     /**
-     * Set track position marker. Overrides all current markers.
+     * Set the track position marker. This will clear all existing markers.
      *
      * @param marker Track position marker to set.
      */

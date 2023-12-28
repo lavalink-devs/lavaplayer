@@ -1,12 +1,10 @@
 package com.sedmelluq.discord.lavaplayer.track;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import static com.sedmelluq.discord.lavaplayer.track.TrackMarkerHandler.MarkerState.BYPASSED;
-import static com.sedmelluq.discord.lavaplayer.track.TrackMarkerHandler.MarkerState.LATE;
-import static com.sedmelluq.discord.lavaplayer.track.TrackMarkerHandler.MarkerState.REACHED;
-import static com.sedmelluq.discord.lavaplayer.track.TrackMarkerHandler.MarkerState.REMOVED;
+import static com.sedmelluq.discord.lavaplayer.track.TrackMarkerHandler.MarkerState.*;
 
 /**
  * Tracks the state of a track position marker.
@@ -21,17 +19,21 @@ public class TrackMarkerTracker {
      * @param currentTimecode Current timecode of the track when this marker is set
      */
     public void set(TrackMarker marker, long currentTimecode) {
-        markerList.forEach(this::remove);
+        if (marker == null) {
+            trigger(REMOVED);
+        } else {
+            trigger(OVERWRITTEN);
 
-        add(marker, currentTimecode);
+            add(marker, currentTimecode);
+        }
     }
 
     public void add(TrackMarker marker, long currentTimecode) {
         if (marker != null) {
-            markerList.add(marker);
-
             if (currentTimecode >= marker.timecode) {
-                trigger(marker, LATE);
+                marker.handler.handle(LATE);
+            } else {
+                markerList.add(marker);
             }
         }
     }
@@ -44,6 +46,8 @@ public class TrackMarkerTracker {
      * Removes the first marker in the list.
      *
      * @return The removed marker. Null if there are no markers.
+     *
+     * @deprecated Use {@link #getMarkers()} and {@link #clear()} instead.
      */
     @Deprecated
     public TrackMarker remove() {
@@ -54,8 +58,14 @@ public class TrackMarkerTracker {
         return markerList.remove(0);
     }
 
+    /**
+     * @return The current unmodifiable list of timecode markers stored in this tracker.
+     * @see #add(TrackMarker, long)
+     * @see #remove(TrackMarker)
+     * @see #clear()
+     */
     public List<TrackMarker> getMarkers() {
-        return markerList;
+        return Collections.unmodifiableList(markerList);
     }
 
     public void clear() {
@@ -63,7 +73,7 @@ public class TrackMarkerTracker {
     }
 
     /**
-     * Trigger and remove the marker with the specified state.
+     * Triggers and removes all markers with the specified state.
      *
      * @param state The state of the marker to pass to the handler.
      */
@@ -71,6 +81,8 @@ public class TrackMarkerTracker {
         for (TrackMarker marker : markerList) {
             marker.handler.handle(state);
         }
+
+        this.clear();
     }
 
     /**
