@@ -79,26 +79,24 @@ public class TwitchStreamAudioSourceManager implements AudioSourceManager, HttpC
 
         if (channelInfo == null || channelInfo.get("stream").get("type").isNull()) {
             return AudioReference.NO_TRACK;
-        } else {
-            String title = channelInfo.get("lastBroadcast").get("title").text();
-
-            final String thumbnail = String.format(
-                "https://static-cdn.jtvnw.net/previews-ttv/live_user_%s-440x248.jpg",
-                // Using root because the turkish lowercase "i" does not have the little dot above the letter when defaulted
-                streamName.toLowerCase(Locale.ROOT)
-            );
-
-            return new TwitchStreamAudioTrack(new AudioTrackInfo(
-                title,
-                streamName,
-                Units.DURATION_MS_UNKNOWN,
-                reference.identifier,
-                true,
-                reference.identifier,
-                thumbnail,
-                null
-            ), this);
         }
+		String title = channelInfo.get("lastBroadcast").get("title").text();
+
+		final String thumbnail = String.format(
+		    TwitchConstants.TWITCH_IMAGE_PREVIEW_URL,
+		    streamName
+		);
+
+		return new TwitchStreamAudioTrack(new AudioTrackInfo(
+		    title,
+		    streamName,
+		    Units.DURATION_MS_UNKNOWN,
+		    reference.identifier,
+		    true,
+		    reference.identifier,
+		    thumbnail,
+		    null
+		), this);
     }
 
     @Override
@@ -128,7 +126,8 @@ public class TwitchStreamAudioSourceManager implements AudioSourceManager, HttpC
             return null;
         }
 
-        return matcher.group(1);
+        // Using root because the turkish lowercase "i" does not have the little dot above the letter when defaulted
+        return matcher.group(1).toLowerCase(Locale.ROOT);
     }
 
     /**
@@ -194,7 +193,7 @@ public class TwitchStreamAudioSourceManager implements AudioSourceManager, HttpC
 
     private void initRequestHeaders() {
         try (HttpInterface httpInterface = getHttpInterface()) {
-            HttpGet get = new HttpGet("https://www.twitch.tv");
+            HttpGet get = new HttpGet(TwitchConstants.TWITCH_URL);
             get.setHeader("Accept", "text/html");
             CloseableHttpResponse response = httpInterface.execute(get);
             HttpClientTools.assertSuccessWithContent(response, "twitch main page");
