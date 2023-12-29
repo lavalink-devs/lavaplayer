@@ -70,7 +70,6 @@ public class TwitchStreamAudioSourceManager implements AudioSourceManager, HttpC
 
     @Override
     public AudioItem loadItem(AudioPlayerManager manager, AudioReference reference) {
-	    // Using root because the turkish lowercase "i" does not have the little dot above the letter when defaulted
         String streamName = getChannelIdentifierFromUrl(reference.identifier);
         if (streamName == null) {
             return null;
@@ -127,6 +126,7 @@ public class TwitchStreamAudioSourceManager implements AudioSourceManager, HttpC
             return null;
         }
 
+        // Using root because the turkish lowercase "i" does not have the little dot above the letter when defaulted
         return matcher.group(1).toLowerCase(Locale.ROOT);
     }
 
