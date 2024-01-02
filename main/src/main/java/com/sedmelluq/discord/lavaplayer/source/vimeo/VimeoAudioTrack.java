@@ -123,13 +123,8 @@ public class VimeoAudioTrack extends DelegatedAudioTrack {
     }
 
     protected String resolveRelativeUrl(String baseUrl, String url) {
-        int upTraversals = 0;
         while (url.startsWith("../")) {
-            upTraversals++;
             url = url.substring(3);
-        }
-
-        for (int i = 0; i < upTraversals; i++) {
             baseUrl = baseUrl.substring(0, baseUrl.lastIndexOf('/'));
         }
 
