@@ -1,6 +1,8 @@
 package com.sedmelluq.discord.lavaplayer.source.vimeo;
 
 import com.sedmelluq.discord.lavaplayer.container.mpeg.MpegAudioTrack;
+import com.sedmelluq.discord.lavaplayer.container.playlists.ExtendedM3uParser;
+import com.sedmelluq.discord.lavaplayer.container.playlists.HlsStreamTrack;
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManager;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.tools.JsonBrowser;
@@ -20,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 
 import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.SUSPICIOUS;
 
@@ -44,17 +47,26 @@ public class VimeoAudioTrack extends DelegatedAudioTrack {
     @Override
     public void process(LocalAudioTrackExecutor localExecutor) throws Exception {
         try (HttpInterface httpInterface = sourceManager.getHttpInterface()) {
-            String playbackUrl = loadPlaybackUrl(httpInterface);
+            PlaybackSource playbackSource = getPlaybackSource(httpInterface);
 
-            log.debug("Starting Vimeo track from URL: {}", playbackUrl);
+            log.debug("Starting Vimeo track. HLS: {}, URL: {}", playbackSource.isHls, playbackSource.url);
 
-            try (PersistentHttpStream stream = new PersistentHttpStream(httpInterface, new URI(playbackUrl), null)) {
-                processDelegate(new MpegAudioTrack(trackInfo, stream), localExecutor);
+            if (playbackSource.isHls) {
+                processDelegate(new HlsStreamTrack(
+                    trackInfo,
+                    extractHlsAudioPlaylistUrl(httpInterface, playbackSource.url),
+                    sourceManager.getHttpInterfaceManager(),
+                    true
+                ), localExecutor);
+            } else {
+                try (PersistentHttpStream stream = new PersistentHttpStream(httpInterface, new URI(playbackSource.url), null)) {
+                    processDelegate(new MpegAudioTrack(trackInfo, stream), localExecutor);
+                }
             }
         }
     }
 
-    private String loadPlaybackUrl(HttpInterface httpInterface) throws IOException {
+    private PlaybackSource getPlaybackSource(HttpInterface httpInterface) throws IOException {
         JsonBrowser config = loadPlayerConfig(httpInterface);
         if (config == null) {
             throw new FriendlyException("Track information not present on the page.", SUSPICIOUS, null);
@@ -62,8 +74,26 @@ public class VimeoAudioTrack extends DelegatedAudioTrack {
 
         String trackConfigUrl = config.get("player").get("config_url").text();
         JsonBrowser trackConfig = loadTrackConfig(httpInterface, trackConfigUrl);
+        JsonBrowser files = trackConfig.get("request").get("files");
 
-        return trackConfig.get("request").get("files").get("progressive").index(0).get("url").text();
+        if (!files.get("progressive").values().isEmpty()) {
+            String url = files.get("progressive").index(0).get("url").text();
+            return new PlaybackSource(url, false);
+        } else {
+            JsonBrowser hls = files.get("hls");
+            String defaultCdn = hls.get("default_cdn").text();
+            return new PlaybackSource(hls.get("cdns").get(defaultCdn).get("url").text(), true);
+        }
+    }
+
+    private static class PlaybackSource {
+        public String url;
+        public boolean isHls;
+
+        public PlaybackSource(String url, boolean isHls) {
+            this.url = url;
+            this.isHls = isHls;
+        }
     }
 
     private JsonBrowser loadPlayerConfig(HttpInterface httpInterface) throws IOException {
@@ -90,6 +120,43 @@ public class VimeoAudioTrack extends DelegatedAudioTrack {
 
             return JsonBrowser.parse(response.getEntity().getContent());
         }
+    }
+
+    protected String resolveRelativeUrl(String baseUrl, String url) {
+        while (url.startsWith("../")) {
+            url = url.substring(3);
+            baseUrl = baseUrl.substring(0, baseUrl.lastIndexOf('/'));
+        }
+
+        return baseUrl + ((url.startsWith("/")) ? url : "/" + url);
+    }
+
+    /** Vimeo HLS uses separate audio and video. This extracts the audio playlist URL from EXT-X-MEDIA */
+    private String extractHlsAudioPlaylistUrl(HttpInterface httpInterface, String videoPlaylistUrl) throws IOException {
+        String url = null;
+        try (CloseableHttpResponse response = httpInterface.execute(new HttpGet(videoPlaylistUrl))) {
+            int statusCode = response.getStatusLine().getStatusCode();
+
+            if (!HttpClientTools.isSuccessWithContent(statusCode)) {
+                throw new FriendlyException("Server responded with an error.", SUSPICIOUS,
+                    new IllegalStateException("Response code for track access info is " + statusCode));
+            }
+
+            String bodyString = IOUtils.toString(response.getEntity().getContent(), StandardCharsets.UTF_8);
+            for (String rawLine : bodyString.split("\n")) {
+                ExtendedM3uParser.Line line = ExtendedM3uParser.parseLine(rawLine);
+                if (Objects.equals(line.directiveName, "EXT-X-MEDIA")
+                    && Objects.equals(line.directiveArguments.get("TYPE"), "AUDIO")) {
+                    url = line.directiveArguments.get("URI");
+                    break;
+                }
+            }
+        }
+
+        if (url == null) throw new FriendlyException("Failed to find audio playlist URL.", SUSPICIOUS,
+            new IllegalStateException("Valid audio directive was not found"));
+
+        return resolveRelativeUrl(videoPlaylistUrl.substring(0, videoPlaylistUrl.lastIndexOf('/')), url);
     }
 
     @Override

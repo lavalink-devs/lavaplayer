@@ -92,6 +92,10 @@ public class VimeoAudioSourceManager implements AudioSourceManager, HttpConfigur
         return httpInterfaceManager.getInterface();
     }
 
+    HttpInterfaceManager getHttpInterfaceManager() {
+        return httpInterfaceManager;
+    }
+
     @Override
     public void configureRequests(Function<RequestConfig, RequestConfig> configurator) {
         httpInterfaceManager.configureRequests(configurator);
