@@ -1,5 +1,16 @@
 # Change Log
 
+## [2.1.0] -- 2024-11-01
+
+* Added support for multiple track markers https://github.com/lavalink-devs/lavaplayer/pull/56
+* Fixed NicoNico https://github.com/lavalink-devs/lavaplayer/pull/50
+* Fixed playback of some Vimeo tracks by adding HLS support https://github.com/lavalink-devs/lavaplayer/pull/63
+* Added support for `/live/` YouTube URLs https://github.com/lavalink-devs/lavaplayer/pull/53
+* Added proper handling of relative URLs in m3u8 playlists https://github.com/lavalink-devs/lavaplayer/pull/48
+* Fixed handling of Twitch URLs with uppercase paths https://github.com/lavalink-devs/lavaplayer/pull/57
+* Made frame buffers pass their format to other frames https://github.com/lavalink-devs/lavaplayer/pull/55
+* Fixed JitPack compilation https://github.com/lavalink-devs/lavaplayer/pull/60
+
 ## [2.0.4] -- 2023-03-12
 
 * Fix NPE on missing author in playlist tracks in https://github.com/lavalink-devs/lavaplayer/pull/45
