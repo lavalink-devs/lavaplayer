@@ -35,7 +35,7 @@ public class YoutubeConstants {
 
     static final String INNERTUBE_MUSIC_API_KEY = "AIzaSyC9XL3ZjWddXya6X74dJoCTL-WEYFDNX30";
     static final String CLIENT_MUSIC_NAME = "WEB_REMIX";
-    static final String CLIENT_MUSIC_VERSION = "0.1";
+    static final String CLIENT_MUSIC_VERSION = "1.20220727.01.00";
 
     static final String SEARCH_MUSIC_PARAMS = "Eg-KAQwIARAAGAAgACgAMABqChADEAQQCRAFEAo=";
 
