@@ -1,5 +1,10 @@
 # Change Log
 
+## [2.1.1] -- 2024-10-03
+* Fixed invalid search request (code 400) https://github.com/lavalink-devs/lavaplayer/pull/70
+* Fixed YoutubeMpegStreamAudioTrack default to `0` if `state.absoluteSequence` is `null` https://github.com/lavalink-devs/lavaplayer/pull/73
+* Update youtube music client version https://github.com/lavalink-devs/lavaplayer/pull/74
+
 ## [2.1.0] -- 2024-11-01
 
 * Added support for multiple track markers https://github.com/lavalink-devs/lavaplayer/pull/56
