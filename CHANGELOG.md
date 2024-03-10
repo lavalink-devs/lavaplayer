@@ -1,5 +1,11 @@
 # Change Log
 
+## [1.5.3] -- 2023-10-03
+* Fix `Target host is not specified` with HLS relative urls in m3u8 playlists in https://github.com/lavalink-devs/lavaplayer/pull/49
+* Fix invalid search request (code 400) in https://github.com/lavalink-devs/lavaplayer/pull/71
+* Added support for youtube `/live/` URLs in https://github.com/lavalink-devs/lavaplayer/pull/54
+* Update youtube music client version in https://github.com/lavalink-devs/lavaplayer/pull/75
+
 ## [1.5.2] -- 2023-03-12
 
 * Fix NPE on missing author in playlist tracks in https://github.com/lavalink-devs/lavaplayer/pull/46
