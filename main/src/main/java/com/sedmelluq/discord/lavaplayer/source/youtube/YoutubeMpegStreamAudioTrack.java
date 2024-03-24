@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.SUSPICIOUS;
@@ -55,7 +54,7 @@ public class YoutubeMpegStreamAudioTrack extends MpegAudioTrack {
 
         // YouTube does not return a segment until it is ready, this might trigger a connect timeout otherwise.
         httpInterface.getContext().setRequestConfig(streamingRequestConfig);
-        updateGlobalSequence().join();
+        updateGlobalSequence();
     }
 
     @Override
@@ -66,7 +65,7 @@ public class YoutubeMpegStreamAudioTrack extends MpegAudioTrack {
     @Override
     public void setPosition(long position) {
         state.seeking = true;
-        updateGlobalSequence().join();
+        updateGlobalSequence();
         getActiveExecutor().setPosition(position);
     }
 
@@ -79,15 +78,13 @@ public class YoutubeMpegStreamAudioTrack extends MpegAudioTrack {
     public long getPosition() {
         if (state.absoluteSequence == null) {
             // We haven't yet received a stream segment so absoluteSequence hasn't been set yet.
-            return 0;
+            return super.getPosition();
         }
 
         return TimeUnit.SECONDS.toMillis(state.absoluteSequence * TimeUnit.MILLISECONDS.toSeconds(state.globalSequenceDuration));
     }
 
-    private CompletableFuture<Void> updateGlobalSequence() {
-        CompletableFuture<Void> updated = new CompletableFuture<>();
-
+    private void updateGlobalSequence() {
         try (YoutubePersistentHttpStream stream = new YoutubePersistentHttpStream(httpInterface, state.initialUrl, CONTENT_LENGTH_UNKNOWN)) {
             MpegFileLoader file = new MpegFileLoader(stream);
             file.parseHeaders();
@@ -95,13 +92,9 @@ public class YoutubeMpegStreamAudioTrack extends MpegAudioTrack {
             SequenceInfo sequenceInfo = extractAbsoluteSequenceFromEvent(file.getLastEventMessage());
             state.globalSequence = sequenceInfo.sequence;
             state.globalSequenceDuration = sequenceInfo.duration;
+        } catch (IOException ignored) {
 
-            updated.complete(null);
-        } catch (IOException e) {
-            updated.complete(null);
         }
-
-        return updated;
     }
 
     private void execute(LocalAudioTrackExecutor localExecutor) throws InterruptedException {
