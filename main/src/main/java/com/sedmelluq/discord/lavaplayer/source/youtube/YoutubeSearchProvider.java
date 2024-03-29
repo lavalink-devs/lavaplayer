@@ -52,7 +52,7 @@ public class YoutubeSearchProvider implements YoutubeSearchResultLoader {
 
         try (HttpInterface httpInterface = httpInterfaceManager.getInterface()) {
             HttpPost post = new HttpPost(SEARCH_URL);
-            YoutubeClientConfig clientConfig = YoutubeClientConfig.ANDROID.copy()
+            YoutubeClientConfig clientConfig = YoutubeClientConfig.IOS.copy()
                 .withRootField("query", query)
                 .withRootField("params", SEARCH_PARAMS)
                 .setAttribute(httpInterface);

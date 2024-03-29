@@ -7,9 +7,9 @@ public class YoutubeConstants {
     static final String YOUTUBE_API_ORIGIN = "https://youtubei.googleapis.com";
     static final String BASE_URL = YOUTUBE_API_ORIGIN + "/youtubei/v1";
 
-    static final String INNERTUBE_ANDROID_API_KEY = "AIzaSyA8eiZmM1FaDVjRy-df2KTyQ_vz_yYM39w";
-    static final String CLIENT_ANDROID_NAME = "ANDROID";
-    static final String CLIENT_ANDROID_VERSION = "18.06.35";
+    static final String INNERTUBE_IOS_API_KEY = "AIzaSyB-63vPrdThhKuerbB2N_l7Kwwcxj6yUAc";
+    static final String CLIENT_IOS_NAME = "IOS";
+    static final String CLIENT_IOS_VERSION = "19.09.3";
 
     static final String INNERTUBE_WEB_API_KEY = "AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8";
     static final String CLIENT_WEB_NAME = "WEB";
@@ -24,7 +24,7 @@ public class YoutubeConstants {
     static final String PLAYER_PARAMS = "CgIQBg";
     static final String SEARCH_PARAMS = "EgIQAUICCAE=";
 
-    static final String SEARCH_URL = BASE_URL + "/search?key=" + INNERTUBE_ANDROID_API_KEY;
+    static final String SEARCH_URL = BASE_URL + "/search?key=" + INNERTUBE_IOS_API_KEY;
     static final String PLAYER_URL = BASE_URL + "/player";
     static final String BROWSE_URL = BASE_URL + "/browse";
     static final String NEXT_URL = BASE_URL + "/next";

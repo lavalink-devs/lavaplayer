@@ -8,14 +8,13 @@ import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeHttpContext
 import static com.sedmelluq.discord.lavaplayer.source.youtube.YoutubePayloadHelper.putOnceAndJoin;
 
 public class YoutubeClientConfig extends JSONObject {
-    public static final AndroidVersion DEFAULT_ANDROID_VERSION = AndroidVersion.ANDROID_11;
 
-    public static YoutubeClientConfig ANDROID = new YoutubeClientConfig()
-        .withApiKey(INNERTUBE_ANDROID_API_KEY)
-        .withUserAgent(String.format("com.google.android.youtube/%s (Linux; U; Android %s) gzip", CLIENT_ANDROID_VERSION, DEFAULT_ANDROID_VERSION.getOsVersion()))
-        .withClientName(CLIENT_ANDROID_NAME)
-        .withClientField("clientVersion", CLIENT_ANDROID_VERSION)
-        .withClientField("androidSdkVersion", DEFAULT_ANDROID_VERSION.getSdkVersion())
+    public static YoutubeClientConfig IOS = new YoutubeClientConfig()
+        .withApiKey(INNERTUBE_IOS_API_KEY)
+        .withUserAgent("com.google.ios.youtube/19.09.3 (iPhone14,3; U; CPU iOS 15_6 like Mac OS X)")
+        .withClientName(CLIENT_IOS_NAME)
+        .withClientField("clientVersion", CLIENT_IOS_VERSION)
+        .withClientField("deviceModel", "iPhone14,3")
         //.withClientField("osName", "Android")
         //.withClientField("osVersion", DEFAULT_ANDROID_VERSION.getOsVersion())
         .withClientDefaultScreenParameters();
@@ -135,26 +134,5 @@ public class YoutubeClientConfig extends JSONObject {
 
     public String toJsonString() {
         return root.toString();
-    }
-
-    public enum AndroidVersion {
-        // https://apilevels.com/
-        ANDROID_11("11", 30);
-
-        private final String osVersion;
-        private final int sdkVersion;
-
-        AndroidVersion(String osVersion, int sdkVersion) {
-            this.osVersion = osVersion;
-            this.sdkVersion = sdkVersion;
-        }
-
-        public String getOsVersion() {
-            return osVersion;
-        }
-
-        public int getSdkVersion() {
-            return sdkVersion;
-        }
     }
 }
