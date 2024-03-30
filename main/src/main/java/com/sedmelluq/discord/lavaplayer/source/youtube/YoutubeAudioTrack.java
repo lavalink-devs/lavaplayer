@@ -25,6 +25,7 @@ import static com.sedmelluq.discord.lavaplayer.tools.Units.CONTENT_LENGTH_UNKNOW
  */
 public class YoutubeAudioTrack extends DelegatedAudioTrack {
   private static final Logger log = LoggerFactory.getLogger(YoutubeAudioTrack.class);
+  private static final int MAX_RETRIES = 3;
 
   private final YoutubeAudioSourceManager sourceManager;
 
@@ -48,7 +49,30 @@ public class YoutubeAudioTrack extends DelegatedAudioTrack {
       if (trackInfo.isStream || format.details.getContentLength() == CONTENT_LENGTH_UNKNOWN) {
         processStream(localExecutor, format);
       } else {
+        processStaticWithRetry(localExecutor, httpInterface, format);
+      }
+    }
+  }
+
+  @SuppressWarnings("ConstantValue")
+  private void processStaticWithRetry(LocalAudioTrackExecutor localExecutor, HttpInterface httpInterface, FormatWithUrl initialFormat) throws Exception {
+    FormatWithUrl format = initialFormat;
+
+    for (int i = 1; i <= MAX_RETRIES; i++) {
+      log.debug("Opening YouTube stream URL attempt {}/{}", i, MAX_RETRIES);
+
+      try {
         processStatic(localExecutor, httpInterface, format);
+        return;
+      } catch (RuntimeException e) {
+        String message = e.getMessage();
+
+        // Throw if it's not a message we're expecting, or this is the last retry.
+        if (!"Not success status code: 403".equals(message) && !"Invalid status code for video page response: 400".equals(message) || i == MAX_RETRIES) {
+          throw e;
+        }
+
+        format = loadBestFormatWithUrl(httpInterface);
       }
     }
   }
