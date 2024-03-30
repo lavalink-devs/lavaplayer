@@ -229,7 +229,7 @@ public class YoutubeAccessTokenTracker {
         try (HttpInterface httpInterface = httpInterfaceManager.getInterface()) {
             httpInterface.getContext().setAttribute(TOKEN_FETCH_CONTEXT_ATTRIBUTE, true);
 
-            YoutubeClientConfig clientConfig = YoutubeClientConfig.ANDROID.copy().setAttribute(httpInterface);
+            YoutubeClientConfig clientConfig = YoutubeClientConfig.WEB.copy().setAttribute(httpInterface);
             HttpPost visitorIdPost = new HttpPost(VISITOR_ID_URL);
             StringEntity visitorIdPayload = new StringEntity(clientConfig.toJsonString(), "UTF-8");
             visitorIdPost.setEntity(visitorIdPayload);
