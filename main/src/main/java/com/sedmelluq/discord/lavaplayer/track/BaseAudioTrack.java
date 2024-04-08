@@ -11,6 +11,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Abstract base for all audio tracks with an executor
@@ -18,7 +19,7 @@ import java.util.concurrent.atomic.AtomicLong;
 public abstract class BaseAudioTrack implements InternalAudioTrack {
     private final PrimordialAudioTrackExecutor initialExecutor;
     private final AtomicBoolean executorAssigned;
-    private volatile AudioTrackExecutor activeExecutor;
+    private final AtomicReference<AudioTrackExecutor> activeExecutor;
     protected final AudioTrackInfo trackInfo;
     protected final AtomicLong accurateDuration;
     private volatile Object userData;
@@ -29,7 +30,7 @@ public abstract class BaseAudioTrack implements InternalAudioTrack {
     public BaseAudioTrack(AudioTrackInfo trackInfo) {
         this.initialExecutor = new PrimordialAudioTrackExecutor(trackInfo);
         this.executorAssigned = new AtomicBoolean();
-        this.activeExecutor = null;
+        this.activeExecutor = new AtomicReference<>();
         this.trackInfo = trackInfo;
         this.accurateDuration = new AtomicLong();
     }
@@ -40,7 +41,7 @@ public abstract class BaseAudioTrack implements InternalAudioTrack {
             if (applyPrimordialState) {
                 initialExecutor.applyStateToExecutor(executor);
             }
-            activeExecutor = executor;
+            activeExecutor.set(executor);
         } else {
             throw new IllegalStateException("Cannot play the same instance of a track twice, use track.makeClone().");
         }
@@ -48,13 +49,17 @@ public abstract class BaseAudioTrack implements InternalAudioTrack {
 
     @Override
     public AudioTrackExecutor getActiveExecutor() {
-        AudioTrackExecutor executor = activeExecutor;
+        AudioTrackExecutor executor = activeExecutor.get();
         return executor != null ? executor : initialExecutor;
     }
 
     @Override
     public void stop() {
-        getActiveExecutor().stop();
+        AudioTrackExecutor executor = activeExecutor.getAndSet(null);
+        if (executor == null) return;
+
+        initialExecutor.setPosition(executor.getPosition());
+        executor.stop();
     }
 
     @Override

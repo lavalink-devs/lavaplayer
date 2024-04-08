@@ -21,7 +21,8 @@ public interface AudioTrackExecutor extends AudioFrameProvider {
     void execute(TrackStateListener listener);
 
     /**
-     * Stop playing the track, terminating the thread that is filling the frame buffer.
+     * Stop playing the track, terminating the thread that is filling the frame buffer. Subsequent playback requires
+     *  a new executor.
      */
     void stop();
 
