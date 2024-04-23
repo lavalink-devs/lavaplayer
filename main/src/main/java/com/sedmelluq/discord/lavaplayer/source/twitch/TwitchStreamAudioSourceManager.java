@@ -79,13 +79,13 @@ public class TwitchStreamAudioSourceManager implements AudioSourceManager, HttpC
 
   @Override
   public AudioItem loadItem(AudioPlayerManager manager, AudioReference reference) {
-    initRequestHeaders();
-
     String streamName = getChannelIdentifierFromUrl(reference.identifier);
 
     if (streamName == null) {
       return null;
     }
+
+    initRequestHeaders();
 
     JsonBrowser channelInfo = fetchStreamChannelInfo(streamName).get("data").get("user");
 
