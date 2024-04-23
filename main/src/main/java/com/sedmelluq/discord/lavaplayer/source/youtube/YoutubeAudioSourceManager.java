@@ -37,7 +37,9 @@ import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.
 
 /**
  * Audio source manager that implements finding Youtube videos or playlists based on an URL or ID.
+ * This source manager is now deprecated. Please use <a href="https://github.com/lavalink-devs/youtube-source">youtube-source</a>
  */
+@Deprecated
 public class YoutubeAudioSourceManager implements AudioSourceManager, HttpConfigurable {
     private static final Logger log = LoggerFactory.getLogger(YoutubeAudioSourceManager.class);
 
@@ -56,7 +58,9 @@ public class YoutubeAudioSourceManager implements AudioSourceManager, HttpConfig
 
     /**
      * Create an instance with default settings.
+     * This source manager is now deprecated. Please use <a href="https://github.com/lavalink-devs/youtube-source">youtube-source</a>
      */
+    @Deprecated
     public YoutubeAudioSourceManager() {
         this(true, null, null);
     }
@@ -64,10 +68,13 @@ public class YoutubeAudioSourceManager implements AudioSourceManager, HttpConfig
     /**
      * Create an instance.
      *
+     * This source manager is now deprecated. Please use <a href="https://github.com/lavalink-devs/youtube-source">youtube-source</a>
+     *
      * @param allowSearch Whether to allow search queries as identifiers
      * @param email       Email of Google account to auth in, required for playing age restricted tracks
      * @param password    Password of Google account to auth in, required for playing age restricted tracks
      */
+    @Deprecated
     public YoutubeAudioSourceManager(boolean allowSearch, String email, String password) {
         this(
             allowSearch,
@@ -83,6 +90,10 @@ public class YoutubeAudioSourceManager implements AudioSourceManager, HttpConfig
         );
     }
 
+    /**
+     * This source manager is now deprecated. Please use <a href="https://github.com/lavalink-devs/youtube-source">youtube-source</a>
+     */
+    @Deprecated
     public YoutubeAudioSourceManager(
         boolean allowSearch,
         String email,
