@@ -16,7 +16,7 @@ public class OggMetadata implements AudioTrackInfoProvider {
     private static final String ARTIST_FIELD = "ARTIST";
 
     private final Map<String, String> tags;
-    private final long length;
+    private final Long length;
 
     /**
      * @param tags Map of OGG metadata with OGG-specific keys.
