@@ -2,6 +2,7 @@ package com.sedmelluq.discord.lavaplayer.container.ogg.vorbis;
 
 import java.nio.ByteBuffer;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -54,7 +55,7 @@ public class VorbisCommentParser {
     private static void storeTagToMap(Map<String, String> tags, byte[] data) {
         for (int i = 0; i < data.length; i++) {
             if (data[i] == '=') {
-                tags.put(new String(data, 0, i, UTF_8), new String(data, i + 1, data.length - i - 1, UTF_8));
+                tags.put(new String(data, 0, i, UTF_8).toUpperCase(Locale.ROOT), new String(data, i + 1, data.length - i - 1, UTF_8));
                 break;
             }
         }
