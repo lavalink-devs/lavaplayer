@@ -67,7 +67,7 @@ public class PcmVolumeProcessor {
 
         for (int i = buffer.position(); i < endOffset; i++) {
             int value = buffer.get(i) * integerMultiplier / 10000;
-            buffer.put(i, (short) Math.max(-32767, Math.min(32767, value)));
+            buffer.put(i, (short) Math.max(Short.MIN_VALUE, Math.min(Short.MAX_VALUE, value)));
         }
     }
 
@@ -80,7 +80,7 @@ public class PcmVolumeProcessor {
 
         for (int i = buffer.position(); i < endOffset; i++) {
             int value = buffer.get(i) * 10000 / integerMultiplier;
-            buffer.put(i, (short) Math.max(-32767, Math.min(32767, value)));
+            buffer.put(i, (short) Math.max(Short.MIN_VALUE, Math.min(Short.MAX_VALUE, value)));
         }
     }
 }
