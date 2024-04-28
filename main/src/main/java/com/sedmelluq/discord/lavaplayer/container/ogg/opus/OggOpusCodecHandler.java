@@ -47,12 +47,13 @@ public class OggOpusCodecHandler implements OggCodecHandler {
     public OggMetadata loadMetadata(OggPacketInputStream stream, DirectBufferStreamBroker broker) throws IOException {
         ByteBuffer firstPacket = broker.getBuffer();
         verifyFirstPacket(firstPacket);
+        int sampleRate = getSampleRate(firstPacket);
 
         loadCommentsHeader(stream, broker, false);
 
         return new OggMetadata(
             parseTags(broker.getBuffer(), broker.isTruncated()),
-            detectLength(stream, getSampleRate(firstPacket))
+            detectLength(stream, sampleRate)
         );
     }
 
