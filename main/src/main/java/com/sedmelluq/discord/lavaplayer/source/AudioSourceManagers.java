@@ -51,6 +51,18 @@ public class AudioSourceManagers {
      * Registers all built-in remote audio sources to the specified player manager, excluding the specified sources.
      * Local file audio source must be registered separately.
      *
+     * @param playerManager   Player manager to register the source managers to
+     * @param excludedSources Source managers to exclude from registration
+     */
+    @SafeVarargs
+    public static void registerRemoteSources(AudioPlayerManager playerManager, Class<? extends AudioSourceManager>... excludedSources) {
+        registerRemoteSources(playerManager, MediaContainerRegistry.DEFAULT_REGISTRY, excludedSources);
+    }
+
+    /**
+     * Registers all built-in remote audio sources to the specified player manager, excluding the specified sources.
+     * Local file audio source must be registered separately.
+     *
      * @param playerManager     Player manager to register the source managers to
      * @param containerRegistry Media container registry to be used by any probing sources.
      * @param excludedSources   Source managers to exclude from registration
