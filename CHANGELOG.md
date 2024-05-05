@@ -1,5 +1,14 @@
 # Change Log
 
+## [2.1.2] - 2024-05-05
+* Fixed Twitch source sometimes failing to initialise causing errors when registering source managers https://github.com/lavalink-devs/lavaplayer/pull/99
+* Fixed metadata extraction for some OGG files https://github.com/lavalink-devs/lavaplayer/pull/101
+* Fixed OGG opus duration extraction https://github.com/lavalink-devs/lavaplayer/pull/103
+* Fixed clamping of lower values during volume changing https://github.com/lavalink-devs/lavaplayer/pull/105
+* Improve handling of some MP3 files with multiple IDv3 blocks https://github.com/lavalink-devs/lavaplayer/pull/108
+* Added basic metadata extraction for Matroska files https://github.com/lavalink-devs/lavaplayer/pull/108
+* Bump `sourceCompatibility` specifically to Java 11 (Java 11 was already needed anyway) https://github.com/lavalink-devs/lavaplayer/pull/81
+
 ## [2.1.1] -- 2024-10-03
 * Fixed invalid search request (code 400) https://github.com/lavalink-devs/lavaplayer/pull/70
 * Fixed YoutubeMpegStreamAudioTrack default to `0` if `state.absoluteSequence` is `null` https://github.com/lavalink-devs/lavaplayer/pull/73
