@@ -9,6 +9,9 @@
 * Added basic metadata extraction for Matroska files https://github.com/lavalink-devs/lavaplayer/pull/108
 * Bump `sourceCompatibility` specifically to Java 11 (Java 11 was already needed anyway) https://github.com/lavalink-devs/lavaplayer/pull/81
 
+> [!WARNING]
+> The `YoutubeSourceManager` is now deprecated and won't receive further updates. Please use https://github.com/lavalink-devs/youtube-source#v2 instead.
+
 ## [2.1.1] -- 2024-10-03
 * Fixed invalid search request (code 400) https://github.com/lavalink-devs/lavaplayer/pull/70
 * Fixed YoutubeMpegStreamAudioTrack default to `0` if `state.absoluteSequence` is `null` https://github.com/lavalink-devs/lavaplayer/pull/73
