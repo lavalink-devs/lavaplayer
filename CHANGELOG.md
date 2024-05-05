@@ -8,6 +8,7 @@
 * Improve handling of some MP3 files with multiple IDv3 blocks https://github.com/lavalink-devs/lavaplayer/pull/108
 * Added basic metadata extraction for Matroska files https://github.com/lavalink-devs/lavaplayer/pull/108
 * Bump `sourceCompatibility` specifically to Java 11 (Java 11 was already needed anyway) https://github.com/lavalink-devs/lavaplayer/pull/81
+* Add new `AudioSourceManagers.registerRemoteSources` method which allows excluding specific source managers from being registered (useful for excluding the old YouTube source manager)
 
 > [!WARNING]
 > The `YoutubeSourceManager` is now deprecated and won't receive further updates. Please use https://github.com/lavalink-devs/youtube-source#v2 instead.

@@ -14,6 +14,8 @@ import com.sedmelluq.discord.lavaplayer.source.vimeo.VimeoAudioSourceManager;
 import com.sedmelluq.discord.lavaplayer.source.yamusic.YandexMusicAudioSourceManager;
 import com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeAudioSourceManager;
 
+import java.util.Set;
+
 /**
  * A helper class for registering built-in source managers to a player manager.
  */
@@ -43,6 +45,49 @@ public class AudioSourceManagers {
         playerManager.registerSourceManager(new GetyarnAudioSourceManager());
         playerManager.registerSourceManager(new NicoAudioSourceManager());
         playerManager.registerSourceManager(new HttpAudioSourceManager(containerRegistry));
+    }
+
+    /**
+     * Registers all built-in remote audio sources to the specified player manager, excluding the specified sources.
+     * Local file audio source must be registered separately.
+     *
+     * @param playerManager     Player manager to register the source managers to
+     * @param containerRegistry Media container registry to be used by any probing sources.
+     * @param excludedSources   Source managers to exclude from registration
+     */
+    @SafeVarargs
+    public static void registerRemoteSources(AudioPlayerManager playerManager, MediaContainerRegistry containerRegistry, Class<? extends AudioSourceManager>... excludedSources) {
+        var excluded = Set.of(excludedSources);
+        if (!excluded.contains(YoutubeAudioSourceManager.class)) {
+            playerManager.registerSourceManager(new YoutubeAudioSourceManager(true, null, null));
+        }
+        if (!excluded.contains(YandexMusicAudioSourceManager.class)) {
+            playerManager.registerSourceManager(new YandexMusicAudioSourceManager(true));
+        }
+        if (!excluded.contains(SoundCloudAudioSourceManager.class)) {
+            playerManager.registerSourceManager(SoundCloudAudioSourceManager.createDefault());
+        }
+        if (!excluded.contains(BandcampAudioSourceManager.class)) {
+            playerManager.registerSourceManager(new BandcampAudioSourceManager());
+        }
+        if (!excluded.contains(VimeoAudioSourceManager.class)) {
+            playerManager.registerSourceManager(new VimeoAudioSourceManager());
+        }
+        if (!excluded.contains(TwitchStreamAudioSourceManager.class)) {
+            playerManager.registerSourceManager(new TwitchStreamAudioSourceManager());
+        }
+        if (!excluded.contains(BeamAudioSourceManager.class)) {
+            playerManager.registerSourceManager(new BeamAudioSourceManager());
+        }
+        if (!excluded.contains(GetyarnAudioSourceManager.class)) {
+            playerManager.registerSourceManager(new GetyarnAudioSourceManager());
+        }
+        if (!excluded.contains(NicoAudioSourceManager.class)) {
+            playerManager.registerSourceManager(new NicoAudioSourceManager());
+        }
+        if (!excluded.contains(HttpAudioSourceManager.class)) {
+            playerManager.registerSourceManager(new HttpAudioSourceManager(containerRegistry));
+        }
     }
 
     /**
