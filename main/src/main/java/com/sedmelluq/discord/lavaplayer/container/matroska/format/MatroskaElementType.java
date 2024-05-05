@@ -17,6 +17,9 @@ public enum MatroskaElementType {
     SeekId(DataType.BINARY, new int[]{0x53, 0xAB}),
     SeekPosition(DataType.UNSIGNED_INTEGER, new int[]{0x53, 0xAC}),
     Info(DataType.MASTER, new int[]{0x15, 0x49, 0xA9, 0x66}),
+    Tags(DataType.MASTER, new int[] { 0x12, 0x54, 0xC3, 0x67 }),
+    Tag(DataType.MASTER, new int[] { 0x73, 0x73 }),
+    SimpleTag(DataType.MASTER, new int[] { 0x67, 0xC8 }),
     Duration(DataType.FLOAT, new int[]{0x44, 0x89}),
     TimecodeScale(DataType.UNSIGNED_INTEGER, new int[]{0x2A, 0xD7, 0xB1}),
     Cluster(DataType.MASTER, new int[]{0x1F, 0x43, 0xB6, 0x75}),
@@ -45,9 +48,12 @@ public enum MatroskaElementType {
     CueTrackPositions(DataType.MASTER, new int[]{0xB7}),
     CueTrack(DataType.UNSIGNED_INTEGER, new int[]{0xF7}),
     CueClusterPosition(DataType.UNSIGNED_INTEGER, new int[]{0xF1}),
+    Title(DataType.STRING, new int[] { 0x7B, 0xA9 }),
+    TagName(DataType.STRING, new int[] { 0x45, 0xA3 }),
+    TagString(DataType.STRING, new int[] { 0x44, 0x87 }),
     Unknown(DataType.BINARY, new int[]{});
 
-    private static Map<Long, MatroskaElementType> mapping;
+    private static final Map<Long, MatroskaElementType> mapping;
 
     /**
      * The ID as EBML code bytes.
