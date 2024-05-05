@@ -117,11 +117,7 @@ public class Mp3TrackProvider implements AudioTrackInfoProvider {
      */
     public void provideFrames() throws InterruptedException {
         try {
-            while (true) {
-                if (!frameReader.fillFrameBuffer()) {
-                    break;
-                }
-
+            while (frameReader.fillFrameBuffer()) {
                 inputBuffer.clear();
                 inputBuffer.put(frameBuffer, 0, frameReader.getFrameSize());
                 inputBuffer.flip();
