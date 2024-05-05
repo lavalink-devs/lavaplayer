@@ -8,6 +8,9 @@
 * Improve handling of some MP3 files with multiple IDv3 blocks https://github.com/lavalink-devs/lavaplayer/pull/109
 * Added basic metadata extraction for Matroska files https://github.com/lavalink-devs/lavaplayer/pull/108
 
+> [!WARNING]
+> The `YoutubeSourceManager` is now deprecated and won't receive further updates. Please use https://github.com/lavalink-devs/youtube-source#common instead.
+
 ## [1.5.3] -- 2023-10-03
 * Fix `Target host is not specified` with HLS relative urls in m3u8 playlists in https://github.com/lavalink-devs/lavaplayer/pull/49
 * Fix invalid search request (code 400) in https://github.com/lavalink-devs/lavaplayer/pull/71
