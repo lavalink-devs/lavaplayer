@@ -1,5 +1,13 @@
 # Change Log
 
+## [1.5.4] - 2024-05-05
+* Fixed Twitch source sometimes failing to initialise causing errors when registering source managers https://github.com/lavalink-devs/lavaplayer/pull/100
+* Fixed metadata extraction for some OGG files https://github.com/lavalink-devs/lavaplayer/pull/102
+* Fixed OGG opus duration extraction https://github.com/lavalink-devs/lavaplayer/pull/104
+* Fixed clamping of lower values during volume changing https://github.com/lavalink-devs/lavaplayer/pull/106
+* Improve handling of some MP3 files with multiple IDv3 blocks https://github.com/lavalink-devs/lavaplayer/pull/109
+* Added basic metadata extraction for Matroska files https://github.com/lavalink-devs/lavaplayer/pull/108
+
 ## [1.5.3] -- 2023-10-03
 * Fix `Target host is not specified` with HLS relative urls in m3u8 playlists in https://github.com/lavalink-devs/lavaplayer/pull/49
 * Fix invalid search request (code 400) in https://github.com/lavalink-devs/lavaplayer/pull/71
