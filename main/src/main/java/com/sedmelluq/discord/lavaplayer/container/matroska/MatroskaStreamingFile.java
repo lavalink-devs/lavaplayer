@@ -399,7 +399,7 @@ public class MatroskaStreamingFile {
                 duration = reader.asDouble(child);
             } else if (child.is(MatroskaElementType.TimecodeScale)) {
                 timecodeScale = reader.asLong(child);
-            } else if (child.is(MatroskaElementType.Title)) {
+            } else if (child.is(MatroskaElementType.Title) && title == null) {
                 title = reader.asString(child);
             }
 
