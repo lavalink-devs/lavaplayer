@@ -451,7 +451,10 @@ public class MatroskaStreamingFile {
             if (child.is(MatroskaElementType.TagName)) {
                 tagName = reader.asString(child);
             } else if (child.is(MatroskaElementType.TagString)) {
-                if ("artist".equalsIgnoreCase(tagName)) {
+                // https://www.matroska.org/technical/tagging.html
+                if ("title".equals(tagName) && title == null) {
+                    title = reader.asString(child);
+                } else if ("artist".equalsIgnoreCase(tagName)) {
                     artist = reader.asString(child);
                 } else if ("isrc".equals(tagName)) {
                     isrc = reader.asString(child);
