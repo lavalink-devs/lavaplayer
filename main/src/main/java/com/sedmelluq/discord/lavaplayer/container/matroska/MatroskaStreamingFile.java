@@ -18,6 +18,7 @@ public class MatroskaStreamingFile {
 
     private String title;
     private String artist;
+    private String isrc;
 
     private long timecodeScale = 1000000;
     private double duration;
@@ -49,11 +50,15 @@ public class MatroskaStreamingFile {
      * @return The title for this file.
      */
     public String getTitle() {
-        return title;
+        return title != null && title.isEmpty() ? null : title;
     }
 
     public String getArtist() {
-        return artist;
+        return artist != null && artist.isEmpty() ? null : artist;
+    }
+
+    public String getIsrc() {
+        return isrc != null && isrc.isEmpty() ? null : isrc;
     }
 
     /**
@@ -448,6 +453,8 @@ public class MatroskaStreamingFile {
             } else if (child.is(MatroskaElementType.TagString)) {
                 if ("artist".equalsIgnoreCase(tagName)) {
                     artist = reader.asString(child);
+                } else if ("isrc".equals(tagName)) {
+                    isrc = reader.asString(child);
                 }
             }
         }
