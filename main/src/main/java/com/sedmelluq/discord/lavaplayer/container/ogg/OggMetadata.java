@@ -14,6 +14,7 @@ public class OggMetadata implements AudioTrackInfoProvider {
 
     private static final String TITLE_FIELD = "TITLE";
     private static final String ARTIST_FIELD = "ARTIST";
+    private static final String ISRC_FIELD = "ISRC";
 
     private final Map<String, String> tags;
     private final Long length;
@@ -58,6 +59,6 @@ public class OggMetadata implements AudioTrackInfoProvider {
 
     @Override
     public String getISRC() {
-        return null;
+        return tags.get(ISRC_FIELD);
     }
 }

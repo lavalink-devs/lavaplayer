@@ -31,8 +31,9 @@ public class Mp3TrackProvider implements AudioTrackInfoProvider {
 
     private static final String TITLE_TAG = "TIT2";
     private static final String ARTIST_TAG = "TPE1";
+    private static final String ISRC_TAG = "TSRC";
 
-    private static final List<String> knownTextExtensions = Arrays.asList(TITLE_TAG, ARTIST_TAG);
+    private static final List<String> knownTextExtensions = Arrays.asList(TITLE_TAG, ARTIST_TAG, ISRC_TAG);
 
     private final AudioProcessingContext context;
     private final SeekableInputStream inputStream;
@@ -369,7 +370,7 @@ public class Mp3TrackProvider implements AudioTrackInfoProvider {
 
     @Override
     public String getISRC() {
-        return null;
+        return getIdv3Tag(ISRC_TAG);
     }
 
     private static class FrameHeader {
