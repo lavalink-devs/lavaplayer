@@ -163,7 +163,7 @@ public class BandcampAudioSourceManager implements AudioSourceManager, HttpConfi
             String artist = trackListInfo.get("artist").safeText();
             String artworkUrl = extractArtwork(trackListInfo);
 
-            return extractTrack(trackListInfo.get("trackinfo").index(0), urlInfo.baseUrl, artist, artworkUrl);
+            return extractTrack(trackListInfo.get("trackinfo").index(0), urlInfo.baseUrl, artist, artworkUrl, trackListInfo.get("current").get("isrc").text());
         });
     }
 
@@ -175,7 +175,8 @@ public class BandcampAudioSourceManager implements AudioSourceManager, HttpConfi
 
             List<AudioTrack> tracks = new ArrayList<>();
             for (JsonBrowser trackInfo : trackListInfo.get("trackinfo").values()) {
-                tracks.add(extractTrack(trackInfo, urlInfo.baseUrl, artist, artworkUrl));
+                // album track json does not include isrc
+                tracks.add(extractTrack(trackInfo, urlInfo.baseUrl, artist, artworkUrl, null));
             }
 
             JsonBrowser albumInfo = readAlbumInformation(text);
@@ -183,7 +184,7 @@ public class BandcampAudioSourceManager implements AudioSourceManager, HttpConfi
         });
     }
 
-    private AudioTrack extractTrack(JsonBrowser trackInfo, String bandUrl, String artist, String artworkUrl) {
+    private AudioTrack extractTrack(JsonBrowser trackInfo, String bandUrl, String artist, String artworkUrl, String isrc) {
         String trackPageUrl = bandUrl + trackInfo.get("title_link").text();
 
         return new BandcampAudioTrack(new AudioTrackInfo(
@@ -194,7 +195,7 @@ public class BandcampAudioSourceManager implements AudioSourceManager, HttpConfi
             false,
             trackPageUrl,
             artworkUrl,
-            null
+            isrc
         ), this);
     }
 
