@@ -123,7 +123,8 @@ public class BandcampAudioSourceManager implements AudioSourceManager, HttpConfi
 
     private AudioTrack extractHtmlTrack(Element e) {
         String title = e.select(".heading a").text();
-        String artist = e.select(".subhead").text().split(",")[0].replace("by", "").trim();
+        String[] artists = e.select(".subhead").text().split("by");
+        String artist = artists[artists.length - 1].split(",")[0].trim();
         String trackUrl = e.select(".itemurl a").text();
 
         int queryIndex = trackUrl.indexOf("?");
