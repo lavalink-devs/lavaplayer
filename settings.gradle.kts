@@ -45,7 +45,7 @@ fun VersionCatalogBuilder.common() {
 
     library("jsoup", "org.jsoup", "jsoup").version("1.16.1")
     library("base64", "net.iharder", "base64").version("2.3.9")
-    library("json", "org.json", "json").version("20230618")
+    library("json", "org.json", "json").version("20240303")
 }
 
 fun VersionCatalogBuilder.others() {
