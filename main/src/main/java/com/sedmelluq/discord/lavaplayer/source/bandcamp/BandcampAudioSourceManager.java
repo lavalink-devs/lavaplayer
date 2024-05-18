@@ -2,10 +2,7 @@ package com.sedmelluq.discord.lavaplayer.source.bandcamp;
 
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManager;
-import com.sedmelluq.discord.lavaplayer.tools.DataFormatTools;
-import com.sedmelluq.discord.lavaplayer.tools.ExceptionTools;
-import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
-import com.sedmelluq.discord.lavaplayer.tools.JsonBrowser;
+import com.sedmelluq.discord.lavaplayer.tools.*;
 import com.sedmelluq.discord.lavaplayer.tools.io.HttpClientTools;
 import com.sedmelluq.discord.lavaplayer.tools.io.HttpConfigurable;
 import com.sedmelluq.discord.lavaplayer.tools.io.HttpInterface;
@@ -16,11 +13,18 @@ import org.apache.http.HttpStatus;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,17 +40,24 @@ import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.
  * Audio source manager that implements finding Bandcamp tracks based on URL.
  */
 public class BandcampAudioSourceManager implements AudioSourceManager, HttpConfigurable {
+    private static final String SEARCH_PREFIX = "bcsearch:";
     private static final String URL_REGEX = "^(https?://(?:[^.]+\\.|)bandcamp\\.com)/(track|album)/([a-zA-Z0-9-_]+)/?(?:\\?.*|)$";
     private static final Pattern urlRegex = Pattern.compile(URL_REGEX);
 
     private static final String ARTWORK_URL_FORMAT = "https://f4.bcbits.com/img/a%s_1.png";
 
     private final HttpInterfaceManager httpInterfaceManager;
+    private final boolean allowSearch;
 
     /**
      * Create an instance.
      */
     public BandcampAudioSourceManager() {
+        this(true);
+    }
+
+    public BandcampAudioSourceManager(boolean allowSearch) {
+        this.allowSearch = allowSearch;
         httpInterfaceManager = HttpClientTools.createDefaultThreadLocalManager();
     }
 
@@ -57,17 +68,83 @@ public class BandcampAudioSourceManager implements AudioSourceManager, HttpConfi
 
     @Override
     public AudioItem loadItem(AudioPlayerManager manager, AudioReference reference) {
-        UrlInfo urlInfo = parseUrl(reference.identifier);
+        if (reference.identifier.startsWith(SEARCH_PREFIX)) {
+            if (allowSearch) {
+                String query = reference.identifier.substring(SEARCH_PREFIX.length());
+                return loadSearch(query);
+            }
+        } else {
+            UrlInfo urlInfo = parseUrl(reference.identifier);
 
-        if (urlInfo != null) {
-            if (urlInfo.isAlbum) {
-                return loadAlbum(urlInfo);
-            } else {
-                return loadTrack(urlInfo);
+            if (urlInfo != null) {
+                if (urlInfo.isAlbum) {
+                    return loadAlbum(urlInfo);
+                } else {
+                    return loadTrack(urlInfo);
+                }
             }
         }
 
         return null;
+    }
+
+    private URI buildSearchUri(String query) {
+        try {
+            return new URIBuilder("https://bandcamp.com/search")
+                .addParameter("q", query)
+                .addParameter("item_type", "t")
+                .build();
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private AudioItem loadSearch(String query) {
+        return extractFromPage(buildSearchUri(query).toString(), (httpClient, text) -> {
+            Document doc = Jsoup.parse(text);
+            Elements elements = doc.select(".searchresult");
+            List<AudioTrack> tracks = new ArrayList<>();
+
+            for (Element e : elements) {
+                if (!"track".equalsIgnoreCase(e.select(".itemtype").text())) {
+                    continue;
+                }
+
+                tracks.add(extractHtmlTrack(e));
+            }
+
+            if (tracks.isEmpty()) {
+                return AudioReference.NO_TRACK;
+            }
+
+            return new BasicAudioPlaylist("Search results for: " + query, tracks, null, true);
+        });
+    }
+
+    private AudioTrack extractHtmlTrack(Element e) {
+        String title = e.select(".heading a").text();
+        String[] artists = e.select(".subhead").text().split("by");
+        String artist = artists[artists.length - 1].split(",")[0].trim();
+        String trackUrl = e.select(".itemurl a").text();
+
+        int queryIndex = trackUrl.indexOf("?");
+
+        if (queryIndex > -1) {
+            trackUrl = trackUrl.substring(0, queryIndex);
+        }
+
+        String artworkUrl = e.select(".art img").attr("src");
+
+        return new BandcampAudioTrack(new AudioTrackInfo(
+            title,
+            artist,
+            Units.DURATION_MS_UNKNOWN,
+            trackUrl,
+            false,
+            trackUrl,
+            artworkUrl,
+            null
+        ), this);
     }
 
     private UrlInfo parseUrl(String url) {
@@ -86,7 +163,7 @@ public class BandcampAudioSourceManager implements AudioSourceManager, HttpConfi
             String artist = trackListInfo.get("artist").safeText();
             String artworkUrl = extractArtwork(trackListInfo);
 
-            return extractTrack(trackListInfo.get("trackinfo").index(0), urlInfo.baseUrl, artist, artworkUrl);
+            return extractTrack(trackListInfo.get("trackinfo").index(0), urlInfo.baseUrl, artist, artworkUrl, trackListInfo.get("current").get("isrc").text());
         });
     }
 
@@ -98,7 +175,8 @@ public class BandcampAudioSourceManager implements AudioSourceManager, HttpConfi
 
             List<AudioTrack> tracks = new ArrayList<>();
             for (JsonBrowser trackInfo : trackListInfo.get("trackinfo").values()) {
-                tracks.add(extractTrack(trackInfo, urlInfo.baseUrl, artist, artworkUrl));
+                // album track json does not include isrc
+                tracks.add(extractTrack(trackInfo, urlInfo.baseUrl, artist, artworkUrl, null));
             }
 
             JsonBrowser albumInfo = readAlbumInformation(text);
@@ -106,7 +184,7 @@ public class BandcampAudioSourceManager implements AudioSourceManager, HttpConfi
         });
     }
 
-    private AudioTrack extractTrack(JsonBrowser trackInfo, String bandUrl, String artist, String artworkUrl) {
+    private AudioTrack extractTrack(JsonBrowser trackInfo, String bandUrl, String artist, String artworkUrl, String isrc) {
         String trackPageUrl = bandUrl + trackInfo.get("title_link").text();
 
         return new BandcampAudioTrack(new AudioTrackInfo(
@@ -117,7 +195,7 @@ public class BandcampAudioSourceManager implements AudioSourceManager, HttpConfi
             false,
             trackPageUrl,
             artworkUrl,
-            null
+            isrc
         ), this);
     }
 
@@ -147,7 +225,7 @@ public class BandcampAudioSourceManager implements AudioSourceManager, HttpConfi
         try (HttpInterface httpInterface = httpInterfaceManager.getInterface()) {
             return extractFromPageWithInterface(httpInterface, url, extractor);
         } catch (Exception e) {
-            throw ExceptionTools.wrapUnfriendlyExceptions("Loading information for a Bandcamp track failed.", FAULT, e);
+            throw ExceptionTools.wrapUnfriendlyExceptions("Loading information for a Bandcamp resource failed.", FAULT, e);
         }
     }
 
