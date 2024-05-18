@@ -7,6 +7,7 @@ import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 import static com.sedmelluq.discord.lavaplayer.container.MediaContainerDetection.checkNextBytes;
 
@@ -14,7 +15,8 @@ import static com.sedmelluq.discord.lavaplayer.container.MediaContainerDetection
  * Loads either WAV header information or a WAV track provider from a stream.
  */
 public class WavFileLoader {
-    static final int[] WAV_RIFF_HEADER = new int[]{0x52, 0x49, 0x46, 0x46, -1, -1, -1, -1, 0x57, 0x41, 0x56, 0x45};
+    static final int[] WAV_RIFF_HEADER = new int[] { 0x52, 0x49, 0x46, 0x46, -1, -1, -1, -1, 0x57, 0x41, 0x56, 0x45 };
+    static final byte[] FORMAT_SUBTYPE_PCM = { 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x00, (byte) 0x80, 0x00, 0x00, (byte) 0xaa, 0x00, 0x38, (byte) 0x9b, 0x71 };
 
     private final SeekableInputStream inputStream;
 
@@ -44,10 +46,11 @@ public class WavFileLoader {
             long chunkSize = Integer.toUnsignedLong(Integer.reverseBytes(dataInput.readInt()));
 
             if ("fmt ".equals(chunkName)) {
-                readFormatChunk(builder, dataInput);
+                int bytesRead = readFormatChunk(builder, dataInput);
+                long chunkBytesRemaining = chunkSize - bytesRead;
 
-                if (chunkSize > 16) {
-                    inputStream.skipFully(chunkSize - 16);
+                if (chunkBytesRemaining > 0) {
+                    inputStream.skipFully(chunkBytesRemaining);
                 }
             } else if ("data".equals(chunkName)) {
                 builder.sampleAreaSize = chunkSize;
@@ -65,8 +68,8 @@ public class WavFileLoader {
         return new String(buffer, StandardCharsets.US_ASCII);
     }
 
-    private void readFormatChunk(InfoBuilder builder, DataInput dataInput) throws IOException {
-        builder.audioFormat = Short.reverseBytes(dataInput.readShort()) & 0xFFFF;
+    private int readFormatChunk(InfoBuilder builder, DataInput dataInput) throws IOException {
+        builder.setAudioFormat(Short.reverseBytes(dataInput.readShort()) & 0xFFFF);
         builder.channelCount = Short.reverseBytes(dataInput.readShort()) & 0xFFFF;
         builder.sampleRate = Integer.reverseBytes(dataInput.readInt());
 
@@ -75,6 +78,16 @@ public class WavFileLoader {
 
         builder.blockAlign = Short.reverseBytes(dataInput.readShort()) & 0xFFFF;
         builder.bitsPerSample = Short.reverseBytes(dataInput.readShort()) & 0xFFFF;
+
+        if (builder.formatType == WaveFormatType.WAVE_FORMAT_EXTENSIBLE) {
+            dataInput.skipBytes(8);
+            byte[] subFormat = new byte[16];
+            dataInput.readFully(subFormat);
+            builder.subFormat = subFormat;
+            return 40;
+        }
+
+        return 16;
     }
 
     /**
@@ -90,12 +103,19 @@ public class WavFileLoader {
 
     private static class InfoBuilder {
         private int audioFormat;
+        private WaveFormatType formatType;
+        private byte[] subFormat;
         private int channelCount;
         private int sampleRate;
         private int bitsPerSample;
         private int blockAlign;
         private long sampleAreaSize;
         private long startOffset;
+
+        private void setAudioFormat(int audioFormat) {
+            this.audioFormat = audioFormat;
+            this.formatType = WaveFormatType.getByCode(audioFormat);
+        }
 
         private WavFileInfo build() {
             validateFormat();
@@ -105,13 +125,15 @@ public class WavFileLoader {
         }
 
         private void validateFormat() {
-            if (audioFormat != 1) {
-                throw new IllegalStateException("Invalid audio format " + audioFormat + ", must be 1 (PCM)");
+            if (formatType == WaveFormatType.WAVE_FORMAT_UNKNOWN) {
+                throw new IllegalStateException("Invalid audio format " + audioFormat + ", must be 1 (PCM) or 65534 (WAVE_FORMAT_EXTENSIBLE)");
+            } else if (subFormat != null && !Arrays.equals(subFormat, FORMAT_SUBTYPE_PCM)) {
+                throw new IllegalStateException("Invalid subformat " + Arrays.toString(subFormat));
             } else if (channelCount < 1 || channelCount > 16) {
                 throw new IllegalStateException("Invalid channel count: " + channelCount);
             } else if (sampleRate < 100 || sampleRate > 384000) {
                 throw new IllegalStateException("Invalid sample rate: " + sampleRate);
-            } else if (bitsPerSample != 16 && bitsPerSample != 24) {
+            } else if (bitsPerSample != 16 && bitsPerSample != 24 && bitsPerSample != 32) {
                 throw new IllegalStateException("Unsupported bits per sample: " + bitsPerSample);
             }
         }

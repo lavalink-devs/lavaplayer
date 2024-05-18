@@ -10,7 +10,6 @@ import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.ShortBuffer;
 
 import static java.nio.ByteOrder.LITTLE_ENDIAN;
 
@@ -23,11 +22,12 @@ public class WavTrackProvider {
     private final SeekableInputStream inputStream;
     private final DataInput dataInput;
     private final WavFileInfo info;
+    private final int bytesPerSample;
     private final AudioPipeline downstream;
+
     private final short[] buffer;
     private final byte[] rawBuffer;
     private final ByteBuffer byteBuffer;
-    private final ShortBuffer nioBuffer;
 
     /**
      * @param context     Configuration and output information for processing
@@ -38,12 +38,12 @@ public class WavTrackProvider {
         this.inputStream = inputStream;
         this.dataInput = new DataInputStream(inputStream);
         this.info = info;
+        this.bytesPerSample = info.bitsPerSample >> 3;
         this.downstream = AudioPipelineFactory.create(context, new PcmFormat(info.channelCount, info.sampleRate));
         this.buffer = info.getPadding() > 0 ? new short[info.channelCount * BLOCKS_IN_BUFFER] : null;
 
         this.byteBuffer = ByteBuffer.allocate(info.blockAlign * BLOCKS_IN_BUFFER).order(LITTLE_ENDIAN);
         this.rawBuffer = byteBuffer.array();
-        this.nioBuffer = byteBuffer.asShortBuffer();
     }
 
     /**
@@ -101,10 +101,10 @@ public class WavTrackProvider {
         int indexInBlock = 0;
 
         for (int i = 0; i < sampleCount; i++) {
-            buffer[i] = nioBuffer.get();
+            buffer[i] = byteBuffer.getShort();
 
             if (++indexInBlock == info.channelCount) {
-                nioBuffer.position(nioBuffer.position() + padding);
+                byteBuffer.position(byteBuffer.position() + padding);
                 indexInBlock = 0;
             }
         }
@@ -115,27 +115,23 @@ public class WavTrackProvider {
     private void processChunk(int blockCount) throws IOException, InterruptedException {
         int sampleCount = readChunkToBuffer(blockCount);
 
-        if (info.bitsPerSample == 16) {
-            downstream.process(nioBuffer);
-        } else if (info.bitsPerSample == 24) {
-            short[] samples = new short[sampleCount];
-
+        if (info.bitsPerSample != 16) {
             for (int i = 0; i < sampleCount; i++) {
-                samples[i] = (short) (byteBuffer.get((i * 3) + 2) << 8 | byteBuffer.get((i * 3) + 1) & 0xFF);
+                byteBuffer.putShort(i * 2, byteBuffer.getShort((i * bytesPerSample) + bytesPerSample - 2));
             }
 
-            downstream.process(samples, 0, sampleCount);
+            byteBuffer.limit(sampleCount * 2);
         }
+
+        downstream.process(byteBuffer.asShortBuffer());
     }
 
     private int readChunkToBuffer(int blockCount) throws IOException {
-        int bytesPerSample = info.bitsPerSample >> 3;
         int bytesToRead = blockCount * info.blockAlign;
         dataInput.readFully(rawBuffer, 0, bytesToRead);
 
         byteBuffer.position(0);
-        nioBuffer.position(0);
-        nioBuffer.limit(bytesToRead / bytesPerSample);
+        byteBuffer.limit(bytesToRead);
 
         return bytesToRead / bytesPerSample;
     }
