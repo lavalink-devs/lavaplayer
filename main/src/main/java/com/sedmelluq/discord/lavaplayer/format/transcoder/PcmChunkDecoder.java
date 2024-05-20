@@ -19,11 +19,7 @@ public class PcmChunkDecoder implements AudioChunkDecoder {
      */
     public PcmChunkDecoder(AudioDataFormat format, boolean bigEndian) {
         this.encodedAsByte = ByteBuffer.allocate(format.maximumChunkSize());
-
-        if (!bigEndian) {
-            encodedAsByte.order(ByteOrder.LITTLE_ENDIAN);
-        }
-
+        encodedAsByte.order(bigEndian ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN);
         this.encodedAsShort = encodedAsByte.asShortBuffer();
     }
 
