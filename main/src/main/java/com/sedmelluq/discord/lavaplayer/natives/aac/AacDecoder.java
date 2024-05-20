@@ -77,8 +77,6 @@ public class AacDecoder extends NativeResourceHolder {
 
         int ret = configureRaw(buffer);
 
-        // This function still seems to mangle decoder configs, so we have a workaround
-        // to decode it and write our own, to avoid LP mangling.
         if (ret != 0) {
             try (ByteArrayInputStream stream = new ByteArrayInputStream(config)) {
                 BitStreamReader reader = new BitStreamReader(stream);
