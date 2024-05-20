@@ -89,10 +89,8 @@ public class AacDecoder extends NativeResourceHolder {
                 int channels = reader.asInteger(4);
 
                 return configure(objectType, sampleRate, channels);
-            } catch (IOException e) {
-                // No handling here. I'd be lying if I said I wasn't expecting errors
-                // from this slight bit of jank code.
-                return ret;
+            } catch (IOException ignored) {
+
             }
         }
 
