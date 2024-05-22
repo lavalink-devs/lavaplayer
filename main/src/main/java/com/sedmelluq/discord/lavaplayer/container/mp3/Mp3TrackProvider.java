@@ -194,14 +194,13 @@ public class Mp3TrackProvider implements AudioTrackInfoProvider {
     private void skipIdv3Tags() throws IOException {
         byte[] lastTagHeader = new byte[4];
 
-        while (true) {
-            System.arraycopy(tagHeaderBuffer, 0, lastTagHeader, 0, 4);
-            dataInput.readFully(tagHeaderBuffer, 0, 3);
+        for (int reads = 0; reads < 3; reads++) {
+            dataInput.readFully(lastTagHeader, 0, 3);
 
             for (int i = 0; i < 3; i++) {
-                if (tagHeaderBuffer[i] != IDV3_TAG[i]) {
-                    frameReader.appendToScanBuffer(tagHeaderBuffer, 0, 3);
+                if (lastTagHeader[i] != IDV3_TAG[i]) {
                     System.arraycopy(lastTagHeader, 0, tagHeaderBuffer, 0, 4);
+                    frameReader.appendToScanBuffer(tagHeaderBuffer, 0, 3);
                     return;
                 }
             }
@@ -227,6 +226,8 @@ public class Mp3TrackProvider implements AudioTrackInfoProvider {
 
             inputStream.seek(tagsEndPosition);
         }
+
+        throw new RuntimeException("Read more than 3 IDv3 blocks, file is possibly invalid");
     }
 
     private int readSyncProofInteger() throws IOException {
