@@ -16,7 +16,6 @@ base {
 dependencies {
     api(projects.common)
     implementation(projects.nativesPublish)
-    implementation(libs.jaadec.fork)
     implementation(libs.rhino.engine)
     implementation(libs.slf4j)
 
