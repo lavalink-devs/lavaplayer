@@ -4,10 +4,12 @@ LavaPlayer is an audio player library written in Java which can load audio track
 into a stream of Opus frames. It is designed for use with Discord bots, but it can be used anywhere where Opus format
 output is required.
 
-**Note:** This is a fork of the original [Lavaplayer](https://github.com/sedmelluq/lavaplayer) with some additional
-features and fixes from [Walkyst's fork](https://github.com/Walkyst/lavaplayer-fork).
+> [!NOTE]
+> This is a fork of the original [Lavaplayer](https://github.com/sedmelluq/lavaplayer) with some additional
+> features and fixes from [Walkyst's fork](https://github.com/Walkyst/lavaplayer-fork).
 
-**Please read the [FAQ](FAQ.md) in case of issues.**
+> [!TIP]
+> **Please read the [FAQ](FAQ.md) in case of issues.**
 
 > [!NOTE]
 > This fork requires Java 11 or newer. If you need Java 8 support you should update as java 8 was released 10 years ago.
