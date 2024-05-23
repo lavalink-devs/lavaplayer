@@ -9,7 +9,7 @@ features and fixes from [Walkyst's fork](https://github.com/Walkyst/lavaplayer-f
 
 **Please read the [FAQ](FAQ.md) in case of issues.**
 
-> [Note]
+> [!Note]
 > This fork requires Java 11 or newer. If you need Java 8 support you should update as java 8 was released 10 years ago.
 
 #### Maven package
