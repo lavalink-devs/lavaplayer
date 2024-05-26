@@ -60,8 +60,11 @@ public class FlacFrameHeaderReader {
      * @return The frame information.
      * @throws IOException On read error.
      */
-    public static FlacFrameInfo readFrameHeader(BitStreamReader bitStreamReader, FlacStreamInfo streamInfo,
-                                                boolean variableBlock) throws IOException {
+    public static FlacFrameInfo readFrameHeader(
+        BitStreamReader bitStreamReader,
+        FlacStreamInfo streamInfo,
+        boolean variableBlock
+    ) throws IOException {
 
         int blockSize = blockSizeMapping[bitStreamReader.asInteger(4)];
         int sampleRate = sampleRateMapping[bitStreamReader.asInteger(4)];
@@ -74,20 +77,27 @@ public class FlacFrameHeaderReader {
 
         readUtf8Value(variableBlock, bitStreamReader);
 
-        if (blockSize == BLOCK_SIZE_EXPLICIT_8_BIT) {
-            blockSize = bitStreamReader.asInteger(8) + 1;
-        } else if (blockSize == BLOCK_SIZE_EXPLICIT_16_BIT) {
-            blockSize = bitStreamReader.asInteger(16) + 1;
+        switch (blockSize) {
+            case BLOCK_SIZE_EXPLICIT_8_BIT:
+                blockSize = bitStreamReader.asInteger(8) + 1;
+                break;
+            case BLOCK_SIZE_EXPLICIT_16_BIT:
+                blockSize = bitStreamReader.asInteger(16) + 1;
+                break;
         }
 
         verifyNotInvalid(blockSize, "block size");
 
-        if (blockSize == SAMPLE_RATE_EXPLICIT_8_BIT) {
-            sampleRate = bitStreamReader.asInteger(8);
-        } else if (blockSize == SAMPLE_RATE_EXPLICIT_16_BIT) {
-            sampleRate = bitStreamReader.asInteger(16);
-        } else if (blockSize == SAMPLE_RATE_EXPLICIT_10X_16_BIT) {
-            sampleRate = bitStreamReader.asInteger(16) * 10;
+        switch (sampleRate) {
+            case SAMPLE_RATE_EXPLICIT_8_BIT:
+                sampleRate = bitStreamReader.asInteger(8) * 1_000;
+                break;
+            case SAMPLE_RATE_EXPLICIT_16_BIT:
+                sampleRate = bitStreamReader.asInteger(16);
+                break;
+            case SAMPLE_RATE_EXPLICIT_10X_16_BIT:
+                sampleRate = bitStreamReader.asInteger(16) * 10;
+                break;
         }
 
         verifyMatchesExpected(sampleRate, streamInfo.sampleRate, "sample rate");
