@@ -241,12 +241,11 @@ public class DefaultAudioPlayer implements AudioPlayer, TrackStateListener {
     private void handleTerminator(InternalAudioTrack track) {
         synchronized (trackSwitchLock) {
             if (activeTrack == track) {
-                InternalAudioTrack oldTrack = activeTrack;
                 try {
                     activeTrack = null;
                     dispatchEvent(new TrackEndEvent(this, track, track.getActiveExecutor().failedBeforeLoad() ? LOAD_FAILED : FINISHED));
                 } finally {
-                    oldTrack.stop();
+                    track.stop();
                 }
             }
         }
