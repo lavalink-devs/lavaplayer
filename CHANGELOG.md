@@ -1,5 +1,19 @@
 # Change Log
 
+## [2.2.0] - 2024-06-05
+### Added
+* Added support for searching Bandcamp tracks
+* Added support for WAV files with 32 bit samples
+* Added support for reading ISRC from MP3, OGG and Matroska files
+* Added support for extracting ISRC from Bandcamp tracks
+* Added method for registering multiple source managers in one call
+
+### Fixed
+* Fixed AAC decoder initialisation
+* Fixed header validation of FLAC files
+* Fixed an issue with playing inner m3u8 playlists directly
+* Fixed a rare thread leak caused by a race condition when stopping track executors
+
 ## [2.1.2] - 2024-05-05
 * Fixed Twitch source sometimes failing to initialise causing errors when registering source managers https://github.com/lavalink-devs/lavaplayer/pull/99
 * Fixed metadata extraction for some OGG files https://github.com/lavalink-devs/lavaplayer/pull/101
