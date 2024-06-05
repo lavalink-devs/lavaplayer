@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 import static com.sedmelluq.discord.lavaplayer.tools.io.HttpClientTools.fetchResponseLines;
@@ -29,6 +30,10 @@ public class HlsStreamSegmentUrlProvider extends M3uStreamSegmentUrlProvider {
         return "default";
     }
 
+    protected boolean isSegmentPlaylist(String[] lines) {
+        return Arrays.stream(lines).noneMatch(line -> line.startsWith("#EXT-X-STREAM-INF"));
+    }
+
     @Override
     protected String fetchSegmentPlaylistUrl(HttpInterface httpInterface) throws IOException {
         if (segmentPlaylistUrl != null) {
@@ -36,8 +41,13 @@ public class HlsStreamSegmentUrlProvider extends M3uStreamSegmentUrlProvider {
         }
 
         HttpUriRequest request = new HttpGet(streamListUrl);
-        List<ChannelStreamInfo> streams = loadChannelStreamsList(fetchResponseLines(httpInterface, request,
-            "HLS stream list"));
+        String[] lines = fetchResponseLines(httpInterface, request, "HLS stream list");
+
+        if (isSegmentPlaylist(lines)) {
+            return (segmentPlaylistUrl = streamListUrl);
+        }
+
+        List<ChannelStreamInfo> streams = loadChannelStreamsList(lines);
 
         if (streams.isEmpty()) {
             throw new IllegalStateException("No streams listed in HLS stream list.");
