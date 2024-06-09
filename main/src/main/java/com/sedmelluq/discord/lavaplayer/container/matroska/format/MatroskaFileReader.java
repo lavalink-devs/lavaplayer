@@ -5,6 +5,7 @@ import com.sedmelluq.discord.lavaplayer.tools.io.SeekableInputStream;
 import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
 /**
@@ -153,16 +154,21 @@ public class MatroskaFileReader {
         }
     }
 
+    public String asString(MatroskaElement element) throws IOException {
+        return asString(element, null);
+    }
+
     /**
      * @param element Element to read from
+     * @param forceCharset The charset to use, or null for default.
      * @return The contents of the element as a string
      * @throws IOException On read error
      */
-    public String asString(MatroskaElement element) throws IOException {
+    public String asString(MatroskaElement element, Charset forceCharset) throws IOException {
         if (element.is(MatroskaElementType.DataType.STRING)) {
-            return new String(asBytes(element), StandardCharsets.US_ASCII);
+            return new String(asBytes(element), forceCharset != null ? forceCharset : StandardCharsets.US_ASCII);
         } else if (element.is(MatroskaElementType.DataType.UTF8_STRING)) {
-            return new String(asBytes(element), StandardCharsets.UTF_8);
+            return new String(asBytes(element), forceCharset != null ? forceCharset : StandardCharsets.UTF_8);
         } else {
             throw new IllegalArgumentException("Not a string element.");
         }
