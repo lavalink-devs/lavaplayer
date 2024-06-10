@@ -463,5 +463,7 @@ public class MatroskaStreamingFile {
                 }
             }
         }
+
+        reader.skip(child);
     }
 }
