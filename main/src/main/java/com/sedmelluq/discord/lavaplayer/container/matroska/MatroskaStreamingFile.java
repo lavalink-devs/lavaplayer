@@ -462,8 +462,8 @@ public class MatroskaStreamingFile {
                     isrc = reader.asString(child, StandardCharsets.UTF_8);
                 }
             }
-        }
 
-        reader.skip(child);
+            reader.skip(child);
+        }
     }
 }
