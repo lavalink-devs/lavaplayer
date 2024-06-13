@@ -13,6 +13,7 @@ import com.sedmelluq.lava.common.tools.DaemonThreadFactory;
 import com.sedmelluq.lava.common.tools.ExecutorTools;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -149,14 +150,22 @@ public class DefaultAudioPlayerManager implements AudioPlayerManager {
     }
 
     @Override
+    public @Nullable AudioItem loadItemSync(AudioReference reference) {
+        AudioItem item = checkSourcesForItem(reference);
+        if (item == null) {
+            log.debug("No matches for track with identifier {}.", reference.identifier);
+        }
+
+        return item;
+    }
+
+    @Override
     public void loadItemSync(final AudioReference reference, final AudioLoadResultHandler resultHandler) {
         boolean[] reported = new boolean[1];
 
         try {
-            if (!checkSourcesForItem(reference, resultHandler, reported)) {
-                log.debug("No matches for track with identifier {}.", reference.identifier);
-                resultHandler.noMatches();
-            }
+            AudioItem item = loadItemSync(reference);
+            submitItemToResultHandler(item, resultHandler, reported);
         } catch (Throwable throwable) {
             if (reported[0]) {
                 log.warn("Load result handler for {} threw an exception", reference.identifier, throwable);
@@ -387,40 +396,57 @@ public class DefaultAudioPlayerManager implements AudioPlayerManager {
         trackInfoExecutorService.setMaximumPoolSize(poolSize);
     }
 
-    private boolean checkSourcesForItem(AudioReference reference, AudioLoadResultHandler resultHandler, boolean[] reported) {
+    private void submitItemToResultHandler(AudioItem item, AudioLoadResultHandler handler, boolean[] reported) {
+        if (item == null) {
+            reported[0] = true;
+            handler.noMatches();
+        } else if (item instanceof AudioTrack) {
+            reported[0] = true;
+            handler.trackLoaded((AudioTrack) item);
+        } else if (item instanceof AudioPlaylist) {
+            reported[0] = true;
+            handler.playlistLoaded((AudioPlaylist) item);
+        } else {
+            log.warn("Cannot submit unknown item to result handler: {}", item);
+        }
+    }
+
+    /**
+     * Attempts to load the provided {@link AudioReference} using the sources registered with this {@link AudioPlayerManager}.
+     * Unlike {@link #checkSourcesForItemOnce} this method attempts to follow any returned redirects.
+     */
+    @Nullable
+    private AudioItem checkSourcesForItem(AudioReference reference) {
         AudioReference currentReference = reference;
 
         for (int redirects = 0; redirects < MAXIMUM_LOAD_REDIRECTS && currentReference.identifier != null; redirects++) {
-            AudioItem item = checkSourcesForItemOnce(currentReference, resultHandler, reported);
-            if (item == null) {
-                return false;
-            } else if (!(item instanceof AudioReference)) {
-                return true;
+            AudioItem item = checkSourcesForItemOnce(currentReference);
+            if (item instanceof AudioReference) {
+                currentReference = (AudioReference) item;
+                continue;
             }
-            currentReference = (AudioReference) item;
+
+            return item;
         }
 
-        return false;
+        return null;
     }
 
-    private AudioItem checkSourcesForItemOnce(AudioReference reference, AudioLoadResultHandler resultHandler, boolean[] reported) {
+    @Nullable
+    private AudioItem checkSourcesForItemOnce(AudioReference reference) {
         for (AudioSourceManager sourceManager : sourceManagers) {
             if (reference.containerDescriptor != null && !(sourceManager instanceof ProbingAudioSourceManager)) {
                 continue;
             }
 
             AudioItem item = sourceManager.loadItem(this, reference);
-
             if (item != null) {
                 if (item instanceof AudioTrack) {
                     log.debug("Loaded a track with identifier {} using {}.", reference.identifier, sourceManager.getClass().getSimpleName());
-                    reported[0] = true;
-                    resultHandler.trackLoaded((AudioTrack) item);
                 } else if (item instanceof AudioPlaylist) {
                     log.debug("Loaded a playlist with identifier {} using {}.", reference.identifier, sourceManager.getClass().getSimpleName());
-                    reported[0] = true;
-                    resultHandler.playlistLoaded((AudioPlaylist) item);
                 }
+
                 return item;
             }
         }
