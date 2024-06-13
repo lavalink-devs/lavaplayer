@@ -29,6 +29,8 @@ dependencies {
     implementation(libs.base64)
     implementation(libs.json)
 
+    implementation(libs.intellij.annotations)
+
     testImplementation(libs.groovy)
     testImplementation(libs.spock.core)
     testImplementation(libs.logback.classic)
