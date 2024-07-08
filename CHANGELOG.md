@@ -1,5 +1,10 @@
 # Change Log
 
+## [2.2.1] - 2024-07-09
+* Fixed reading of Matroska files with embedded SimpleTags https://github.com/lavalink-devs/lavaplayer/pull/133
+* Fixed reading of Matroska SimpleTags that contain UTF8 characters https://github.com/lavalink-devs/lavaplayer/pull/133
+* Added loadItemSync method to AudioPlayerManager without result handler https://github.com/lavalink-devs/lavaplayer/pull/134
+
 ## [2.2.0] - 2024-06-05
 ### Added
 * Added support for searching Bandcamp tracks
