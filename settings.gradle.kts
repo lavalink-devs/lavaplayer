@@ -36,6 +36,7 @@ fun VersionCatalogBuilder.plugins() {
 fun VersionCatalogBuilder.common() {
     library("slf4j", "org.slf4j", "slf4j-api").version("2.0.7")
     library("commons-io", "commons-io", "commons-io").version("2.13.0")
+    library("intellij-annotations", "org.jetbrains", "annotations").version("24.0.0")
 
     version("jackson", "2.15.2")
     library("jackson-core", "com.fasterxml.jackson.core", "jackson-core").versionRef("jackson")
