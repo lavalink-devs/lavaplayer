@@ -32,7 +32,7 @@ import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.
  * Audio source manager which detects getyarn.io tracks by URL.
  */
 public class GetyarnAudioSourceManager implements HttpConfigurable, AudioSourceManager {
-  private static final Pattern GETYARN_REGEX = Pattern.compile("(?:http://|https://(?:www\\.)?)?getyarn\\.io/yarn-clip/(.*)");
+  private static final Pattern GETYARN_REGEX = Pattern.compile("https?://(?:www\\.|)getyarn\\.io/yarn-clip/(.*)");
 
   private final HttpInterfaceManager httpInterfaceManager;
 
