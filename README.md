@@ -62,7 +62,7 @@ Using in Maven:
 The set of sources where LavaPlayer can load tracks from is easily extensible, but the ones currently included by
 default are:
 
-* YouTube
+* ~~YouTube~~ YouTube support is now provided by [youtube-source](https://github.com/lavalink-devs/youtube-source)
 * SoundCloud
 * Bandcamp
 * Vimeo
