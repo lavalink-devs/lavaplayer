@@ -159,7 +159,7 @@ public class VimeoAudioSourceManager implements AudioSourceManager, HttpConfigur
         AudioTrackInfo info = new AudioTrackInfo(
             videoData.get("name").text(),
             videoData.get("uploader").get("name").textOrDefault("Unknown artist"),
-            videoData.get("duration").asLong(Units.DURATION_SEC_UNKNOWN) * 1000,
+            Units.secondsToMillis(videoData.get("duration").asLong(Units.DURATION_SEC_UNKNOWN)),
             videoId,
             false,
             "https://vimeo.com/" + videoId,
