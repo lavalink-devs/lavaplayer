@@ -164,6 +164,20 @@ public class JsonBrowser {
     }
 
     /**
+     * Returns a list of all key names in this element if it's a map.
+     * @return The list of keys.
+     */
+    public List<String> keys() {
+        if (!isMap()) {
+            return Collections.emptyList();
+        }
+
+        List<String> keys = new ArrayList<>();
+        node.fieldNames().forEachRemaining(keys::add);
+        return keys;
+    }
+
+    /**
      * Attempt to retrieve the value in the specified format
      *
      * @param klass The class to retrieve the value as
