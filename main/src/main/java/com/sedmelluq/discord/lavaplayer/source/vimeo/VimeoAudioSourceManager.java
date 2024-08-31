@@ -208,9 +208,10 @@ public class VimeoAudioSourceManager implements AudioSourceManager, HttpConfigur
             }
 
             if (!files.get("hls").isNull()) {
+                JsonBrowser hls = files.get("hls");
                 // ["akfire_interconnect_quic", "fastly_skyfire"]
-                JsonBrowser cdns = files.get("hls").get("cdns");
-                return new PlaybackFormat(cdns.get(cdns.get("default_cdn").text()).get("url").text(), true);
+                JsonBrowser cdns = hls.get("cdns");
+                return new PlaybackFormat(cdns.get(hls.get("default_cdn").text()).get("url").text(), true);
             }
 
             throw new RuntimeException("No supported formats");
