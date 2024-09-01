@@ -1,12 +1,15 @@
 # Change Log
 
+## [1.5.5] - 2024-09-01
+* Fixed GetyarnAudioSourceManager URL regex in https://github.com/lavalink-devs/lavaplayer/pull/144
+
 ## [1.5.4] - 2024-05-05
-* Fixed Twitch source sometimes failing to initialise causing errors when registering source managers https://github.com/lavalink-devs/lavaplayer/pull/100
-* Fixed metadata extraction for some OGG files https://github.com/lavalink-devs/lavaplayer/pull/102
-* Fixed OGG opus duration extraction https://github.com/lavalink-devs/lavaplayer/pull/104
-* Fixed clamping of lower values during volume changing https://github.com/lavalink-devs/lavaplayer/pull/106
-* Improve handling of some MP3 files with multiple IDv3 blocks https://github.com/lavalink-devs/lavaplayer/pull/109
-* Added basic metadata extraction for Matroska files https://github.com/lavalink-devs/lavaplayer/pull/108
+* Fixed Twitch source sometimes failing to initialise causing errors when registering source managers in https://github.com/lavalink-devs/lavaplayer/pull/100
+* Fixed metadata extraction for some OGG files in https://github.com/lavalink-devs/lavaplayer/pull/102
+* Fixed OGG opus duration extraction in https://github.com/lavalink-devs/lavaplayer/pull/104
+* Fixed clamping of lower values during volume changing in https://github.com/lavalink-devs/lavaplayer/pull/106
+* Improve handling of some MP3 files with multiple IDv3 blocks in https://github.com/lavalink-devs/lavaplayer/pull/109
+* Added basic metadata extraction for Matroska files in https://github.com/lavalink-devs/lavaplayer/pull/108
 
 > [!WARNING]
 > The `YoutubeSourceManager` is now deprecated and won't receive further updates. Please use https://github.com/lavalink-devs/youtube-source#common instead.
