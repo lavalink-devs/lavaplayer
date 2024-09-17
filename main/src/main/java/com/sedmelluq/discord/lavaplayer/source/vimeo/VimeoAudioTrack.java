@@ -1,6 +1,8 @@
 package com.sedmelluq.discord.lavaplayer.source.vimeo;
 
 import com.sedmelluq.discord.lavaplayer.container.mpeg.MpegAudioTrack;
+import com.sedmelluq.discord.lavaplayer.container.playlists.ExtendedM3uParser;
+import com.sedmelluq.discord.lavaplayer.container.playlists.HlsStreamTrack;
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManager;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.tools.JsonBrowser;
@@ -20,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 
 import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.SUSPICIOUS;
 
@@ -32,7 +35,7 @@ public class VimeoAudioTrack extends DelegatedAudioTrack {
   private final VimeoAudioSourceManager sourceManager;
 
   /**
-   * @param trackInfo     Track info
+   * @param trackInfo Track info
    * @param sourceManager Source manager which was used to find this track
    */
   public VimeoAudioTrack(AudioTrackInfo trackInfo, VimeoAudioSourceManager sourceManager) {
@@ -41,61 +44,70 @@ public class VimeoAudioTrack extends DelegatedAudioTrack {
     this.sourceManager = sourceManager;
   }
 
-  @Override
-  public void process(LocalAudioTrackExecutor localExecutor) throws Exception {
-    try (HttpInterface httpInterface = sourceManager.getHttpInterface()) {
-      String playbackUrl = loadPlaybackUrl(httpInterface);
+    @Override
+    public void process(LocalAudioTrackExecutor localExecutor) throws Exception {
+        try (HttpInterface httpInterface = sourceManager.getHttpInterface()) {
+            JsonBrowser videoData = sourceManager.getVideoFromApi(httpInterface, trackInfo.identifier);
+            VimeoAudioSourceManager.PlaybackFormat playbackFormat = sourceManager.getPlaybackFormat(httpInterface, videoData.get("config_url").text());
 
-      log.debug("Starting Vimeo track from URL: {}", playbackUrl);
+            log.debug("Starting Vimeo track. HLS: {}, URL: {}", playbackFormat.isHls, playbackFormat.url);
 
-      try (PersistentHttpStream stream = new PersistentHttpStream(httpInterface, new URI(playbackUrl), null)) {
-        processDelegate(new MpegAudioTrack(trackInfo, stream), localExecutor);
-      }
+            if (playbackFormat.isHls) {
+                processDelegate(
+                    new HlsStreamTrack(trackInfo, extractHlsAudioPlaylistUrl(httpInterface, playbackFormat.url), sourceManager.getHttpInterfaceManager(), true),
+                    localExecutor
+                );
+            } else {
+                try (PersistentHttpStream stream = new PersistentHttpStream(httpInterface, new URI(playbackFormat.url), null)) {
+                    processDelegate(new MpegAudioTrack(trackInfo, stream), localExecutor);
+                }
+            }
+        }
     }
-  }
 
-  private String loadPlaybackUrl(HttpInterface httpInterface) throws IOException {
-    JsonBrowser config = loadPlayerConfig(httpInterface);
-    if (config == null) {
-      throw new FriendlyException("Track information not present on the page.", SUSPICIOUS, null);
+    protected String resolveRelativeUrl(String baseUrl, String url) {
+        while (url.startsWith("../")) {
+            url = url.substring(3);
+            baseUrl = baseUrl.substring(0, baseUrl.lastIndexOf('/'));
+        }
+
+        return baseUrl + ((url.startsWith("/")) ? url : "/" + url);
     }
 
-    String trackConfigUrl = config.get("player").get("config_url").text();
-    JsonBrowser trackConfig = loadTrackConfig(httpInterface, trackConfigUrl);
+    /** Vimeo HLS uses separate audio and video. This extracts the audio playlist URL from EXT-X-MEDIA */
+    private String extractHlsAudioPlaylistUrl(HttpInterface httpInterface, String videoPlaylistUrl) throws IOException {
+        String url = null;
+        try (CloseableHttpResponse response = httpInterface.execute(new HttpGet(videoPlaylistUrl))) {
+            int statusCode = response.getStatusLine().getStatusCode();
 
-    return trackConfig.get("request").get("files").get("progressive").index(0).get("url").text();
-  }
+            if (!HttpClientTools.isSuccessWithContent(statusCode)) {
+                throw new FriendlyException("Server responded with an error.", SUSPICIOUS,
+                    new IllegalStateException("Response code for track access info is " + statusCode));
+            }
 
-  private JsonBrowser loadPlayerConfig(HttpInterface httpInterface) throws IOException {
-    try (CloseableHttpResponse response = httpInterface.execute(new HttpGet(trackInfo.identifier))) {
-      int statusCode = response.getStatusLine().getStatusCode();
+            String bodyString = IOUtils.toString(response.getEntity().getContent(), StandardCharsets.UTF_8);
+            for (String rawLine : bodyString.split("\n")) {
+                ExtendedM3uParser.Line line = ExtendedM3uParser.parseLine(rawLine);
 
-      if (!HttpClientTools.isSuccessWithContent(statusCode)) {
-        throw new FriendlyException("Server responded with an error.", SUSPICIOUS,
-          new IllegalStateException("Response code for player config is " + statusCode));
-      }
+                if (Objects.equals(line.directiveName, "EXT-X-MEDIA") && Objects.equals(line.directiveArguments.get("TYPE"), "AUDIO")) {
+                    url = line.directiveArguments.get("URI");
+                    break;
+                }
+            }
+        }
 
-      return sourceManager.loadConfigJsonFromPageContent(IOUtils.toString(response.getEntity().getContent(), StandardCharsets.UTF_8));
+        if (url == null) {
+            throw new FriendlyException("Failed to find audio playlist URL.", SUSPICIOUS,
+                new IllegalStateException("Valid audio directive was not found"));
+        }
+
+        return resolveRelativeUrl(videoPlaylistUrl.substring(0, videoPlaylistUrl.lastIndexOf('/')), url);
     }
-  }
 
-  private JsonBrowser loadTrackConfig(HttpInterface httpInterface, String trackAccessInfoUrl) throws IOException {
-    try (CloseableHttpResponse response = httpInterface.execute(new HttpGet(trackAccessInfoUrl))) {
-      int statusCode = response.getStatusLine().getStatusCode();
-
-      if (!HttpClientTools.isSuccessWithContent(statusCode)) {
-        throw new FriendlyException("Server responded with an error.", SUSPICIOUS,
-          new IllegalStateException("Response code for track access info is " + statusCode));
-      }
-
-      return JsonBrowser.parse(response.getEntity().getContent());
+    @Override
+    protected AudioTrack makeShallowClone() {
+        return new VimeoAudioTrack(trackInfo, sourceManager);
     }
-  }
-
-  @Override
-  protected AudioTrack makeShallowClone() {
-    return new VimeoAudioTrack(trackInfo, sourceManager);
-  }
 
   @Override
   public AudioSourceManager getSourceManager() {
