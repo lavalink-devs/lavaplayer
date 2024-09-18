@@ -1,5 +1,9 @@
 # Change Log
 
+## [2.2.2] - 2024-09-18
+* Fixed GetyarnAudioSourceManager URL regex in https://github.com/lavalink-devs/lavaplayer/pull/144
+* Fixed playback of vimeo (please note seeking doesn't seem to work) in https://github.com/lavalink-devs/lavaplayer/pull/149
+
 ## [2.2.1] - 2024-07-09
 * Fixed reading of Matroska files with embedded SimpleTags https://github.com/lavalink-devs/lavaplayer/pull/133
 * Fixed reading of Matroska SimpleTags that contain UTF8 characters https://github.com/lavalink-devs/lavaplayer/pull/133
@@ -100,6 +104,251 @@
 - Added `AudioPlayerManager#loadItemSync` to allow loading tracks synchronously
 - Added `natives` & `natives-publish` modules for lavaplayer native libraries
 - Added support soundcloud short urls for in https://github.com/lavalink-devs/lavaplayer/pull/4
+
+## [1.5.5] - 2024-09-18
+> [!CAUTION]
+> This is the last Lavaplayer v1 release, see: https://github.com/lavalink-devs/lavaplayer/discussions/150
+
+* Fixed GetyarnAudioSourceManager URL regex in https://github.com/lavalink-devs/lavaplayer/pull/144
+* Fixed playback of vimeo (please note seeking doesn't seem to work) in https://github.com/lavalink-devs/lavaplayer/pull/149
+* Updated org.json in https://github.com/lavalink-devs/lavaplayer/pull/114
+
+## [1.5.4] - 2024-05-05
+* Fixed Twitch source sometimes failing to initialise causing errors when registering source managers in https://github.com/lavalink-devs/lavaplayer/pull/100
+* Fixed metadata extraction for some OGG files in https://github.com/lavalink-devs/lavaplayer/pull/102
+* Fixed OGG opus duration extraction in https://github.com/lavalink-devs/lavaplayer/pull/104
+* Fixed clamping of lower values during volume changing in https://github.com/lavalink-devs/lavaplayer/pull/106
+* Improve handling of some MP3 files with multiple IDv3 blocks in https://github.com/lavalink-devs/lavaplayer/pull/109
+* Added basic metadata extraction for Matroska files in https://github.com/lavalink-devs/lavaplayer/pull/108
+
+> [!WARNING]
+> The `YoutubeSourceManager` is now deprecated and won't receive further updates. Please use https://github.com/lavalink-devs/youtube-source#common instead.
+
+## [1.5.3] -- 2023-10-03
+* Fix `Target host is not specified` with HLS relative urls in m3u8 playlists in https://github.com/lavalink-devs/lavaplayer/pull/49
+* Fix invalid search request (code 400) in https://github.com/lavalink-devs/lavaplayer/pull/71
+* Added support for youtube `/live/` URLs in https://github.com/lavalink-devs/lavaplayer/pull/54
+* Update youtube music client version in https://github.com/lavalink-devs/lavaplayer/pull/75
+
+## [1.5.2] -- 2023-03-12
+
+* Fix NPE on missing author in playlist tracks in https://github.com/lavalink-devs/lavaplayer/pull/46
+
+## [1.5.1] -- 2023-05-11
+
+* Updated all request timeouts in https://github.com/lavalink-devs/lavaplayer/pull/34
+* Updated `IDENTITY_REGEX` in https://github.com/lavalink-devs/lavaplayer/pull/44
+
+## [1.5.0] -- 2023-03-08
+
+### Fixed
+
+- Fixed YouTube 403 errors in https://github.com/lavalink-devs/lavaplayer/pull/16
+- Fixed YouTube access token issue in https://github.com/lavalink-devs/lavaplayer/pull/15
+
+### Removed
+
+- Removed `stream-merger` module
+- Removed `node` module & classes in `main` module
+- Removed `test-samples` module
+
+## Added
+
+- Added `natives` & `natives-publish` modules for lavaplayer native libraries
+
+## [1.3.78] -- 2021-06-28
+
+### Fixed
+
+- Fixed loading YouTube tracks with age verification.
+- Fixed SoundCloud Client ID detection which broke loading SoundCloud tracks.
+
+## [1.3.77] -- 2021-05-25
+
+### Fixed
+
+- Fixed playing YouTube tracks which require a separate verification request (PR #615 by Walkyst).
+- Fixed quotes in YouTube Music search breaking the request (PR #618 by Walkyst).
+- Fixed playing age restricted YouTube tracks (PR #627 by Walkyst).
+- Fixed SoundCloud URLs not working if they end with a slash (PR #626 by NavyCake).
+
+### Added
+
+- Added a method to load tracks from the player manager by AudioReference (PR #620 by duncte123).
+
+## [1.3.76] -- 2021-04-05
+
+### Fixed
+
+- Fixed using natives dependency which may have had outdated files in the new repository.
+
+## [1.3.75] -- 2021-04-02
+
+### Fixed
+
+- Fix loading YouTube playlists not working due to non-error alerts.
+
+## [1.3.74] -- 2021-04-01
+
+### Fixed
+
+- Fix playing YouTube tracks by using a hardcoded consent cookie.
+
+## [1.3.73] -- 2021-03-07
+
+### Fixed
+
+- Fix for YouTube playlists with pagination not loading (PR #592 by Walkyst)
+
+## [1.3.72] -- 2021-03-03
+
+### Fixed
+
+- Fixed a specific MP3 frame type (version 2, layer 1, 144kbps) being decoded incorrectly.
+
+## [1.3.71] -- 2021-02-15
+
+### Fixed
+
+- Fixed YouTube music search failing if some results did not include duration.
+
+## [1.3.70] -- 2021-02-15
+
+### Fixed
+
+- Fixed a bug with MP4 AAC decoding introduced in 1.3.68.
+
+## [1.3.69] -- 2021-02-13
+
+### Fixed
+
+- Fixed YouTube age restricted videos which broke due to embed page content change.
+
+## [1.3.68] -- 2021-02-13
+
+### Added
+
+- Added support for AAC profiles other than AAC-LC in MP4 files.
+
+## [1.3.67] -- 2021-01-30
+
+### Added
+
+- Added support for `music.youtube.com` URLs (PR 562 by Walkyst).
+
+### Changed
+
+- Internal changes to allow custom `AudioPlayerManager` implementations (PR 572 by ToxicMushroom).
+
+## [1.3.66] -- 2020-12-30
+
+### Changed
+
+- All YouTube requests are now retried once if they get a connection reset during connection establishment.
+
+## [1.3.65] -- 2020-12-20
+
+### Added
+
+- Attached LP, OS and JDK version information to all FriendlyExceptions as a suppressed exception.
+
+## [1.3.64] -- 2020-12-17
+
+### Fixed
+
+- Fixed SoundCloud not working due to a change in the site (PR 570 by reptar25).
+
+## [1.3.63] -- 2020-12-01
+
+### Added
+
+- Added option to override logging handler for errors with large payloads.
+
+### Removed
+
+- Removed Mixer implementation, source manager class kept for now to not cause a breaking change.
+
+### Changed
+
+- YouTube playlist loader logs response content if content type is not JSON.
+
+## [1.3.62] -- 2020-11-30
+
+### Changed
+
+- Status code 429 from YouTube now causes an exception which explains YouTube block.
+- GC logging no longer warns about pauses shorter than 200ms.
+
+## [1.3.61] -- 2020-11-19
+
+### Fixed
+
+- Fixed age restricted YouTube videos (PR 559 by Walkyst).
+- Fixed YouTube search results using current locale language (PR 557 by madeyoga).
+
+## [1.3.60] -- 2020-11-11
+
+### Fixed
+
+- Fixed removing/adding player listeners failing when done from within listener callback.
+
+## [1.3.59] -- 2020-11-07
+
+### Fixed
+
+- Fixed YouTube playlist pagination being broken (PR 552 by Xavinlol).
+
+## [1.3.58] -- 2020-11-06
+
+### Fixed
+
+- Fixed AAC streams possibly detected as MP3 even if their mime type is set to audio/aac.
+
+## [1.3.57] -- 2020-11-06
+
+### Added
+
+- Added support for SoundCloud tracks which only have MP3 HLS format available.
+
+## [1.3.56] -- 2020-11-05
+
+### Fixed
+
+- Fixed some YouTube live streams caused by MP4 audio data being skipped in MP4 with no sidx.
+
+## [1.3.55] -- 2020-10-31
+
+### Fixed
+
+- Fixed no exception thrown when native lib loading fails.
+- Fixed seeking on MKV files with cues in the end of the file.
+
+## [1.3.54] -- 2020-10-29
+
+### Fixed
+
+- Fixed YouTube VOD duration set to unknown.
+
+## [1.3.53] -- 2020-10-26
+
+### Fixed
+
+- Fixed Bandcamp track and album loading which broke due to url changes (PR 527 by Walkyst).
+- Fixed Twitch stream loading failure which broke due to access token changes (PR 410 by kimcore).
+- Fixed Twitch stream including ads which also broke stream start sometimes.
+
+## [1.3.52] -- 2020-10-25
+
+### Fixed
+
+- Fixed a redundant request made for YouTube age-restricted tracks.
+
+## [1.3.51] -- 2020-10-25
+
+### Fixed
+
+- Fixed various issues with YouTube track loading and searches.
+- Fixed YouTube playlist track titles being null (PR 534 by gmfonseca).
 
 ## [1.3.50] -- 2020-06-17
 
