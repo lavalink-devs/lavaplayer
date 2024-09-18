@@ -1,7 +1,12 @@
 # Change Log
 
 ## [1.5.5] - 2024-09-01
+> [!CAUTION]
+> This is the last Lavaplayer v1 release, see: https://github.com/lavalink-devs/lavaplayer/discussions/150
+
 * Fixed GetyarnAudioSourceManager URL regex in https://github.com/lavalink-devs/lavaplayer/pull/144
+* Fixed playback of vimeo (please note seeking doesn't seem to work) in https://github.com/lavalink-devs/lavaplayer/pull/149
+* Updated org.json in https://github.com/lavalink-devs/lavaplayer/pull/114
 
 ## [1.5.4] - 2024-05-05
 * Fixed Twitch source sometimes failing to initialise causing errors when registering source managers in https://github.com/lavalink-devs/lavaplayer/pull/100
