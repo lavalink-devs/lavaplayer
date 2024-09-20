@@ -1,6 +1,6 @@
 # Change Log
 
-## [1.5.5] - 2024-09-18
+## [1.5.6] - 2024-09-20
 > [!CAUTION]
 > This is the last Lavaplayer v1 release, see: https://github.com/lavalink-devs/lavaplayer/discussions/150
 
