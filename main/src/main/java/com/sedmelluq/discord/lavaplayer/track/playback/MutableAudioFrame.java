@@ -10,6 +10,18 @@ public class MutableAudioFrame extends AbstractMutableAudioFrame {
     private int framePosition;
     private int frameLength;
 
+    public MutableAudioFrame() {
+    }
+
+    /**
+     * This should be called only by the requester of a frame.
+     *
+     * @param frameBuffer Buffer to use internally.
+     */
+    public MutableAudioFrame(final ByteBuffer frameBuffer) {
+        this.setBuffer(frameBuffer);
+    }
+
     /**
      * This should be called only by the requester of a frame.
      *
