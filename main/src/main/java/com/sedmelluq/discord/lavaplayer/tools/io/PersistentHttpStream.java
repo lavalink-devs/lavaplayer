@@ -90,7 +90,7 @@ public class PersistentHttpStream extends SeekableInputStream implements AutoClo
         return true;
     }
 
-    private HttpGet getConnectRequest() {
+    protected HttpGet getConnectRequest() {
         HttpGet request = new HttpGet(getConnectUrl());
 
         if (position > 0 && useHeadersForRange()) {
