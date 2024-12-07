@@ -37,19 +37,27 @@ import static com.sedmelluq.discord.lavaplayer.tools.FriendlyException.Severity.
 public class HttpClientTools {
     private static final Logger log = LoggerFactory.getLogger(HttpClientTools.class);
 
-    public static final RequestConfig DEFAULT_REQUEST_CONFIG = RequestConfig.custom()
+    public static RequestConfig DEFAULT_REQUEST_CONFIG = RequestConfig.custom()
         .setConnectTimeout(3000)
         .setConnectionRequestTimeout(3000)
         .setSocketTimeout(3000)
         .setCookieSpec(CookieSpecs.STANDARD)
         .build();
 
-    private static final RequestConfig NO_COOKIES_REQUEST_CONFIG = RequestConfig.custom()
+    private static RequestConfig NO_COOKIES_REQUEST_CONFIG = RequestConfig.custom()
         .setConnectTimeout(3000)
         .setConnectionRequestTimeout(3000)
         .setSocketTimeout(3000)
         .setCookieSpec(CookieSpecs.IGNORE_COOKIES)
         .build();
+
+    public static void setDefaultRequestConfig(RequestConfig requestConfig) {
+        DEFAULT_REQUEST_CONFIG = requestConfig;
+    }
+
+    public static void setNoCookiesRequestConfig(RequestConfig requestConfig) {
+        NO_COOKIES_REQUEST_CONFIG = requestConfig;
+    }
 
     /**
      * @return An HttpClientBuilder which uses the same cookie store for all clients
