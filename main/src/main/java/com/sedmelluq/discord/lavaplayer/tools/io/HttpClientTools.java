@@ -51,12 +51,18 @@ public class HttpClientTools {
         .setCookieSpec(CookieSpecs.IGNORE_COOKIES)
         .build();
 
-    public static void setDefaultRequestConfig(RequestConfig requestConfig) {
-        DEFAULT_REQUEST_CONFIG = requestConfig;
-    }
+    public static void setDefaultRequestTimeout(int timeout, int connectionRequestTimeout, int socketTimeout) {
+        DEFAULT_REQUEST_CONFIG = RequestConfig.copy(DEFAULT_REQUEST_CONFIG)
+            .setConnectTimeout(timeout)
+            .setConnectionRequestTimeout(connectionRequestTimeout)
+            .setSocketTimeout(socketTimeout)
+            .build();
 
-    public static void setNoCookiesRequestConfig(RequestConfig requestConfig) {
-        NO_COOKIES_REQUEST_CONFIG = requestConfig;
+        NO_COOKIES_REQUEST_CONFIG = RequestConfig.copy(NO_COOKIES_REQUEST_CONFIG)
+            .setConnectTimeout(timeout)
+            .setConnectionRequestTimeout(connectionRequestTimeout)
+            .setSocketTimeout(socketTimeout)
+            .build();
     }
 
     /**
