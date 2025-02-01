@@ -1,5 +1,10 @@
 # Change Log
 
+## [2.2.3] - 2025-02-01
+* Make PersistentHttpStream$getConnectionRequest overridable in https://github.com/lavalink-devs/lavaplayer/pull/159
+* Add constructor with ByteByffer to MutableAudioFrame in https://github.com/lavalink-devs/lavaplayer/pull/158
+* Allow overriding default & no cookies request timeouts in https://github.com/lavalink-devs/lavaplayer/pull/160
+
 ## [2.2.2] - 2024-09-18
 * Fixed GetyarnAudioSourceManager URL regex in https://github.com/lavalink-devs/lavaplayer/pull/144
 * Fixed playback of vimeo (please note seeking doesn't seem to work) in https://github.com/lavalink-devs/lavaplayer/pull/149
