@@ -101,7 +101,7 @@ public class OggPacketInputStream extends InputStream {
                 return false;
             }
 
-            throw new IllegalStateException("Stream is not positioned at a page header. kkk");
+            throw new IllegalStateException("Stream is not positioned at a page header.");
         } else if ((dataInput.readByte() & 0xFF) != 0) {
             throw new IllegalStateException("Unknown OGG stream version.");
         }
