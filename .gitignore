@@ -29,8 +29,10 @@ natives/samplerate/src
 natives/vorbis/*/
 udpqueue-natives/dist
 version.txt
+main/bin/main/certificates
 
 *.log
 *.json
 *.project
 *.html
+*.class

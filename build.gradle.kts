@@ -37,6 +37,10 @@ subprojects {
         targetCompatibility = JavaVersion.VERSION_11
     }
 
+    tasks.withType<JavaCompile> {
+        options.compilerArgs.addAll(listOf("--enable-preview", "--add-reads", "org.ninetail=ALL-UNNAMED"))
+    }
+
     configure<PublishingExtension> {
         if (findProperty("MAVEN_PASSWORD") != null && findProperty("MAVEN_USERNAME") != null) {
             repositories {
