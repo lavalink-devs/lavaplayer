@@ -3,6 +3,7 @@ module com.sedmelluq.lava.extensions.youtuberotator {
     requires org.slf4j;
     requires org.apache.httpcomponents.httpclient;
     requires org.apache.httpcomponents.httpcore;
+    requires com.sedmelluq.discord.lavaplayer;
 
     exports com.sedmelluq.lava.extensions.youtuberotator;
     exports com.sedmelluq.lava.extensions.youtuberotator.tools;

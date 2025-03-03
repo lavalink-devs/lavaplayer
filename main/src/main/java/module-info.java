@@ -1,9 +1,17 @@
 module com.sedmelluq.discord.lavaplayer {
     requires java.base;
+    requires java.desktop;
+    requires java.scripting;
+    requires java.management;
+    requires jdk.management;
     requires org.slf4j;
     requires org.apache.httpcomponents.httpclient;
     requires org.apache.httpcomponents.httpcore;
     requires org.jetbrains.annotations;
+    requires org.json;
+    requires com.fasterxml.jackson.core;
+    requires com.fasterxml.jackson.databind;
+    requires com.sedmelluq.lava.common;
 
     exports com.sedmelluq.discord.lavaplayer.container;
     exports com.sedmelluq.discord.lavaplayer.container.adts;
@@ -56,6 +64,7 @@ module com.sedmelluq.discord.lavaplayer {
     exports com.sedmelluq.discord.lavaplayer.source.youtube.format;
     exports com.sedmelluq.discord.lavaplayer.tools;
     exports com.sedmelluq.discord.lavaplayer.tools.http;
+    exports com.sedmelluq.discord.lavaplayer.tools.io;
     exports com.sedmelluq.discord.lavaplayer.track;
     exports com.sedmelluq.discord.lavaplayer.track.info;
     exports com.sedmelluq.discord.lavaplayer.track.playback;

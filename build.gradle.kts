@@ -22,6 +22,10 @@ allprojects {
         mavenCentral()
         maven("https://jitpack.io")
     }
+
+    tasks.withType<JavaCompile> {
+        modularity.inferModulePath.set(true)
+    }
 }
 
 subprojects {
@@ -38,7 +42,16 @@ subprojects {
     }
 
     tasks.withType<JavaCompile> {
-        options.compilerArgs.addAll(listOf("--enable-preview", "--add-reads", "org.ninetail=ALL-UNNAMED"))
+        options.compilerArgs.addAll(listOf(
+            "--add-reads",
+            "com.sedmelluq.lava.common=ALL-UNNAMED",
+            "--add-reads",
+            "com.sedmelluq.lavaplayer.extensions.format=ALL-UNNAMED",
+            "--add-reads",
+            "com.sedmelluq.lava.extensions.youtuberotator=ALL-UNNAMED",
+            "--add-reads",
+            "com.sedmelluq.discord.lavaplayer=ALL-UNNAMED"
+        ))
     }
 
     configure<PublishingExtension> {
