@@ -5,5 +5,5 @@ module com.sedmelluq.lava.common {
 
     exports com.sedmelluq.lava.common.natives;
     exports com.sedmelluq.lava.common.natives.architecture;
-    com.sedmelluq.lava.common.tools;
+    exports com.sedmelluq.lava.common.tools;
 }
