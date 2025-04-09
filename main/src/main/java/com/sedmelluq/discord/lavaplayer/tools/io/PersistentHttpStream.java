@@ -108,7 +108,7 @@ public class PersistentHttpStream extends SeekableInputStream implements AutoClo
         
         request.setHeader(HttpHeaders.USER_AGENT, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 Edg/133.0.0.0");
         request.setHeader(HttpHeaders.REFERER, referer);
-        request.setHeader(HttpHeaders.ORIGIN, origin);
+        request.setHeader("Origin", origin);
         
         return request;
     }
