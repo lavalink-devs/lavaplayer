@@ -27,7 +27,7 @@ dependencyResolutionManagement {
 }
 
 fun VersionCatalogBuilder.plugins() {
-    val mavenPublishPlugin = version("maven-publish-plugin", "0.25.3")
+    val mavenPublishPlugin = version("maven-publish-plugin", "0.32.0")
 
     plugin("maven-publish", "com.vanniktech.maven.publish").versionRef(mavenPublishPlugin)
     plugin("maven-publish-base", "com.vanniktech.maven.publish.base").versionRef(mavenPublishPlugin)
