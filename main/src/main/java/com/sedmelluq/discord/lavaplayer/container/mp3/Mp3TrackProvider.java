@@ -157,6 +157,16 @@ public class Mp3TrackProvider implements AudioTrackInfoProvider {
     }
 
     /**
+     * Records a seek to the specified timecode without actually seeking.
+     *
+     * @param timecode The requested timecode in milliseconds
+     * @param actualTimecode The actual timecode in milliseconds
+     */
+    public void recordSeek(long timecode, long actualTimecode) {
+        downstream.seekPerformed(timecode, actualTimecode);
+    }
+
+    /**
      * @return True if the track is seekable (false for streams for example).
      */
     public boolean isSeekable() {
