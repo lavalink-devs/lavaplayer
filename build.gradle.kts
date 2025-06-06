@@ -43,42 +43,41 @@ subprojects {
 
     tasks.withType<JavaCompile> {
         options.compilerArgs.addAll(listOf(
-            "--add-reads",
-            "com.sedmelluq.lava.common=ALL-UNNAMED",
-            "--add-reads",
-            "com.sedmelluq.lavaplayer.extensions.format=ALL-UNNAMED",
-            "--add-reads",
-            "com.sedmelluq.lava.extensions.youtuberotator=ALL-UNNAMED",
-            "--add-reads",
-            "com.sedmelluq.discord.lavaplayer=ALL-UNNAMED"
+            "--add-reads", "com.sedmelluq.lava.common=ALL-UNNAMED",
+            "--add-reads", "com.sedmelluq.lavaplayer.extensions.format=ALL-UNNAMED",
+            "--add-reads", "com.sedmelluq.lava.extensions.youtuberotator=ALL-UNNAMED",
+            "--add-reads", "com.sedmelluq.discord.lavaplayer=ALL-UNNAMED"
         ))
-    }
-
-    configure<PublishingExtension> {
-        if (findProperty("MAVEN_PASSWORD") != null && findProperty("MAVEN_USERNAME") != null) {
-            repositories {
-                val snapshots = "https://maven.lavalink.dev/snapshots"
-                val releases = "https://maven.lavalink.dev/releases"
-
-                maven(if (release) releases else snapshots) {
-                    credentials {
-                        password = findProperty("MAVEN_PASSWORD") as String?
-                        username = findProperty("MAVEN_USERNAME") as String?
-                    }
-                }
-            }
-        } else {
-            logger.lifecycle("Not publishing to maven.lavalink.dev because credentials are not set")
-        }
     }
 
     afterEvaluate {
         plugins.withId(libs.plugins.maven.publish.base.get().pluginId) {
+            configure<PublishingExtension> {
+                val mavenUsername = findProperty("MAVEN_USERNAME") as String?
+                val mavenPassword = findProperty("MAVEN_PASSWORD") as String?
+                if (!mavenUsername.isNullOrEmpty() && !mavenPassword.isNullOrEmpty()) {
+                    repositories {
+                        val snapshots = "https://maven.lavalink.dev/snapshots"
+                        val releases = "https://maven.lavalink.dev/releases"
+
+                        maven(if (release) releases else snapshots) {
+                            credentials {
+                                username = mavenUsername
+                                password = mavenPassword
+                            }
+                        }
+                    }
+                } else {
+                    logger.lifecycle("Not publishing to maven.lavalink.dev because credentials are not set")
+                }
+            }
+
             configure<MavenPublishBaseExtension> {
                 coordinates(group.toString(), project.the<BasePluginExtension>().archivesName.get(), version.toString())
-
-                if (findProperty("mavenCentralUsername") != null && findProperty("mavenCentralPassword") != null) {
-                    publishToMavenCentral(SonatypeHost.S01, false)
+                val mavenCentralUsername = findProperty("mavenCentralUsername") as String?
+                val mavenCentralPassword = findProperty("mavenCentralPassword") as String?
+                if (!mavenCentralUsername.isNullOrEmpty() && !mavenCentralPassword.isNullOrEmpty()) {
+                    publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL, false)
                     if (release) {
                         signAllPublications()
                     }
@@ -117,7 +116,6 @@ subprojects {
     }
 }
 
-@SuppressWarnings("GrMethodMayBeStatic")
 fun versionFromGit(): Pair<String, Boolean> {
     Grgit.open(mapOf("currentDir" to project.rootDir)).use { git ->
         val headTag = git.tag

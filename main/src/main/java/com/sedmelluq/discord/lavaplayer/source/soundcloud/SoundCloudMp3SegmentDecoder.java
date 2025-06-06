@@ -35,6 +35,10 @@ public class SoundCloudMp3SegmentDecoder implements SoundCloudSegmentDecoder {
 
             try {
                 trackProvider.parseHeaders();
+
+                // Persist the position to seek to
+                trackProvider.recordSeek(desiredPosition, startPosition);
+
                 trackProvider.provideFrames();
             } finally {
                 trackProvider.close();
