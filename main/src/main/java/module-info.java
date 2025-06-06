@@ -1,4 +1,4 @@
-module com.sedmelluq.discord.lavaplayer {
+open module com.sedmelluq.discord.lavaplayer {
     requires java.base;
     requires java.desktop;
     requires java.scripting;
