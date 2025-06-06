@@ -1,4 +1,4 @@
-module com.sedmelluq.lavaplayer.extensions.format {
+open module com.sedmelluq.lavaplayer.extensions.format {
     requires java.base;
     requires org.slf4j;
     requires com.sedmelluq.discord.lavaplayer;
