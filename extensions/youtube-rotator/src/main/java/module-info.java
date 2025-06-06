@@ -1,4 +1,4 @@
-module com.sedmelluq.lava.extensions.youtuberotator {
+open module com.sedmelluq.lava.extensions.youtuberotator {
     requires java.base;
     requires org.slf4j;
     requires org.apache.httpcomponents.httpclient;
