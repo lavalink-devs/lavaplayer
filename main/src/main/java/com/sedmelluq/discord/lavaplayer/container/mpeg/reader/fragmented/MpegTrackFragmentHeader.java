@@ -127,7 +127,7 @@ public class MpegTrackFragmentHeader {
         public MpegTrackFragmentHeader build() {
             int[] finalSampleSizes = sampleSizes;
 
-            if (defaultSampleSize != 0) {
+            if (finalSampleSizes == null && defaultSampleSize != 0) {
                 finalSampleSizes = new int[sampleCount];
 
                 for (int i = 0; i < sampleCount; i++) {
