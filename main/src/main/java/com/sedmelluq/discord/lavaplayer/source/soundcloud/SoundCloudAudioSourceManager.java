@@ -18,6 +18,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -27,6 +28,7 @@ import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -51,6 +53,7 @@ public class SoundCloudAudioSourceManager implements AudioSourceManager, HttpCon
     private static final String SEARCH_PREFIX = "scsearch";
     private static final String SEARCH_PREFIX_DEFAULT = "scsearch:";
     private static final String SEARCH_REGEX = SEARCH_PREFIX + "\\[([0-9]{1,9}),([0-9]{1,9})\\]:\\s*(.*)\\s*";
+    private static final String FULL_TRACK_UNAVAILABLE_MARKER = "SUB_HIGH_TIER";
 
     private static final Pattern mobileUrlPattern = Pattern.compile(MOBILE_URL_REGEX);
     private static final Pattern trackUrlPattern = Pattern.compile(TRACK_URL_REGEX);
@@ -67,14 +70,20 @@ public class SoundCloudAudioSourceManager implements AudioSourceManager, HttpCon
     private final HttpInterfaceManager httpInterfaceManager;
     private final SoundCloudClientIdTracker clientIdTracker;
     private final boolean allowSearch;
+    private final boolean filterOutPreviewTracks;
 
     public static SoundCloudAudioSourceManager createDefault() {
         SoundCloudDataReader dataReader = new DefaultSoundCloudDataReader();
         SoundCloudDataLoader dataLoader = new DefaultSoundCloudDataLoader();
         SoundCloudFormatHandler formatHandler = new DefaultSoundCloudFormatHandler();
 
-        return new SoundCloudAudioSourceManager(true, dataReader, dataLoader, formatHandler,
-            new DefaultSoundCloudPlaylistLoader(dataLoader, dataReader, formatHandler));
+        return new SoundCloudAudioSourceManager(true,
+            dataReader,
+            dataLoader,
+            formatHandler,
+            new DefaultSoundCloudPlaylistLoader(dataLoader, dataReader, formatHandler),
+            false
+        );
     }
 
     public static Builder builder() {
@@ -91,13 +100,15 @@ public class SoundCloudAudioSourceManager implements AudioSourceManager, HttpCon
         SoundCloudDataReader dataReader,
         SoundCloudDataLoader dataLoader,
         SoundCloudFormatHandler formatHandler,
-        SoundCloudPlaylistLoader playlistLoader
+        SoundCloudPlaylistLoader playlistLoader,
+        boolean filterOutPreviewTracks
     ) {
         this.allowSearch = allowSearch;
         this.dataReader = dataReader;
         this.dataLoader = dataLoader;
         this.formatHandler = formatHandler;
         this.playlistLoader = playlistLoader;
+        this.filterOutPreviewTracks = filterOutPreviewTracks;
 
         httpInterfaceManager = HttpClientTools.createDefaultThreadLocalManager();
         clientIdTracker = new SoundCloudClientIdTracker(httpInterfaceManager);
@@ -209,6 +220,7 @@ public class SoundCloudAudioSourceManager implements AudioSourceManager, HttpCon
         }
     }
 
+    @Nullable
     public AudioTrack loadTrack(String trackWebUrl) {
         try (HttpInterface httpInterface = getHttpInterface()) {
             JsonBrowser rootData = dataLoader.load(httpInterface, trackWebUrl);
@@ -216,6 +228,10 @@ public class SoundCloudAudioSourceManager implements AudioSourceManager, HttpCon
 
             if (trackData == null) {
                 throw new FriendlyException("This track is not available", COMMON, null);
+            }
+
+            if (filterOutPreviewTracks && Objects.equals(trackData.get("monetization_model").text(), FULL_TRACK_UNAVAILABLE_MARKER)) {
+                return null;
             }
 
             return loadFromTrackData(trackData);
@@ -363,6 +379,7 @@ public class SoundCloudAudioSourceManager implements AudioSourceManager, HttpCon
         private SoundCloudFormatHandler formatHandler;
         private SoundCloudPlaylistLoader playlistLoader;
         private PlaylistLoaderFactory playlistLoaderFactory;
+        private boolean filterOutPreviewTracks = false;
 
         public Builder withAllowSearch(boolean allowSearch) {
             this.allowSearch = allowSearch;
@@ -391,6 +408,16 @@ public class SoundCloudAudioSourceManager implements AudioSourceManager, HttpCon
 
         public Builder withPlaylistLoaderFactory(PlaylistLoaderFactory playlistLoaderFactory) {
             this.playlistLoaderFactory = playlistLoaderFactory;
+            return this;
+        }
+
+        /**
+         * Whether to filter out short preview tracks that are only fully available with a Soundcloud subscription.
+         * Lavaplayer does not support getting the full track. Only affects new AudioTracks being loaded by this source,
+         *   with no effect on deserialized tracks.
+         */
+        public Builder withFilterOutPreviewTracks(boolean filterOutPreviewTracks) {
+            this.filterOutPreviewTracks = filterOutPreviewTracks;
             return this;
         }
 
@@ -432,7 +459,8 @@ public class SoundCloudAudioSourceManager implements AudioSourceManager, HttpCon
                 usedDataReader,
                 usedDataLoader,
                 usedFormatHandler,
-                usedPlaylistLoader
+                usedPlaylistLoader,
+                filterOutPreviewTracks
             );
         }
 
