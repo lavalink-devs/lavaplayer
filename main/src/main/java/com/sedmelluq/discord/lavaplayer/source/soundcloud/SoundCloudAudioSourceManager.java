@@ -222,6 +222,11 @@ public class SoundCloudAudioSourceManager implements AudioSourceManager, HttpCon
 
     @Nullable
     public AudioTrack loadTrack(String trackWebUrl) {
+        return loadTrack(trackWebUrl, true);
+    }
+
+    @Nullable
+    public AudioTrack loadTrack(String trackWebUrl, boolean honorPreviewFilter) {
         try (HttpInterface httpInterface = getHttpInterface()) {
             JsonBrowser rootData = dataLoader.load(httpInterface, trackWebUrl);
             JsonBrowser trackData = dataReader.findTrackData(rootData);
@@ -230,7 +235,7 @@ public class SoundCloudAudioSourceManager implements AudioSourceManager, HttpCon
                 throw new FriendlyException("This track is not available", COMMON, null);
             }
 
-            if (filterOutPreviewTracks && Objects.equals(trackData.get("monetization_model").text(), FULL_TRACK_UNAVAILABLE_MARKER)) {
+            if (honorPreviewFilter && filterOutPreviewTracks && Objects.equals(trackData.get("monetization_model").text(), FULL_TRACK_UNAVAILABLE_MARKER)) {
                 return null;
             }
 
