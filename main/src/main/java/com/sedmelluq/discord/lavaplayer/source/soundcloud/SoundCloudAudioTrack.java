@@ -63,7 +63,8 @@ public class SoundCloudAudioTrack extends DelegatedAudioTrack {
 
         if (!recursion) {
             // Old "track ID" entry? Let's "load" it to get url.
-            AudioTrack track = sourceManager.loadTrack(trackInfo.uri);
+            AudioTrack track = sourceManager.loadTrack(trackInfo.uri, false);
+            //noinspection DataFlowIssue
             playFromIdentifier(httpInterface, track.getIdentifier(), true, localExecutor);
         }
     }
