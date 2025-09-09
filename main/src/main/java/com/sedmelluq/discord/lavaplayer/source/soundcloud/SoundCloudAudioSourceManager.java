@@ -194,17 +194,19 @@ public class SoundCloudAudioSourceManager implements AudioSourceManager, HttpCon
         httpInterfaceManager.configureBuilder(configurator);
     }
 
-    private AudioTrack processAsSingleTrack(AudioReference reference) {
+    private AudioItem processAsSingleTrack(AudioReference reference) {
         String url = SoundCloudHelper.nonMobileUrl(reference.identifier);
 
         Matcher trackUrlMatcher = trackUrlPattern.matcher(url);
         if (trackUrlMatcher.matches() && !"likes".equals(trackUrlMatcher.group(2))) {
-            return loadTrack(url);
+            AudioTrack track = loadTrack(url);
+            return Objects.requireNonNullElse(track, AudioReference.NO_TRACK);
         }
 
         Matcher unlistedUrlMatcher = unlistedUrlPattern.matcher(url);
         if (unlistedUrlMatcher.matches()) {
-            return loadTrack(url);
+            AudioTrack track = loadTrack(url);
+            return Objects.requireNonNullElse(track, AudioReference.NO_TRACK);
         }
 
         return null;
@@ -427,7 +429,7 @@ public class SoundCloudAudioSourceManager implements AudioSourceManager, HttpCon
         /**
          * Whether to filter out short preview tracks that are only fully available with a Soundcloud subscription.
          * Lavaplayer does not support getting the full track. Only affects new AudioTracks being loaded by this source,
-         *   with no effect on deserialized tracks.
+         * with no effect on deserialized tracks.
          * <p>
          * Note: Currently does not affect playlists except liked tracks
          */
