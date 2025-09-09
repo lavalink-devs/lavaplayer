@@ -235,7 +235,7 @@ public class SoundCloudAudioSourceManager implements AudioSourceManager, HttpCon
                 throw new FriendlyException("This track is not available", COMMON, null);
             }
 
-            if (honorPreviewFilter && filterOutPreviewTracks && Objects.equals(trackData.get("monetization_model").text(), FULL_TRACK_UNAVAILABLE_MARKER)) {
+            if (honorPreviewFilter && filterOutPreviewTracks && isPreviewTrack(trackData)) {
                 return null;
             }
 
@@ -298,7 +298,9 @@ public class SoundCloudAudioSourceManager implements AudioSourceManager, HttpCon
             JsonBrowser trackItem = item.get("track");
 
             if (!trackItem.isNull() && !dataReader.isTrackBlocked(trackItem)) {
-                tracks.add(loadFromTrackData(trackItem));
+                if (!filterOutPreviewTracks || !isPreviewTrack(trackItem)) {
+                    tracks.add(loadFromTrackData(trackItem));
+                }
             }
         }
 
@@ -370,11 +372,17 @@ public class SoundCloudAudioSourceManager implements AudioSourceManager, HttpCon
 
         for (JsonBrowser item : searchResults.get("collection").values()) {
             if (!item.isNull()) {
-                tracks.add(loadFromTrackData(item));
+                if (!filterOutPreviewTracks || !isPreviewTrack(item)) {
+                    tracks.add(loadFromTrackData(item));
+                }
             }
         }
 
         return new BasicAudioPlaylist("Search results for: " + query, tracks, null, true);
+    }
+
+    private boolean isPreviewTrack(JsonBrowser trackData) {
+        return Objects.equals(trackData.get("monetization_model").text(), FULL_TRACK_UNAVAILABLE_MARKER);
     }
 
     public static class Builder {
@@ -420,6 +428,8 @@ public class SoundCloudAudioSourceManager implements AudioSourceManager, HttpCon
          * Whether to filter out short preview tracks that are only fully available with a Soundcloud subscription.
          * Lavaplayer does not support getting the full track. Only affects new AudioTracks being loaded by this source,
          *   with no effect on deserialized tracks.
+         * <p>
+         * Note: Currently does not affect playlists except liked tracks
          */
         public Builder withFilterOutPreviewTracks(boolean filterOutPreviewTracks) {
             this.filterOutPreviewTracks = filterOutPreviewTracks;
