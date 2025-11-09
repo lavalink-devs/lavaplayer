@@ -306,6 +306,10 @@ public class SoundCloudAudioSourceManager implements AudioSourceManager, HttpCon
             }
         }
 
+        if (tracks.isEmpty()) {
+            return AudioReference.NO_TRACK;
+        }
+
         return new BasicAudioPlaylist("Liked by " + userInfo.name, tracks, null, false);
     }
 
@@ -378,6 +382,10 @@ public class SoundCloudAudioSourceManager implements AudioSourceManager, HttpCon
                     tracks.add(loadFromTrackData(item));
                 }
             }
+        }
+
+        if (tracks.isEmpty()) {
+            return AudioReference.NO_TRACK;
         }
 
         return new BasicAudioPlaylist("Search results for: " + query, tracks, null, true);
