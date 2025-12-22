@@ -100,6 +100,21 @@ public class SoundCloudAudioSourceManager implements AudioSourceManager, HttpCon
         SoundCloudDataReader dataReader,
         SoundCloudDataLoader dataLoader,
         SoundCloudFormatHandler formatHandler,
+        SoundCloudPlaylistLoader playlistLoader
+    ) {
+        this(allowSearch, dataReader, dataLoader, formatHandler, playlistLoader, false);
+    }
+
+    /**
+     * Create an instance.
+     *
+     * @param allowSearch Whether to allow search queries as identifiers
+     */
+    public SoundCloudAudioSourceManager(
+        boolean allowSearch,
+        SoundCloudDataReader dataReader,
+        SoundCloudDataLoader dataLoader,
+        SoundCloudFormatHandler formatHandler,
         SoundCloudPlaylistLoader playlistLoader,
         boolean filterOutPreviewTracks
     ) {
