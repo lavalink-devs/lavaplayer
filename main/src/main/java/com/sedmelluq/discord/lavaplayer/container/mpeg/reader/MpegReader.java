@@ -62,6 +62,15 @@ public class MpegReader {
 
         if (length == 1) {
             length = data.readLong();
+        } else if (length == 0) {
+            // length == 0 means the box extends to end of container.
+            // Avoid seeking back to the box's start by adjusting length to the remainder of the container length
+            length = parent.offset + parent.length - offset;
+        }
+
+        if (length < 8) {
+            // Need at least 8 bytes for the header, anything less is invalid.
+            return null;
         }
 
         return new MpegSectionInfo(offset, length, type);

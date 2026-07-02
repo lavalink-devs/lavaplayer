@@ -4,6 +4,8 @@ import com.sedmelluq.discord.lavaplayer.tools.io.BitStreamReader;
 import com.sedmelluq.discord.lavaplayer.tools.io.BitStreamWriter;
 import com.sedmelluq.discord.lavaplayer.tools.io.ByteBufferOutputStream;
 import com.sedmelluq.lava.common.natives.NativeResourceHolder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -16,6 +18,8 @@ import java.nio.ShortBuffer;
  * layer. The only AAC type verified to work with this is AAC_LC.
  */
 public class AacDecoder extends NativeResourceHolder {
+    private static final Logger log = LoggerFactory.getLogger(AacDecoder.class);
+
     private static final int[] SAMPLERATE_TABLE = { 96000, 88200, 64000, 48000, 44100,
         32000, 24000, 22050, 16000, 12000, 11025, 8000, 7350 };
 
@@ -31,8 +35,13 @@ public class AacDecoder extends NativeResourceHolder {
     private static final int ERROR_NOT_ENOUGH_BITS = 4098;
     private static final int ERROR_OUTPUT_BUFFER_TOO_SMALL = 8204;
 
+    // per-frame decode errors are in the range 0x4000-0x4FFF
+    private static final int DECODE_ERROR_START = 0x4000;
+    private static final int DECODE_ERROR_END = 0x4FFF;
+
     private final AacDecoderLibrary library;
-    private final long instance;
+    private long instance;
+    private Long lastConfig;
 
     /**
      * Create a new decoder.
@@ -102,6 +111,7 @@ public class AacDecoder extends NativeResourceHolder {
             buffer = Long.reverseBytes(buffer);
         }
 
+        lastConfig = buffer;
         return library.configure(instance, buffer);
     }
 
@@ -205,11 +215,28 @@ public class AacDecoder extends NativeResourceHolder {
         }
 
         int result = library.decode(instance, buffer, buffer.capacity(), flush);
-        if (result != 0 && result != ERROR_NOT_ENOUGH_BITS) {
-            throw new IllegalStateException("Error from decoder " + result);
+
+        if (result == 0) {
+            return true;
+        } else if (result == ERROR_NOT_ENOUGH_BITS) {
+            return false;
+        } else if (result >= DECODE_ERROR_START && result <= DECODE_ERROR_END) {
+            // 0x4xxx errors are per-frame, so we can try to ignore the error and resume from the next frame
+            log.warn("Skipping corrupt AAC frame, decoder returned error {}.", result);
+            resetInstance();
+            return false;
         }
 
-        return result == 0;
+        throw new IllegalStateException("Error from decoder " + result);
+    }
+
+    private void resetInstance() {
+        library.destroy(instance);
+        instance = library.create(TRANSPORT_NONE);
+
+        if (lastConfig != null) {
+            library.configure(instance, lastConfig);
+        }
     }
 
     /**
