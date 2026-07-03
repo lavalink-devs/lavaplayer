@@ -1,5 +1,12 @@
 # Change Log
 
+## [2.2.7] -- 2026-07-03
+* Fixed Ogg playback position being set to 0 on seek in https://github.com/lavalink-devs/lavaplayer/commit/94f9d5706414ef50b21e92628f212b6e16260302
+* Fixed AAC per-frame decode errors being treated as fatal in https://github.com/lavalink-devs/lavaplayer/pull/192
+* Fixed MP4 probing of invalid files causing excessive CPU usage in https://github.com/lavalink-devs/lavaplayer/pull/192
+* Fixed the incorrect sha256Hash in `TwitchAudioSourceManager` in https://github.com/lavalink-devs/lavaplayer/pull/190
+* Changed the `SoundCloudAudioSourceManager` search prefix public in https://github.com/lavalink-devs/lavaplayer/pull/188
+
 ## [2.2.6] - 2025-12-21
 * Fixed breaking change in `new SoundCloudAudioSourceManager` in https://github.com/lavalink-devs/lavaplayer/commit/0e67279600b8be62eebc2ab114934d24c6a0b54d
 
