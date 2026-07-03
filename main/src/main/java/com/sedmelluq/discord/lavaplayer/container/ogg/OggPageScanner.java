@@ -19,6 +19,7 @@ public class OggPageScanner {
     private int pageSize;
     private long byteStreamPosition;
     private int pageSequence;
+    private int streamSerial;
 
     /**
      * @param absoluteOffset Current position of the stream in bytes.
@@ -37,7 +38,7 @@ public class OggPageScanner {
      * @return If the data contains the header of the last page in the OGG stream, then stream size information,
      * otherwise <code>null</code>.
      */
-    public OggStreamSizeInfo scanForSizeInfo(long firstPageOffset, int sampleRate) {
+    public OggStreamSizeInfo scanForSizeInfo(long firstPageOffset, int sampleRate, int targetSerial) {
         ByteBuffer buffer = ByteBuffer.wrap(data, 0, dataLength);
         int head = buffer.getInt(0);
 
@@ -47,7 +48,7 @@ public class OggPageScanner {
 
                 if (attemptReadHeader(buffer)) {
                     do {
-                        if ((flags & OggPageHeader.FLAG_LAST_PAGE) != 0) {
+                        if (streamSerial == targetSerial && (flags & OggPageHeader.FLAG_LAST_PAGE) != 0) {
                             return new OggStreamSizeInfo((byteStreamPosition - firstPageOffset) + pageSize,
                                 Long.reverseBytes(reversedPosition), firstPageOffset, byteStreamPosition, sampleRate);
                         }
@@ -68,7 +69,7 @@ public class OggPageScanner {
      * @param sampleRate Sample rate of the track in the stream.
      * @return A list of OggSeekPoint objects representing the seek points in the stream.
      */
-    public List<OggSeekPoint> createSeekTable(int sampleRate) {
+    public List<OggSeekPoint> createSeekTable(int sampleRate, int targetSerial) {
         List<OggSeekPoint> seekPoints = new ArrayList<>();
 
         ByteBuffer buffer = ByteBuffer.wrap(data, 0, dataLength);
@@ -78,7 +79,7 @@ public class OggPageScanner {
             if (head == OGG_PAGE_HEADER_INT) {
                 buffer.position(i);
 
-                if (attemptReadHeader(buffer)) {
+                if (attemptReadHeader(buffer) && streamSerial == targetSerial) {
                     long position = byteStreamPosition;
                     long granulePosition = Long.reverseBytes(reversedPosition);
                     long timecode = granulePosition / (sampleRate / 1000);
@@ -124,6 +125,7 @@ public class OggPageScanner {
 
         flags = buffer.get(start + 5) & 0xFF;
         reversedPosition = buffer.getLong(start + 6);
+        streamSerial = Integer.reverseBytes(buffer.getInt(start + 14));
         byteStreamPosition = absoluteOffset + start;
         pageSize = minimumCapacity;
 
