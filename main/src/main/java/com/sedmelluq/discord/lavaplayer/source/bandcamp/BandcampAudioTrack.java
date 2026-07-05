@@ -13,6 +13,7 @@ import com.sedmelluq.discord.lavaplayer.track.playback.LocalAudioTrackExecutor;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.jsoup.parser.Parser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,7 +63,8 @@ public class BandcampAudioTrack extends DelegatedAudioTrack {
             String responseText = IOUtils.toString(response.getEntity().getContent(), StandardCharsets.UTF_8);
             JsonBrowser trackInfo = sourceManager.readTrackListInformation(responseText);
 
-            return trackInfo.get("trackinfo").index(0).get("file").get("mp3-128").text();
+            String url = trackInfo.get("trackinfo").index(0).get("file").get("mp3-128").text();
+            return url != null ? Parser.unescapeEntities(url, false) : null;
         }
     }
 
