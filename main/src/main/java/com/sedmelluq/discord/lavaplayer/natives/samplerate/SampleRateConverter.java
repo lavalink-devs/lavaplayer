@@ -19,10 +19,13 @@ public class SampleRateConverter extends NativeResourceHolder {
     public SampleRateConverter(ResamplingType type, int channels, int sourceRate, int targetRate) {
         ratio = (double) targetRate / (double) sourceRate;
         library = SampleRateLibrary.getInstance();
-        instance = library.create(type.ordinal(), channels);
+
+        int[] error = new int[1];
+        instance = library.create(type.ordinal(), channels, error);
 
         if (instance == 0) {
-            throw new IllegalStateException("Could not create an instance of sample rate converter.");
+            throw new IllegalStateException("Could not create an instance of sample rate converter." +
+                " type: " + type + ", channels: " + channels + ", error code: " + error[0]);
         }
     }
 

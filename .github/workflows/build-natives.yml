@@ -1,0 +1,764 @@
+name: Build Natives
+
+on:
+    push:
+        branches: ["**"]
+        paths:
+            - "natives/**"
+            - ".github/workflows/build-natives.yml"
+    workflow_dispatch:
+        inputs:
+            skip-cache:
+                description: "Skip all caches and force a full rebuild"
+                type: boolean
+                default: false
+    workflow_call:
+        secrets:
+            MAVEN_USERNAME:
+                required: false
+            MAVEN_PASSWORD:
+                required: false
+            ORG_GRADLE_PROJECT_mavenCentralPassword:
+                required: false
+            ORG_GRADLE_PROJECT_mavenCentralUsername:
+                required: false
+            ORG_GRADLE_PROJECT_signingInMemoryKey:
+                required: false
+            ORG_GRADLE_PROJECT_signingInMemoryKeyPassword:
+                required: false
+# Prevent concurrent runs on the same branch from racing to commit
+concurrency:
+    group: build-natives-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    # -------------------------------------------------------------------------
+    # Linux glibc — matrix of 6 targets, all cross-compiled on ubuntu-latest
+    # -------------------------------------------------------------------------
+    build-linux:
+        runs-on: ubuntu-latest
+        strategy:
+            fail-fast: false
+            matrix:
+                include:
+                    - target: linux-x86-64
+                      apt_packages: ""
+                      configure_host: native
+                      toolchain: ""
+
+                    - target: linux-x86
+                      apt_packages: gcc-i686-linux-gnu g++-i686-linux-gnu binutils-i686-linux-gnu
+                      configure_host: i686-linux-gnu
+                      toolchain: cmake/toolchain-linux-x86.cmake
+
+                    - target: linux-arm
+                      apt_packages: gcc-arm-linux-gnueabi g++-arm-linux-gnueabi binutils-arm-linux-gnueabi
+                      configure_host: arm-linux-gnueabi
+                      toolchain: cmake/toolchain-linux-arm.cmake
+
+                    - target: linux-armhf
+                      apt_packages: gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf binutils-arm-linux-gnueabihf
+                      configure_host: arm-linux-gnueabihf
+                      toolchain: cmake/toolchain-linux-armhf.cmake
+
+                    - target: linux-aarch32
+                      apt_packages: gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf binutils-arm-linux-gnueabihf
+                      configure_host: arm-linux-gnueabihf
+                      toolchain: cmake/toolchain-linux-aarch32.cmake
+
+                    - target: linux-aarch64
+                      apt_packages: gcc-aarch64-linux-gnu g++-aarch64-linux-gnu binutils-aarch64-linux-gnu
+                      configure_host: aarch64-linux-gnu
+                      toolchain: cmake/toolchain-linux-aarch64.cmake
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v6
+
+            - name: Cache dist output
+              if: inputs.skip-cache != true
+              id: dist-cache
+              uses: actions/cache@v5
+              with:
+                  path: natives/dist/${{ matrix.target }}
+                  key: natives-dist-v1-${{ matrix.target }}-${{ hashFiles('natives/**') }}
+
+            - name: Install build tools and cross-compiler
+              if: steps.dist-cache.outputs.cache-hit != 'true'
+              run: |
+                  sudo apt-get update -qq
+                  sudo apt-get install -y libtool autoconf ${{ matrix.apt_packages }}
+
+            - name: Setup Java
+              if: steps.dist-cache.outputs.cache-hit != 'true'
+              uses: actions/setup-java@v5
+              with:
+                  distribution: zulu
+                  java-version: 11
+
+            - name: Setup Gradle
+              if: steps.dist-cache.outputs.cache-hit != 'true'
+              uses: gradle/actions/setup-gradle@v6
+
+            - name: Download sources
+              if: steps.dist-cache.outputs.cache-hit != 'true'
+              run: ./gradlew :natives:load --no-daemon
+
+            - name: Build static dependencies
+              if: steps.dist-cache.outputs.cache-hit != 'true'
+              working-directory: natives
+              env:
+                  NATIVES_DIR: ${{ github.workspace }}/natives
+              run: |
+                  chmod +x scripts/build-linux-deps.sh
+                  TOOLCHAIN=""
+                  if [ -n "${{ matrix.toolchain }}" ]; then
+                      TOOLCHAIN="${{ github.workspace }}/natives/${{ matrix.toolchain }}"
+                  fi
+                  scripts/build-linux-deps.sh "${{ matrix.configure_host }}" "$TOOLCHAIN"
+
+            - name: Build connector
+              if: steps.dist-cache.outputs.cache-hit != 'true'
+              working-directory: natives
+              run: |
+                  TARGET="${{ matrix.target }}"
+                  DIST_DIR="${{ github.workspace }}/natives/dist/${TARGET}"
+                  BUILD_DIR="${{ github.workspace }}/natives/build/${TARGET}"
+                  mkdir -p "$DIST_DIR" "$BUILD_DIR"
+
+                  TOOLCHAIN_ARGS=""
+                  if [ -n "${{ matrix.toolchain }}" ]; then
+                      TOOLCHAIN_ARGS="-DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/natives/${{ matrix.toolchain }}"
+                  fi
+
+                  cd "$BUILD_DIR"
+                  DIST_DIR="$DIST_DIR" JAVA_HOME="$JAVA_HOME" \
+                  cmake "${{ github.workspace }}/natives" \
+                      -DCMAKE_BUILD_TYPE=Release \
+                      $TOOLCHAIN_ARGS
+                  DIST_DIR="$DIST_DIR" JAVA_HOME="$JAVA_HOME" cmake --build . -j"$(nproc)"
+
+            - name: Upload artifact
+              uses: actions/upload-artifact@v7
+              with:
+                  name: natives-${{ matrix.target }}
+                  path: natives/dist/${{ matrix.target }}/
+                  if-no-files-found: error
+
+    # -------------------------------------------------------------------------
+    # Linux musl — two targets using musl toolchains
+    # -------------------------------------------------------------------------
+    build-linux-musl:
+        runs-on: ubuntu-latest
+        strategy:
+            fail-fast: false
+            matrix:
+                include:
+                    - target: linux-musl-x86-64
+                      musl_host: x86_64-linux-musl
+                      musl_toolchain: cmake/toolchain-linux-musl-x86-64.cmake
+
+                    - target: linux-musl-aarch64
+                      musl_host: aarch64-linux-musl
+                      musl_toolchain: cmake/toolchain-linux-musl-aarch64.cmake
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v6
+
+            - name: Cache dist output
+              if: inputs.skip-cache != true
+              id: dist-cache
+              uses: actions/cache@v5
+              with:
+                  path: natives/dist/${{ matrix.target }}
+                  key: natives-dist-v1-${{ matrix.target }}-${{ hashFiles('natives/**') }}
+
+            - name: Install build tools
+              if: steps.dist-cache.outputs.cache-hit != 'true'
+              run: |
+                  sudo apt-get update -qq
+                  sudo apt-get install -y libtool autoconf
+
+            - name: Install musl tools (x86-64 only)
+              if: steps.dist-cache.outputs.cache-hit != 'true' && matrix.target == 'linux-musl-x86-64'
+              run: |
+                  sudo apt-get install -y musl-tools
+
+            - name: Install Zig for musl-aarch64 cross-compilation
+              if: steps.dist-cache.outputs.cache-hit != 'true' && matrix.target == 'linux-musl-aarch64'
+              run: |
+                  ZIG_VER="0.13.0"
+                  curl -fsSL "https://ziglang.org/download/${ZIG_VER}/zig-linux-x86_64-${ZIG_VER}.tar.xz" \
+                      -o /tmp/zig.tar.xz
+                  sudo tar xf /tmp/zig.tar.xz -C /opt
+                  sudo ln -sf "/opt/zig-linux-x86_64-${ZIG_VER}/zig" /usr/local/bin/zig
+                  # Create wrapper scripts so autotools and CMake can use zig as a GCC-compatible cross-compiler
+                  printf '#!/bin/sh\nexec zig cc -target aarch64-linux-musl "$@"\n' \
+                      | sudo tee /usr/local/bin/aarch64-linux-musl-gcc > /dev/null
+                  printf '#!/bin/sh\nexec zig c++ -target aarch64-linux-musl "$@"\n' \
+                      | sudo tee /usr/local/bin/aarch64-linux-musl-g++ > /dev/null
+                  printf '#!/bin/sh\nexec zig ar "$@"\n' \
+                      | sudo tee /usr/local/bin/aarch64-linux-musl-ar > /dev/null
+                  printf '#!/bin/sh\nexec zig ranlib "$@"\n' \
+                      | sudo tee /usr/local/bin/aarch64-linux-musl-ranlib > /dev/null
+                  printf '#!/bin/sh\nexec strip "$@"\n' \
+                      | sudo tee /usr/local/bin/aarch64-linux-musl-strip > /dev/null
+                  sudo chmod +x \
+                      /usr/local/bin/aarch64-linux-musl-gcc \
+                      /usr/local/bin/aarch64-linux-musl-g++ \
+                      /usr/local/bin/aarch64-linux-musl-ar \
+                      /usr/local/bin/aarch64-linux-musl-ranlib \
+                      /usr/local/bin/aarch64-linux-musl-strip
+                  # MUSL_CROSS_PATH=/usr/local makes the cmake toolchain resolve to /usr/local/bin/aarch64-linux-musl-gcc
+                  echo "MUSL_CROSS_PATH=/usr/local" >> "$GITHUB_ENV"
+
+            - name: Setup Java
+              if: steps.dist-cache.outputs.cache-hit != 'true'
+              uses: actions/setup-java@v5
+              with:
+                  distribution: zulu
+                  java-version: 11
+
+            - name: Setup Gradle
+              if: steps.dist-cache.outputs.cache-hit != 'true'
+              uses: gradle/actions/setup-gradle@v6
+
+            - name: Download sources
+              if: steps.dist-cache.outputs.cache-hit != 'true'
+              run: ./gradlew :natives:load --no-daemon
+
+            - name: Set CC for musl-aarch64
+              if: steps.dist-cache.outputs.cache-hit != 'true' && matrix.target == 'linux-musl-aarch64'
+              run: |
+                  echo "CC=${MUSL_CROSS_PATH}/bin/aarch64-linux-musl-gcc" >> "$GITHUB_ENV"
+                  echo "CXX=${MUSL_CROSS_PATH}/bin/aarch64-linux-musl-g++" >> "$GITHUB_ENV"
+                  echo "AR=${MUSL_CROSS_PATH}/bin/aarch64-linux-musl-ar" >> "$GITHUB_ENV"
+                  echo "RANLIB=${MUSL_CROSS_PATH}/bin/aarch64-linux-musl-ranlib" >> "$GITHUB_ENV"
+                  echo "STRIP=${MUSL_CROSS_PATH}/bin/aarch64-linux-musl-strip" >> "$GITHUB_ENV"
+
+            - name: Set CC for musl-x86-64
+              if: steps.dist-cache.outputs.cache-hit != 'true' && matrix.target == 'linux-musl-x86-64'
+              run: |
+                  echo "CC=musl-gcc" >> "$GITHUB_ENV"
+                  echo "AR=ar" >> "$GITHUB_ENV"
+                  echo "RANLIB=ranlib" >> "$GITHUB_ENV"
+                  echo "STRIP=strip" >> "$GITHUB_ENV"
+
+            - name: Build static dependencies
+              if: steps.dist-cache.outputs.cache-hit != 'true'
+              working-directory: natives
+              env:
+                  NATIVES_DIR: ${{ github.workspace }}/natives
+              run: |
+                  chmod +x scripts/build-linux-deps.sh
+                  TOOLCHAIN="${{ github.workspace }}/natives/${{ matrix.musl_toolchain }}"
+                  scripts/build-linux-deps.sh "${{ matrix.musl_host }}" "$TOOLCHAIN"
+
+            - name: Build connector
+              if: steps.dist-cache.outputs.cache-hit != 'true'
+              working-directory: natives
+              run: |
+                  TARGET="${{ matrix.target }}"
+                  DIST_DIR="${{ github.workspace }}/natives/dist/${TARGET}"
+                  BUILD_DIR="${{ github.workspace }}/natives/build/${TARGET}"
+                  mkdir -p "$DIST_DIR" "$BUILD_DIR"
+                  cd "$BUILD_DIR"
+                  DIST_DIR="$DIST_DIR" JAVA_HOME="$JAVA_HOME" \
+                  cmake "${{ github.workspace }}/natives" \
+                      -DCMAKE_BUILD_TYPE=Release \
+                      -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}/natives/${{ matrix.musl_toolchain }}"
+                  DIST_DIR="$DIST_DIR" JAVA_HOME="$JAVA_HOME" cmake --build . -j"$(nproc)"
+
+            - name: Upload artifact
+              uses: actions/upload-artifact@v7
+              with:
+                  name: natives-${{ matrix.target }}
+                  path: natives/dist/${{ matrix.target }}/
+                  if-no-files-found: error
+
+    # -------------------------------------------------------------------------
+    # macOS — build Intel and Apple Silicon, then merge into a universal binary
+    # -------------------------------------------------------------------------
+    build-darwin:
+        strategy:
+            fail-fast: false
+            matrix:
+                include:
+                    - target: darwin-x86-64
+                      runner: macos-26-intel
+                    - target: darwin-aarch64
+                      runner: macos-26
+        runs-on: ${{ matrix.runner }}
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v6
+
+            - name: Cache dist output
+              if: inputs.skip-cache != true
+              id: dist-cache
+              uses: actions/cache@v5
+              with:
+                  path: natives/dist/${{ matrix.target }}
+                  key: natives-dist-v1-${{ matrix.target }}-${{ hashFiles('natives/**') }}
+
+            - name: Setup Java
+              if: steps.dist-cache.outputs.cache-hit != 'true'
+              uses: actions/setup-java@v5
+              with:
+                  distribution: zulu
+                  java-version: 11
+
+            - name: Setup Gradle
+              if: steps.dist-cache.outputs.cache-hit != 'true'
+              uses: gradle/actions/setup-gradle@v6
+
+            - name: Download sources
+              if: steps.dist-cache.outputs.cache-hit != 'true'
+              run: ./gradlew :natives:load --no-daemon
+
+            - name: Build static dependencies
+              if: steps.dist-cache.outputs.cache-hit != 'true'
+              working-directory: natives
+              env:
+                  NATIVES_DIR: ${{ github.workspace }}/natives
+              run: |
+                  chmod +x scripts/build-linux-deps.sh
+                  scripts/build-linux-deps.sh native ""
+
+            - name: Build connector
+              if: steps.dist-cache.outputs.cache-hit != 'true'
+              working-directory: natives
+              run: |
+                  TARGET="${{ matrix.target }}"
+                  DIST_DIR="${{ github.workspace }}/natives/dist/${TARGET}"
+                  BUILD_DIR="${{ github.workspace }}/natives/build/${TARGET}"
+                  mkdir -p "$DIST_DIR" "$BUILD_DIR"
+                  cd "$BUILD_DIR"
+                  DIST_DIR="$DIST_DIR" JAVA_HOME="$JAVA_HOME" \
+                  cmake "${{ github.workspace }}/natives" \
+                      -DCMAKE_BUILD_TYPE=Release
+                  DIST_DIR="$DIST_DIR" JAVA_HOME="$JAVA_HOME" cmake --build . -j"$(sysctl -n hw.logicalcpu)"
+
+            - name: Upload artifact
+              uses: actions/upload-artifact@v7
+              with:
+                  name: darwin-build-${{ matrix.target }}
+                  path: natives/dist/${{ matrix.target }}/
+                  if-no-files-found: error
+
+    # -------------------------------------------------------------------------
+    # macOS — merge per-arch builds into a single universal binary
+    # -------------------------------------------------------------------------
+    merge-darwin:
+        needs: [build-darwin]
+        runs-on: macos-26
+        steps:
+            - name: Download darwin-x86-64
+              uses: actions/download-artifact@v8
+              with:
+                  name: darwin-build-darwin-x86-64
+                  path: /tmp/darwin-x86-64
+
+            - name: Download darwin-aarch64
+              uses: actions/download-artifact@v8
+              with:
+                  name: darwin-build-darwin-aarch64
+                  path: /tmp/darwin-aarch64
+
+            - name: Create universal binary with lipo
+              run: |
+                  mkdir -p /tmp/darwin
+                  lipo -create \
+                      /tmp/darwin-x86-64/libconnector.dylib \
+                      /tmp/darwin-aarch64/libconnector.dylib \
+                      -output /tmp/darwin/libconnector.dylib
+                  echo "Universal binary info:"
+                  lipo -info /tmp/darwin/libconnector.dylib
+
+            - name: Upload universal artifact
+              uses: actions/upload-artifact@v7
+              with:
+                  name: natives-darwin
+                  path: /tmp/darwin/
+                  if-no-files-found: error
+
+    # -------------------------------------------------------------------------
+    # Windows — MSYS2 with prebuilt packages (win-x86-64, win-x86, win-aarch64)
+    # -------------------------------------------------------------------------
+    build-windows:
+        runs-on: windows-latest
+        strategy:
+            fail-fast: false
+            matrix:
+                include:
+                    - target: win-x86-64
+                      msys_env: MINGW64
+                      msys_prefix: mingw-w64-x86_64
+                      msys_unix_root: /mingw64
+                      msys_packages: >-
+                          mingw-w64-x86_64-gcc
+                          mingw-w64-x86_64-opus
+                          mingw-w64-x86_64-libvorbis
+                          mingw-w64-x86_64-mpg123
+                          mingw-w64-x86_64-fdk-aac
+                          mingw-w64-x86_64-libsamplerate
+                          mingw-w64-x86_64-cmake
+                          mingw-w64-x86_64-ninja
+
+                    - target: win-x86
+                      msys_env: MINGW32
+                      msys_prefix: mingw-w64-i686
+                      msys_unix_root: /mingw32
+                      # fdk-aac and libsamplerate are not available for i686 — built from source below
+                      msys_packages: >-
+                          mingw-w64-i686-gcc
+                          mingw-w64-i686-opus
+                          mingw-w64-i686-libvorbis
+                          mingw-w64-i686-mpg123
+                          mingw-w64-i686-cmake
+                          mingw-w64-i686-ninja
+
+                    - target: win-aarch64
+                      msys_env: CLANG64
+                      msys_prefix: mingw-w64-clang-x86_64
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v6
+
+            - name: Cache dist output
+              if: inputs.skip-cache != true
+              id: dist-cache
+              uses: actions/cache@v5
+              with:
+                  path: natives/dist/${{ matrix.target }}
+                  key: natives-dist-v1-${{ matrix.target }}-${{ hashFiles('natives/**') }}
+
+            - name: Setup Java
+              if: steps.dist-cache.outputs.cache-hit != 'true'
+              uses: actions/setup-java@v5
+              with:
+                  distribution: zulu
+                  java-version: 11
+
+            - name: Setup Gradle
+              if: steps.dist-cache.outputs.cache-hit != 'true'
+              uses: gradle/actions/setup-gradle@v6
+
+            # Download sources using native Gradle (Windows CMD) — needed for fdk-aac headers
+            - name: Download sources
+              if: steps.dist-cache.outputs.cache-hit != 'true'
+              shell: cmd
+              run: gradlew.bat :natives:load --no-daemon
+
+            # Install codec libraries for win-x86-64 and win-x86
+            - name: Setup MSYS2 (win-x86-64 / win-x86)
+              if: steps.dist-cache.outputs.cache-hit != 'true' && matrix.target != 'win-aarch64'
+              uses: msys2/setup-msys2@v2
+              with:
+                  msystem: ${{ matrix.msys_env }}
+                  update: true
+                  cache: true
+                  install: ${{ matrix.msys_packages }}
+
+            # Install ARM64 codec libs + Clang cross-compiler for win-aarch64
+            - name: Setup MSYS2 (win-aarch64)
+              if: steps.dist-cache.outputs.cache-hit != 'true' && matrix.target == 'win-aarch64'
+              uses: msys2/setup-msys2@v2
+              with:
+                  msystem: CLANG64
+                  update: true
+                  cache: true
+                  install: >-
+                      mingw-w64-clang-x86_64-clang
+                      mingw-w64-clang-x86_64-compiler-rt
+                      mingw-w64-clang-x86_64-cmake
+                      mingw-w64-clang-x86_64-ninja
+                      mingw-w64-clang-aarch64-toolchain
+                      mingw-w64-clang-aarch64-opus
+                      mingw-w64-clang-aarch64-libvorbis
+                      mingw-w64-clang-aarch64-mpg123
+                      mingw-w64-clang-aarch64-fdk-aac
+                      mingw-w64-clang-aarch64-libsamplerate
+
+            # win-x86: fdk-aac and libsamplerate are not in MSYS2 MINGW32 — build from cached sources
+            - name: Build missing MINGW32 deps from source (win-x86 only)
+              if: steps.dist-cache.outputs.cache-hit != 'true' && matrix.target == 'win-x86'
+              shell: msys2 {0}
+              run: |
+                  WORKSPACE="$(cygpath -u '${{ github.workspace }}')"
+                  LIBS_DIR="${WORKSPACE}/natives/libs/64"
+                  mkdir -p "$LIBS_DIR"
+
+                  mkdir -p /tmp/fdk-aac-build && cd /tmp/fdk-aac-build
+                  cmake "${WORKSPACE}/natives/fdk-aac" \
+                      -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF
+                  cmake --build .
+                  find . -name "libfdk-aac.a" -exec cp {} "$LIBS_DIR/" \;
+
+                  mkdir -p /tmp/samplerate-build && cd /tmp/samplerate-build
+                  cmake "${WORKSPACE}/natives/samplerate" \
+                      -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF \
+                      -DLIBSAMPLERATE_EXAMPLES=OFF
+                  cmake --build .
+                  find . -name "libsamplerate.a" -exec cp {} "$LIBS_DIR/" \;
+
+            # Build win-x86-64 and win-x86 natively with MinGW
+            - name: Build connector (win-x86-64 / win-x86)
+              if: steps.dist-cache.outputs.cache-hit != 'true' && matrix.target != 'win-aarch64'
+              shell: msys2 {0}
+              run: |
+                  TARGET="${{ matrix.target }}"
+                  MSYS_UNIX_ROOT="${{ matrix.msys_unix_root }}"
+                  WORKSPACE="$(cygpath -u '${{ github.workspace }}')"
+                  LIBS_DIR="${WORKSPACE}/natives/libs/64"
+                  DIST_DIR="${WORKSPACE}/natives/dist/${TARGET}"
+                  BUILD_DIR="${WORKSPACE}/natives/build/${TARGET}"
+                  mkdir -p "$LIBS_DIR" "$DIST_DIR" "$BUILD_DIR"
+
+                  # Copy prebuilt static libs from MSYS2 into the location CMakeLists expects
+                  for lib in opus vorbis ogg mpg123 fdk-aac samplerate; do
+                      src_a="${MSYS_UNIX_ROOT}/lib/lib${lib}.a"
+                      [ -f "$src_a" ] && cp "$src_a" "$LIBS_DIR/" || echo "Note: $src_a not in MSYS2 (may be built from source)"
+                  done
+
+                  JAVA_HOME="$(cygpath -u "$JAVA_HOME")"
+                  cd "$BUILD_DIR"
+                  DIST_DIR="$DIST_DIR" JAVA_HOME="$JAVA_HOME" \
+                  cmake "${WORKSPACE}/natives" \
+                      -G Ninja \
+                      -DCMAKE_BUILD_TYPE=Release
+                  DIST_DIR="$DIST_DIR" JAVA_HOME="$JAVA_HOME" cmake --build .
+
+                  # Copy libmpg123-0.dll from MSYS2 to the output folder
+                  cp "${MSYS_UNIX_ROOT}/bin/libmpg123-0.dll" "$DIST_DIR/"
+
+            # Copy aarch64 builtins from CLANGARM64 to where CLANG64's Clang expects them
+            - name: Copy aarch64 builtins for cross-compilation (win-aarch64)
+              if: steps.dist-cache.outputs.cache-hit != 'true' && matrix.target == 'win-aarch64'
+              shell: msys2 {0}
+              run: |
+                  CLANG64_VER=$(clang --version | grep -oP '\b[0-9]+\b' | head -1)
+                  DEST="/clang64/lib/clang/${CLANG64_VER}/lib/aarch64-w64-windows-gnu"
+                  mkdir -p "$DEST"
+                  FOUND=$(find /clangarm64/lib/clang -name "libclang_rt.builtins*.a" 2>/dev/null | head -1)
+                  if [ -z "$FOUND" ]; then
+                      echo "ERROR: no aarch64 builtins found under /clangarm64/lib/clang"
+                      find /clangarm64/lib -maxdepth 5 2>/dev/null | head -40
+                      exit 1
+                  fi
+                  cp "$FOUND" "$DEST/libclang_rt.builtins.a"
+                  echo "Copied $FOUND → $DEST/libclang_rt.builtins.a"
+
+            # Build win-aarch64 by cross-compiling with Clang targeting aarch64-w64-mingw32
+            - name: Build connector (win-aarch64)
+              if: steps.dist-cache.outputs.cache-hit != 'true' && matrix.target == 'win-aarch64'
+              shell: msys2 {0}
+              run: |
+                  TARGET="win-aarch64"
+                  WORKSPACE="$(cygpath -u '${{ github.workspace }}')"
+                  ARM64_LIB_ROOT="/clangarm64"
+                  LIBS_DIR="${WORKSPACE}/natives/libs/64"
+                  DIST_DIR="${WORKSPACE}/natives/dist/${TARGET}"
+                  BUILD_DIR="${WORKSPACE}/natives/build/${TARGET}"
+                  mkdir -p "$LIBS_DIR" "$DIST_DIR" "$BUILD_DIR"
+
+                  # Copy ARM64 static libs from the CLANGARM64 environment
+                  for lib in opus vorbis ogg mpg123 fdk-aac samplerate; do
+                      src_a="${ARM64_LIB_ROOT}/lib/lib${lib}.a"
+                      [ -f "$src_a" ] && cp "$src_a" "$LIBS_DIR/" || echo "Warning: $src_a not found"
+                  done
+
+                  JAVA_HOME="$(cygpath -u "$JAVA_HOME")"
+                  TOOLCHAIN="${WORKSPACE}/natives/cmake/toolchain-win-aarch64.cmake"
+                  cd "$BUILD_DIR"
+                  DIST_DIR="$DIST_DIR" JAVA_HOME="$JAVA_HOME" CLANGARM64_ROOT="$ARM64_LIB_ROOT" \
+                  cmake "${WORKSPACE}/natives" \
+                      -G Ninja \
+                      -DCMAKE_BUILD_TYPE=Release \
+                      -DCMAKE_TOOLCHAIN_FILE="$TOOLCHAIN"
+                  DIST_DIR="$DIST_DIR" JAVA_HOME="$JAVA_HOME" cmake --build .
+
+                  # Copy libmpg123-0.dll from CLANGARM64 to the output folder
+                  cp "${ARM64_LIB_ROOT}/bin/libmpg123-0.dll" "$DIST_DIR/"
+
+            - name: Upload artifact
+              uses: actions/upload-artifact@v7
+              with:
+                  name: natives-${{ matrix.target }}
+                  path: natives/dist/${{ matrix.target }}/
+                  if-no-files-found: error
+
+    # -------------------------------------------------------------------------
+    # Collect all native artifacts into a single upload
+    # -------------------------------------------------------------------------
+    package-natives:
+        needs: [build-linux, build-linux-musl, merge-darwin, build-windows]
+        runs-on: ubuntu-latest
+        steps:
+            - name: Download all artifacts
+              uses: actions/download-artifact@v8
+              with:
+                  path: /tmp/natives-artifacts
+                  pattern: "natives-*"
+                  merge-multiple: false
+
+            - name: Assemble natives resources
+              run: |
+                  for dir in /tmp/natives-artifacts/natives-*/; do
+                      target=$(basename "$dir" | sed 's/^natives-//')
+                      dest="/tmp/natives-resources/natives/${target}"
+                      echo "Placing ${target} → ${dest}"
+                      mkdir -p "$dest"
+                      cp "$dir"* "$dest/"
+                  done
+
+            - name: Upload combined artifact
+              uses: actions/upload-artifact@v7
+              with:
+                  name: natives-resources
+                  path: /tmp/natives-resources/natives/
+                  if-no-files-found: error
+
+    # -------------------------------------------------------------------------
+    # Smoke-test natives on each natively-supported runner
+    # -------------------------------------------------------------------------
+    test-natives:
+        needs: [package-natives]
+        strategy:
+            fail-fast: false
+            matrix:
+                include:
+                    - target: linux-x86-64
+                      runner: ubuntu-latest
+
+                    - target: darwin (Intel)
+                      runner: macos-26-intel
+
+                    - target: darwin (ARM)
+                      runner: macos-26
+
+                    - target: win-x86-64
+                      runner: windows-latest
+
+        runs-on: ${{ matrix.runner }}
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v6
+
+            - name: Download natives
+              uses: actions/download-artifact@v8
+              with:
+                  name: natives-resources
+                  path: natives/src/main/resources/natives
+
+            - name: Setup Java
+              uses: actions/setup-java@v5
+              with:
+                  distribution: zulu
+                  java-version: 11
+
+            - name: Setup Gradle
+              uses: gradle/actions/setup-gradle@v6
+
+            - name: Test natives (${{ matrix.target }})
+              shell: bash
+              run: ./gradlew :main:test --no-daemon
+
+    # -------------------------------------------------------------------------
+    # Smoke-test linux-musl-x86-64 inside an Alpine (musl) container
+    # -------------------------------------------------------------------------
+    test-natives-musl-x86-64:
+        needs: [package-natives]
+        runs-on: ubuntu-latest
+        container:
+            image: eclipse-temurin:11-jdk-alpine
+        steps:
+            - name: Install git and bash
+              run: apk add --no-cache bash git
+
+            - name: Checkout
+              uses: actions/checkout@v6
+
+            - name: Download natives
+              uses: actions/download-artifact@v8
+              with:
+                  name: natives-resources
+                  path: natives/src/main/resources/natives
+
+            - name: Test natives (linux-musl-x86-64)
+              run: ./gradlew :main:test --no-daemon
+
+    # -------------------------------------------------------------------------
+    # Smoke-test linux-aarch64 on an ARM64 runner (Ubuntu 24.04)
+    # -------------------------------------------------------------------------
+    test-natives-linux-aarch64:
+        needs: [package-natives]
+        runs-on: ubuntu-24.04-arm
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v6
+
+            - name: Download natives
+              uses: actions/download-artifact@v8
+              with:
+                  name: natives-resources
+                  path: natives/src/main/resources/natives
+
+            - name: Setup Java
+              uses: actions/setup-java@v5
+              with:
+                  distribution: zulu
+                  java-version: 11
+
+            - name: Setup Gradle
+              uses: gradle/actions/setup-gradle@v6
+
+            - name: Test natives (linux-aarch64)
+              run: ./gradlew :main:test --no-daemon
+
+    # -------------------------------------------------------------------------
+    # Build and publish the natives JAR
+    # -------------------------------------------------------------------------
+    publish-natives:
+        needs:
+            [test-natives, test-natives-musl-x86-64, test-natives-linux-aarch64]
+        runs-on: ubuntu-latest
+        env:
+            MAVEN_USERNAME: ${{ vars.MAVEN_USERNAME }}
+            MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
+            ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.ORG_GRADLE_PROJECT_MAVENCENTRALPASSWORD }}
+            ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.ORG_GRADLE_PROJECT_MAVENCENTRALUSERNAME }}
+            ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.ORG_GRADLE_PROJECT_SIGNINGINMEMORYKEY }}
+            ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.ORG_GRADLE_PROJECT_SIGNINGINMEMORYKEYPASSWORD }}
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v6
+              with:
+                  fetch-depth: 0
+
+            - name: Download natives
+              uses: actions/download-artifact@v8
+              with:
+                  name: natives-resources
+                  path: natives/src/main/resources/natives
+
+            - name: Setup Java
+              uses: actions/setup-java@v5
+              with:
+                  distribution: zulu
+                  java-version: 11
+
+            - name: Setup Gradle
+              uses: gradle/actions/setup-gradle@v6
+
+            - name: Build and Publish natives JAR
+              run: ./gradlew :natives:build :natives:publish --no-daemon -PMAVEN_USERNAME=$MAVEN_USERNAME -PMAVEN_PASSWORD=$MAVEN_PASSWORD
+
+            - name: Upload Artifacts
+              uses: actions/upload-artifact@v7
+              with:
+                    name: Lavaplayer-Natives.zip
+                    path: |
+                        natives/build/libs/lavaplayer-natvies-*.jar
