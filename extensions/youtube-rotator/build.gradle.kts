@@ -10,6 +10,14 @@ base {
     archivesName = "lavaplayer-ext-youtube-rotator"
 }
 
+tasks.jar {
+    manifest {
+        attributes(
+            "Automatic-Module-Name" to "com.sedmelluq.lava.extensions.youtuberotator"
+        )
+    }
+}
+
 dependencies {
     compileOnly(projects.main)
     implementation(libs.slf4j)
