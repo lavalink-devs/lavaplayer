@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.10)
 
 project(fdk-aac CXX)
 
@@ -12,7 +12,7 @@ message(STATUS "${MAIN_DIRS}")
 foreach(subdir ${MAIN_DIRS})
 	file (GLOB dir_sources "${subdir}/src/*.cpp" "${subdir}/src/*.h" "${subdir}/include/*.h")
 	set (MAIN_SOURCES ${MAIN_SOURCES} ${dir_sources})
-	
+
 	include_directories("${subdir}/include")
 endforeach()
 

@@ -15,7 +15,7 @@ base {
 
 dependencies {
     api(projects.common)
-    implementation(projects.nativesPublish)
+    implementation("dev.arbjerg:lavaplayer-natives:+")
     implementation(libs.rhino.engine)
     implementation(libs.slf4j)
 
@@ -31,12 +31,18 @@ dependencies {
 
     implementation(libs.intellij.annotations)
 
-    testImplementation(libs.groovy)
-    testImplementation(libs.spock.core)
+    testImplementation(libs.junit.jupiter)
     testImplementation(libs.logback.classic)
 }
 
 tasks {
+    test {
+        useJUnitPlatform()
+        testLogging {
+            events("passed", "failed", "skipped")
+        }
+    }
+
     val updateVersion by registering {
         val output = "$buildDir/resources/main/com/sedmelluq/discord/lavaplayer/tools/version.txt"
         inputs.property("version", version)

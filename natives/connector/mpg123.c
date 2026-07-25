@@ -1,5 +1,6 @@
 #include "connector.h"
 #include <aacdecoder_lib.h>
+#include <stdint.h>
 
 #ifdef MSC_VER
 #define IMPORT __declspec(dllimport)
@@ -16,23 +17,23 @@ CONNECTOR_IMPORT int mpg123_decode(void *mh, const unsigned char *inmemory, size
 
 CONNECTOR_EXPORT jlong JNICALL Java_com_sedmelluq_discord_lavaplayer_natives_mp3_Mp3DecoderLibrary_create(JNIEnv *jni, jobject me) {
 	mpg123_init();
-	
+
 	void* handle = mpg123_new(NULL, NULL);
 	if (handle == NULL) {
 		return 0;
 	}
-	
+
 	if (mpg123_open_feed(handle) != 0) {
 		mpg123_delete(handle);
 		return 0;
 	}
-	
-	return (jlong) handle;
+
+	return (jlong)(uintptr_t) handle;
 }
 
 CONNECTOR_EXPORT void JNICALL Java_com_sedmelluq_discord_lavaplayer_natives_mp3_Mp3DecoderLibrary_destroy(JNIEnv *jni, jobject me, jlong instance) {
-	void* handle = (void*) instance;
-	
+	void* handle = (void*)(uintptr_t) instance;
+
 	if (handle != NULL) {
 		mpg123_close(handle);
 		mpg123_delete(handle);
@@ -41,17 +42,17 @@ CONNECTOR_EXPORT void JNICALL Java_com_sedmelluq_discord_lavaplayer_natives_mp3_
 
 CONNECTOR_EXPORT jint JNICALL Java_com_sedmelluq_discord_lavaplayer_natives_mp3_Mp3DecoderLibrary_decode(JNIEnv *jni, jobject me, jlong instance, jobject direct_input,
 		jint input_length, jobject direct_output, jint output_length) {
-	
+
 	if (instance == 0) {
 		return -1;
 	}
-	
+
 	unsigned char* input = (*jni)->GetDirectBufferAddress(jni, direct_input);
 	unsigned char* output = (*jni)->GetDirectBufferAddress(jni, direct_output);
 	size_t used_bytes = 0;
-	
-	int result = mpg123_decode((void*) instance, input, (size_t) input_length, output, (size_t) output_length, &used_bytes);
-	
+
+	int result = mpg123_decode((void*)(uintptr_t) instance, input, (size_t) input_length, output, (size_t) output_length, &used_bytes);
+
 	if (result != 0) {
 		if (result > 0) {
 			return -(result + 100);
@@ -59,6 +60,6 @@ CONNECTOR_EXPORT jint JNICALL Java_com_sedmelluq_discord_lavaplayer_natives_mp3_
 			return result;
 		}
 	}
-	
+
 	return (jint) used_bytes;
 }

@@ -12,7 +12,7 @@ class SampleRateLibrary {
         return new SampleRateLibrary();
     }
 
-    native long create(int type, int channels);
+    native long create(int type, int channels, int[] error);
 
     native void destroy(long instance);
 

@@ -6,7 +6,6 @@ import org.ajoberstar.grgit.Grgit
 
 plugins {
     id("org.ajoberstar.grgit") version "5.2.0"
-    id("de.undercouch.download") version "5.4.0"
     alias(libs.plugins.maven.publish.base) apply false
 }
 
@@ -25,7 +24,7 @@ allprojects {
 }
 
 subprojects {
-    if (project.name == "natives" || project.name == "extensions-project") {
+    if (project.name == "extensions-project") {
         return@subprojects
     }
 
