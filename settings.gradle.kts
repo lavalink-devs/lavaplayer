@@ -51,7 +51,7 @@ fun VersionCatalogBuilder.common() {
 
 fun VersionCatalogBuilder.others() {
     library("ibxm-fork", "com.github.walkyst", "ibxm-fork").version("a75")
-    library("rhino-engine", "org.mozilla", "rhino-engine").version("1.7.14")
+    library("rhino-engine", "org.mozilla", "rhino-engine").version("1.7.14.1")
 }
 
 fun VersionCatalogBuilder.test() {
