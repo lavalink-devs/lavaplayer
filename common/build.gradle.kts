@@ -10,6 +10,14 @@ base {
     archivesName = "lava-common"
 }
 
+tasks.jar {
+    manifest {
+        attributes(
+            "Automatic-Module-Name" to "com.sedmelluq.lava.common"
+        )
+    }
+}
+
 dependencies {
     implementation(libs.slf4j)
     implementation(libs.commons.io)

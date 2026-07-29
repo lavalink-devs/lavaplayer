@@ -9,6 +9,14 @@ base {
     archivesName = "lavaplayer-ext-format-xm"
 }
 
+tasks.jar {
+    manifest {
+        attributes(
+            "Automatic-Module-Name" to "com.sedmelluq.lavaplayer.extensions.format.xm"
+        )
+    }
+}
+
 dependencies {
     compileOnly(projects.main)
     implementation(libs.ibxm.fork)

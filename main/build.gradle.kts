@@ -13,6 +13,14 @@ base {
     archivesName = "lavaplayer"
 }
 
+tasks.jar {
+    manifest {
+        attributes(
+            "Automatic-Module-Name" to "com.sedmelluq.discord.lavaplayer"
+        )
+    }
+}
+
 dependencies {
     api(projects.common)
     implementation(projects.nativesPublish)
