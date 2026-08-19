@@ -118,7 +118,12 @@ public class PersistentHttpStream extends SeekableInputStream implements AutoClo
     }
 
     private boolean attemptConnect(boolean skipStatusCheck, boolean retryOnServerError) throws IOException {
-        currentResponse = httpInterface.execute(getConnectRequest());
+        HttpGet request = getConnectRequest();
+
+        // A subclass may narrow the request by rewriting the URL, which the response does not advertise.
+        boolean partialRequest = !request.getURI().equals(contentUrl);
+
+        currentResponse = httpInterface.execute(request);
         lastStatusCode = currentResponse.getStatusLine().getStatusCode();
 
         if (!skipStatusCheck && !validateStatusCode(currentResponse, retryOnServerError)) {
@@ -133,7 +138,7 @@ public class PersistentHttpStream extends SeekableInputStream implements AutoClo
 
         currentContent = createContentInputStream(currentResponse);
 
-        if (contentLength == Units.CONTENT_LENGTH_UNKNOWN) {
+        if (contentLength == Units.CONTENT_LENGTH_UNKNOWN && !partialRequest) {
             Header header = currentResponse.getFirstHeader("Content-Length");
 
             if (header != null) {
