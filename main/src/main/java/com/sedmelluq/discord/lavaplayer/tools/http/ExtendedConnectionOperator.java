@@ -139,7 +139,7 @@ public class ExtendedConnectionOperator implements HttpClientConnectionOperator 
         boolean last
     ) throws IOException {
         Socket socket = socketFactory.createSocket(context);
-        configureSocket(socket, socketConfig);
+        configureSocket(socket, socketConfig, context);
 
         try {
             socket = socketFactory.connectSocket(connectTimeout, socket, host, remoteAddress, localAddress, context);
@@ -186,8 +186,15 @@ public class ExtendedConnectionOperator implements HttpClientConnectionOperator 
             (localAddress instanceof Inet6Address && remoteAddress instanceof Inet6Address);
     }
 
-    private void configureSocket(Socket socket, SocketConfig socketConfig) throws IOException {
-        socket.setSoTimeout(socketConfig.getSoTimeout());
+    private void configureSocket(Socket socket, SocketConfig socketConfig, HttpContext context) throws IOException {
+        int soTimeout = socketConfig.getSoTimeout();
+        int requestSocketTimeout = HttpClientContext.adapt(context).getRequestConfig().getSocketTimeout();
+
+        if (soTimeout == 0 && requestSocketTimeout > 0) {
+            soTimeout = requestSocketTimeout;
+        }
+
+        socket.setSoTimeout(soTimeout);
         socket.setReuseAddress(socketConfig.isSoReuseAddress());
         socket.setTcpNoDelay(socketConfig.isTcpNoDelay());
         socket.setKeepAlive(socketConfig.isSoKeepAlive());
