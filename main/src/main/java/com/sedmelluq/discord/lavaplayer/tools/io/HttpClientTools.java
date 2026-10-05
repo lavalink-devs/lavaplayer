@@ -135,12 +135,16 @@ public class HttpClientTools {
         }
     }
 
+    /** HTTP 308 Permanent Redirect — not defined in Apache HttpComponents 4.5's HttpStatus. */
+    private static final int SC_PERMANENT_REDIRECT = 308;
+
     private static boolean isRedirectStatus(int statusCode) {
         switch (statusCode) {
             case HttpStatus.SC_MOVED_PERMANENTLY:
             case HttpStatus.SC_MOVED_TEMPORARILY:
             case HttpStatus.SC_SEE_OTHER:
             case HttpStatus.SC_TEMPORARY_REDIRECT:
+            case SC_PERMANENT_REDIRECT:
                 return true;
             default:
                 return false;

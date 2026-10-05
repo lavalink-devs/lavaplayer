@@ -6,6 +6,7 @@ import kotlin.io.path.writeText
 
 plugins {
     `java-library`
+    groovy
     alias(libs.plugins.maven.publish.base)
 }
 
@@ -37,6 +38,10 @@ dependencies {
 }
 
 tasks {
+    test {
+        useJUnitPlatform()
+    }
+
     val updateVersion by registering {
         val output = "$buildDir/resources/main/com/sedmelluq/discord/lavaplayer/tools/version.txt"
         inputs.property("version", version)
