@@ -1,9 +1,11 @@
 package com.sedmelluq.discord.lavaplayer.source.soundcloud;
 
+import com.sedmelluq.discord.lavaplayer.container.playlists.ExtendedM3uParser;
 import com.sedmelluq.discord.lavaplayer.container.playlists.HlsStreamSegment;
 import com.sedmelluq.discord.lavaplayer.container.playlists.HlsStreamSegmentParser;
 import com.sedmelluq.discord.lavaplayer.tools.http.HttpStreamTools;
 import com.sedmelluq.discord.lavaplayer.tools.io.ChainedInputStream;
+import com.sedmelluq.discord.lavaplayer.tools.io.HttpClientTools;
 import com.sedmelluq.discord.lavaplayer.tools.io.HttpInterface;
 import com.sedmelluq.discord.lavaplayer.tools.io.NonSeekableInputStream;
 import com.sedmelluq.discord.lavaplayer.tools.io.SeekableInputStream;
@@ -47,28 +49,54 @@ public class SoundCloudM3uAudioTrack extends DelegatedAudioTrack {
         }
     }
 
-    private List<HlsStreamSegment> loadSegments() throws IOException {
+    private SegmentList loadSegments() throws IOException {
         String playbackUrl = SoundCloudHelper.loadPlaybackUrl(httpInterface, m3uInfo.lookupUrl);
-        return HlsStreamSegmentParser.parseFromUrl(httpInterface, playbackUrl);
+        String[] lines = HttpClientTools.fetchResponseLines(httpInterface, new HttpGet(playbackUrl), "stream segments list");
+        return new SegmentList(findInitSegmentUrl(lines), HlsStreamSegmentParser.parseFromLines(lines));
+    }
+
+    private static String findInitSegmentUrl(String[] lines) {
+        for (String lineText : lines) {
+            ExtendedM3uParser.Line line = ExtendedM3uParser.parseLine(lineText);
+
+            if (line.isDirective() && "EXT-X-MAP".equals(line.directiveName)) {
+                return line.directiveArguments.get("URI");
+            }
+        }
+
+        return null;
     }
 
     private SegmentTracker createSegmentTracker() throws IOException {
-        List<HlsStreamSegment> initialSegments = loadSegments();
+        SegmentList initialSegments = loadSegments();
         SegmentTracker tracker = new SegmentTracker(initialSegments);
         tracker.setupDecoder(m3uInfo.decoderFactory);
         return tracker;
     }
 
+    private static class SegmentList {
+        private final String initSegmentUrl;
+        private final List<HlsStreamSegment> segments;
+
+        private SegmentList(String initSegmentUrl, List<HlsStreamSegment> segments) {
+            this.initSegmentUrl = initSegmentUrl;
+            this.segments = segments;
+        }
+    }
+
     private class SegmentTracker implements AutoCloseable {
         private final List<HlsStreamSegment> segments;
+        private String initSegmentUrl;
+        private boolean initSegmentPending;
         private long desiredPosition = 0;
         private long streamStartPosition = 0;
         private long lastUpdate;
         private SoundCloudSegmentDecoder decoder;
         private int segmentIndex = 0;
 
-        private SegmentTracker(List<HlsStreamSegment> segments) {
-            this.segments = segments;
+        private SegmentTracker(SegmentList segmentList) {
+            this.segments = segmentList.segments;
+            this.initSegmentUrl = segmentList.initSegmentUrl;
             this.lastUpdate = System.currentTimeMillis();
         }
 
@@ -77,6 +105,8 @@ public class SoundCloudM3uAudioTrack extends DelegatedAudioTrack {
         }
 
         private SeekableInputStream createChainedStream() {
+            // Fragmented MP4 segments are only decodable after the initialization segment.
+            initSegmentPending = initSegmentUrl != null;
             return new NonSeekableInputStream(new ChainedInputStream(this::getNextStream));
         }
 
@@ -120,6 +150,11 @@ public class SoundCloudM3uAudioTrack extends DelegatedAudioTrack {
         }
 
         private InputStream getNextStream() {
+            if (initSegmentPending) {
+                initSegmentPending = false;
+                return HttpStreamTools.streamContent(httpInterface, new HttpGet(initSegmentUrl));
+            }
+
             HlsStreamSegment segment = getNextSegment();
 
             if (segment == null) {
@@ -131,7 +166,8 @@ public class SoundCloudM3uAudioTrack extends DelegatedAudioTrack {
 
         private void updateSegmentList() {
             try {
-                List<HlsStreamSegment> newSegments = loadSegments();
+                SegmentList newSegmentList = loadSegments();
+                List<HlsStreamSegment> newSegments = newSegmentList.segments;
 
                 if (newSegments.size() != segments.size()) {
                     log.error("For {}, received different number of segments on update, skipping.", trackInfo.identifier);
@@ -148,6 +184,8 @@ public class SoundCloudM3uAudioTrack extends DelegatedAudioTrack {
                 for (int i = 0; i < segments.size(); i++) {
                     segments.set(i, newSegments.get(i));
                 }
+
+                initSegmentUrl = newSegmentList.initSegmentUrl;
             } catch (Exception e) {
                 log.error("For {}, failed to update segment list, skipping.", trackInfo.identifier, e);
             }

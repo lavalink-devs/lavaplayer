@@ -41,7 +41,7 @@ public class SoundCloudHttpContextFilter implements HttpContextFilter {
         if (clientIdTracker.isIdFetchContext(context)) {
             // Used for fetching client ID, let's not recurse.
             return;
-        } else if (request.getURI().getHost().contains("sndcdn.com")) {
+        } else if (isCdnHost(request.getURI().getHost())) {
             // CDN urls do not require client ID (it actually breaks them)
             return;
         }
@@ -71,6 +71,11 @@ public class SoundCloudHttpContextFilter implements HttpContextFilter {
         } else {
             return false;
         }
+    }
+
+    private static boolean isCdnHost(String host) {
+        // media-streaming.soundcloud.cloud urls are signed, extra query parameters invalidate the signature
+        return host.contains("sndcdn.com") || host.endsWith("media-streaming.soundcloud.cloud");
     }
 
     @Override
