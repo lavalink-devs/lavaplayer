@@ -60,7 +60,8 @@ public class MatroskaContainerProbe implements MediaContainerProbe {
             return unsupportedFormat(this, "No supported audio tracks present in the file.");
         }
 
-        String title = DataFormatTools.defaultOnNull(file.getTitle(), UNKNOWN_TITLE);
+        String title = DataFormatTools.defaultOnNull(file.getTitle(),
+            DataFormatTools.defaultOnNull(reference.title, UNKNOWN_TITLE));
         String artist = DataFormatTools.defaultOnNull(file.getArtist(), UNKNOWN_ARTIST);
 
         return supportedFormat(this, null, new AudioTrackInfo(title, artist,

@@ -54,11 +54,26 @@ public class LocalAudioSourceManager extends ProbingAudioSourceManager {
             int lastDotIndex = file.getName().lastIndexOf('.');
             String fileExtension = lastDotIndex >= 0 ? file.getName().substring(lastDotIndex + 1) : null;
 
-            return new MediaContainerDetection(containerRegistry, reference, inputStream,
-                MediaContainerHints.from(null, fileExtension)).detectContainer();
+            return new MediaContainerDetection(containerRegistry, referenceWithFallbackTitle(reference, file.getName()),
+                inputStream, MediaContainerHints.from(null, fileExtension)).detectContainer();
         } catch (IOException e) {
             throw new FriendlyException("Failed to open file for reading.", SUSPICIOUS, e);
         }
+    }
+
+    /**
+     * Wraps the reference with the file name as a fallback title when no title is known, so that embedded metadata can
+     * still take precedence, as it is applied to the builder afterwards.
+     */
+    private static AudioReference referenceWithFallbackTitle(AudioReference reference, String fileName) {
+        if (reference.title != null) {
+            return reference;
+        }
+
+        int lastDotIndex = fileName.lastIndexOf('.');
+        String title = lastDotIndex > 0 ? fileName.substring(0, lastDotIndex) : fileName;
+
+        return new AudioReference(reference.identifier, title, reference.containerDescriptor);
     }
 
     @Override
